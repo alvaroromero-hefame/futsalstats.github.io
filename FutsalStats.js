@@ -5,8 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	const mainContent = document.getElementById('main-content');
 	const menuClasificacion = document.getElementById('menu-clasificacion');
 	const menuHistorico = document.getElementById('menu-historico');
+	const mobileBackdrop = document.getElementById('mobile-backdrop');
 
 	let futsalData = null;
+	let isMobile = window.innerWidth <= 768;
 
 	// Cargar JSON
 	fetch('FutsalStatsMartes.json')
@@ -16,21 +18,107 @@ document.addEventListener('DOMContentLoaded', function() {
 			mostrarClasificacion();
 		});
 
+	// Function to check if device is mobile
+	function checkMobile() {
+		isMobile = window.innerWidth <= 768;
+	}
+
 	// Toggle sidebar
 	toggleBtn.addEventListener('click', function() {
-		sidebar.classList.toggle('collapsed');
-		mainContent.classList.toggle('collapsed');
+		if (isMobile) {
+			sidebar.classList.toggle('mobile-open');
+			mobileBackdrop.classList.toggle('active');
+			document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+		} else {
+			sidebar.classList.toggle('collapsed');
+		}
 	});
+
+	// Close mobile menu when clicking backdrop
+	mobileBackdrop.addEventListener('click', function() {
+		sidebar.classList.remove('mobile-open');
+		mobileBackdrop.classList.remove('active');
+		document.body.style.overflow = '';
+	});
+
+	// Close mobile menu when clicking menu items
+	function closeMobileMenu() {
+		if (isMobile) {
+			sidebar.classList.remove('mobile-open');
+			mobileBackdrop.classList.remove('active');
+			document.body.style.overflow = '';
+		}
+	}
+
+	// Handle window resize
+	window.addEventListener('resize', function() {
+		checkMobile();
+		if (!isMobile) {
+			sidebar.classList.remove('mobile-open');
+			mobileBackdrop.classList.remove('active');
+			document.body.style.overflow = '';
+		}
+	});
+
+	// Touch gesture support for mobile sidebar
+	let touchStartX = 0;
+	let touchStartY = 0;
+	let touchEndX = 0;
+	let touchEndY = 0;
+
+	// Add touch event listeners for mobile swipe gestures
+	document.addEventListener('touchstart', function(e) {
+		if (!isMobile) return;
+		touchStartX = e.changedTouches[0].screenX;
+		touchStartY = e.changedTouches[0].screenY;
+	});
+
+	document.addEventListener('touchend', function(e) {
+		if (!isMobile) return;
+		touchEndX = e.changedTouches[0].screenX;
+		touchEndY = e.changedTouches[0].screenY;
+		handleSwipeGesture();
+	});
+
+	function handleSwipeGesture() {
+		const swipeThreshold = 50;
+		const swipeDistanceX = touchEndX - touchStartX;
+		const swipeDistanceY = Math.abs(touchEndY - touchStartY);
+		
+		// Only trigger if horizontal swipe is greater than vertical
+		if (Math.abs(swipeDistanceX) > swipeThreshold && swipeDistanceY < 100) {
+			if (swipeDistanceX > 0 && touchStartX < 50) {
+				// Swipe right from left edge - open sidebar
+				sidebar.classList.add('mobile-open');
+				mobileBackdrop.classList.add('active');
+				document.body.style.overflow = 'hidden';
+			} else if (swipeDistanceX < 0 && sidebar.classList.contains('mobile-open')) {
+				// Swipe left when sidebar is open - close sidebar
+				sidebar.classList.remove('mobile-open');
+				mobileBackdrop.classList.remove('active');
+				document.body.style.overflow = '';
+			}
+		}
+	}
+
+	// Prevent scroll when sidebar is open on mobile
+	document.addEventListener('touchmove', function(e) {
+		if (isMobile && sidebar.classList.contains('mobile-open')) {
+			e.preventDefault();
+		}
+	}, { passive: false });
 
 	// Navegación
 	menuClasificacion.addEventListener('click', function(e) {
 		e.preventDefault();
 		mostrarClasificacion();
+		closeMobileMenu();
 	});
 
 	menuHistorico.addEventListener('click', function(e) {
 		e.preventDefault();
 		mostrarHistorico();
+		closeMobileMenu();
 	});
 
 	function mostrarClasificacion() {
@@ -126,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Renderizar tabla
 		let html = `<h2>Clasificación Liga</h2>
-		<table class="tabla-historico"><thead><tr><th>Posición</th><th>Jugador</th><th>Puntos</th><th>Goles</th><th>Encajados</th><th>Ganados</th><th>Empatados</th><th>Perdidos</th><th>MVPs</th></tr></thead><tbody>`;
+		<table class="tabla-historico tabla-clasificacion"><thead><tr><th>Posición</th><th>Jugador</th><th>Puntos</th><th>Goles</th><th>Encajados</th><th>Ganados</th><th>Empatados</th><th>Perdidos</th><th>MVPs</th></tr></thead><tbody>`;
 		clasificacion.forEach((j, idx) => {
 			let clase = '';
 			let icono = '';
@@ -143,15 +231,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				icono = '😭';
 			}
 			html += `<tr class="${clase}">
-				<td>${idx + 1}</td>
-				<td>${j.nombre} ${icono} ${fijoIcon}</td>
-				<td>${j.puntos.toFixed(2)}</td>
-				<td>${j.goles}</td>
-				<td>${j.encajados}</td>
-				<td>${j.ganados}</td>
-				<td>${j.empatados}</td>
-				<td>${j.perdidos}</td>
-				<td>${j.mvps || 0}</td>
+				<td data-label="Posición">${idx + 1}</td>
+				<td data-label="Jugador">${j.nombre} ${icono} ${fijoIcon}</td>
+				<td data-label="Puntos">${j.puntos.toFixed(2)}</td>
+				<td data-label="Goles">${j.goles}</td>
+				<td data-label="Encajados">${j.encajados}</td>
+				<td data-label="Ganados">${j.ganados}</td>
+				<td data-label="Empatados">${j.empatados}</td>
+				<td data-label="Perdidos">${j.perdidos}</td>
+				<td data-label="MVPs">${j.mvps || 0}</td>
 			</tr>`;
 		});
 		html += '</tbody></table>';
@@ -235,10 +323,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			const fecha = isNaN(fechaObj) ? match.matchDate : fechaObj.toLocaleDateString();
 			const resultado = getResultado(match);
 			html += `<tr>
-				<td>${fecha}</td>
-				<td>${resultado}</td>
-				<td>${match.mvp}</td>
-				<td><button class="detalle-btn" data-idx="${idx}">Ver detalle</button></td>
+				<td data-label="Fecha">${fecha}</td>
+				<td data-label="Resultado">${resultado}</td>
+				<td data-label="MVP">${match.mvp}</td>
+				<td data-label="Detalle"><button class="detalle-btn" data-idx="${idx}">Ver detalle</button></td>
 			</tr>`;
 		});
 		html += '</tbody></table>';
