@@ -1,0 +1,97 @@
+{
+    "fijos": [
+        "Alvaro",
+        "Javi Alcaraz",
+        "Ruben",
+        "Ricardo",
+        "Carlos Toledo",
+        "Alejandro",
+        "Fran",
+        "Carlos Alcaraz",
+        "Jaime",
+        "Bienve"
+    ],
+    "matches": [
+        {
+        "matchDate": "2025-09-30",
+        "mvp": "Alejandro",
+        "result":"VictoryRed",
+        "teams": [
+            {
+            "blue": [
+                {
+                "result": 4,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Alvaro",
+                        "goal": 2,
+                        "keeper": 7
+                        },
+                        {
+                        "name": "Javi Alcaraz",
+                        "goal": 2,
+                        "keeper": 6
+                        },
+                        {
+                        "name": "Ruben",
+                        "goal": 2,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Ricardo",
+                        "goal": 2,
+                        "keeper": 5
+                        },
+                        {
+                        "name": "Carlos Toledo",
+                        "goal": 2,
+                        "keeper": 4
+                        }
+                    ]
+                    }
+                ]
+                }
+            ],
+            "red": [
+                {
+                "result": 3,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Alejandro",
+                        "goal": 2,
+                        "keeper": 3
+                        },
+                        {
+                        "name": "Fran",
+                        "goal": 2,
+                        "keeper": 5
+                        },
+                        {
+                        "name": "Carlos Alcaraz",
+                        "goal": 2,
+                        "keeper": 7
+                        },
+                        {
+                        "name": "Jaime",
+                        "goal": 2,
+                        "keeper": 8
+                        },
+                        {
+                        "name": "Bienve",
+                        "goal": 2,
+                        "keeper": 13
+                        }
+                    ]
+                    }
+                ]
+                }
+            ]
+            }
+        ]
+    }
+]
+}
