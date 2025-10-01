@@ -21,14 +21,32 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Function to check if device is mobile
 	function checkMobile() {
 		isMobile = window.innerWidth <= 768;
+		if (isMobile) {
+			document.body.classList.add('mobile-device');
+		} else {
+			document.body.classList.remove('mobile-device');
+		}
 	}
+	
+	// Initial mobile check
+	checkMobile();
 
 	// Toggle sidebar
-	toggleBtn.addEventListener('click', function() {
+	toggleBtn.addEventListener('click', function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
 		if (isMobile) {
-			sidebar.classList.toggle('mobile-open');
-			mobileBackdrop.classList.toggle('active');
-			document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+			const isOpen = sidebar.classList.contains('mobile-open');
+			if (isOpen) {
+				sidebar.classList.remove('mobile-open');
+				mobileBackdrop.classList.remove('active');
+				document.body.style.overflow = '';
+			} else {
+				sidebar.classList.add('mobile-open');
+				mobileBackdrop.classList.add('active');
+				document.body.style.overflow = 'hidden';
+			}
 		} else {
 			sidebar.classList.toggle('collapsed');
 		}

@@ -140,6 +140,7 @@ body {
 	width: 60px;
 }
 
+/* Desktop toggle button - inside sidebar on larger screens */
 .toggle-btn {
 	background: #222e3c;
 	color: #fff;
@@ -147,8 +148,18 @@ body {
 	font-size: 1.5em;
 	padding: 10px 15px;
 	cursor: pointer;
-	width: 100%;
-	text-align: left;
+	width: auto;
+	text-align: center;
+	position: fixed;
+	top: 15px;
+	left: 15px;
+	z-index: 2500;
+	border-radius: 8px;
+	min-width: 50px;
+	min-height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .menu {
@@ -243,15 +254,21 @@ input, select, textarea {
 	}
 	/* Mobile sidebar overlay */
 	.sidebar {
-		width: 100%;
-		max-width: 280px;
-		transform: translateX(-100%);
-		transition: transform 0.3s ease;
-		z-index: 2000;
+		width: 100% !important;
+		max-width: 280px !important;
+		transform: translateX(-100%) !important;
+		transition: transform 0.3s ease !important;
+		z-index: 2000 !important;
+		position: fixed !important;
+		left: 0 !important;
+		top: 0 !important;
+		height: 100vh !important;
 	}
 	
 	.sidebar.mobile-open {
-		transform: translateX(0);
+		transform: translateX(0) !important;
+		visibility: visible !important;
+		opacity: 1 !important;
 	}
 	
 	.sidebar.collapsed {
@@ -262,10 +279,11 @@ input, select, textarea {
 	
 	/* Main content adjustments for mobile */
 	.main-content {
-		margin-left: 0;
-		padding: 15px;
-		width: 100%;
-		box-sizing: border-box;
+		margin-left: 0 !important;
+		padding: 15px !important;
+		padding-top: 100px !important; /* Space for floating toggle button */
+		width: 100% !important;
+		box-sizing: border-box !important;
 	}
 	
 	.sidebar.collapsed ~ .main-content {
@@ -288,17 +306,54 @@ input, select, textarea {
 		display: block;
 	}
 	
-	/* Larger toggle button for mobile */
+	/* Mobile toggle button - larger and more visible */
 	.toggle-btn {
-		font-size: 1.8em;
-		padding: 15px 20px;
-		position: fixed;
-		top: 10px;
-		left: 10px;
-		z-index: 2500;
-		border-radius: 8px;
-		background: #222e3c;
-		box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+		font-size: 2em;
+		padding: 15px;
+		width: 70px;
+		height: 70px;
+		border-radius: 50%;
+		background: #e53935;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+		color: #fff;
+		border: 3px solid #fff;
+		top: 25px;
+		left: 25px;
+		transition: all 0.3s ease;
+	}
+	
+	.toggle-btn:hover, .toggle-btn:active {
+		background: #c62828;
+		transform: scale(1.1);
+		box-shadow: 0 6px 25px rgba(0,0,0,0.9);
+	}
+	
+	.toggle-btn:focus {
+		outline: 3px solid #4CAF50;
+		outline-offset: 2px;
+	}
+}
+
+/* Specific rules for mobile portrait orientation */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+	.toggle-btn {
+		display: flex !important;
+		position: fixed !important;
+		top: 20px !important;
+		left: 20px !important;
+		z-index: 9999 !important;
+		width: 60px !important;
+		height: 60px !important;
+		background: #e53935 !important;
+		color: white !important;
+		border: 2px solid white !important;
+		border-radius: 50% !important;
+		font-size: 1.8em !important;
+		box-shadow: 0 4px 15px rgba(0,0,0,0.7) !important;
+	}
+	
+	.main-content {
+		padding-top: 110px !important;
 	}
 	
 	/* Mobile menu improvements */
@@ -413,11 +468,14 @@ input, select, textarea {
 @media screen and (min-width: 769px) and (max-width: 1024px) {
 	.sidebar {
 		width: 200px;
+		position: fixed !important;
+		transform: translateX(0) !important;
 	}
 	
 	.main-content {
 		margin-left: 200px;
 		padding: 25px;
+		padding-top: 25px;
 	}
 	
 	.sidebar.collapsed {
@@ -426,6 +484,21 @@ input, select, textarea {
 	
 	.sidebar.collapsed ~ .main-content {
 		margin-left: 60px;
+	}
+	
+	/* Tablet toggle button */
+	.toggle-btn {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: 100%;
+		height: auto;
+		border-radius: 0;
+		background: #222e3c;
+		border: none;
+		box-shadow: none;
+		font-size: 1.5em;
+		padding: 10px 15px;
 	}
 	
 	/* Tablet table adjustments */
@@ -459,6 +532,30 @@ input, select, textarea {
 @media screen and (min-width: 1025px) {
 	.main-content {
 		padding: 30px;
+		margin-left: 220px;
+	}
+	
+	/* Desktop toggle button positioning */
+	.toggle-btn {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: 100%;
+		height: auto;
+		border-radius: 0;
+		background: #222e3c;
+		border: none;
+		box-shadow: none;
+		font-size: 1.5em;
+		padding: 10px 15px;
+		text-align: left;
+	}
+	
+	.sidebar {
+		position: fixed !important;
+		transform: translateX(0) !important;
+		width: 220px !important;
+		max-width: none !important;
 	}
 }
 
