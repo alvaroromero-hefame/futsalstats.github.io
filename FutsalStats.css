@@ -559,6 +559,36 @@ input, select, textarea {
 	}
 }
 
+/* Ajustes para pantallas grandes */
+@media (min-width: 1024px) {
+    .sidebar {
+        width: 220px;
+        position: relative; /* Cambiar a relativo para evitar superposición */
+    }
+
+    .toggle-btn {
+        position: absolute;
+        left: 230px; /* Ajustar posición para que no se superponga */
+        top: 15px;
+    }
+
+    .main-content {
+        margin-left: 220px; /* Asegurar que el contenido principal no quede debajo del menú */
+    }
+}
+
+/* Ocultar el botón de contraer y la barra superior en escritorio */
+@media (min-width: 1024px) {
+    .toggle-btn {
+        display: none;
+    }
+
+    .sidebar {
+        position: relative;
+        width: 220px;
+    }
+}
+
 /* Landscape orientation adjustments for tablets */
 @media screen and (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
 	.sidebar {
@@ -573,4 +603,54 @@ input, select, textarea {
 	.sidebar.collapsed ~ .main-content {
 		margin-left: 60px;
 	}
+}
+
+/* Estilos para la página de estadísticas */
+.estadisticas-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fila {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.columna {
+    flex: 1;
+    margin: 0 10px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.columna.izquierda {
+    text-align: center;
+}
+
+.columna h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.estadistica-grande {
+	font-size: 2.5em;
+	font-weight: bold;
+	color: #444444;
+}ul {
+    list-style: none;
+    padding: 0;
+}
+
+ul li {
+    font-size: 1.2em;
+    margin: 5px 0;
+    color: #555;
 }

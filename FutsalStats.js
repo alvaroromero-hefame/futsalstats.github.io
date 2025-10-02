@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
 	const sidebar = document.getElementById('sidebar');
 	const toggleBtn = document.getElementById('toggleBtn');
@@ -390,5 +389,317 @@ document.addEventListener('DOMContentLoaded', function() {
 		html += `</ul></div>`;
 		html += `</div>`;
 		detalleDiv.innerHTML = html;
+	}
+
+	// Estadísticas
+	document.addEventListener("DOMContentLoaded", () => {
+		// Cargar datos del archivo JSON
+		fetch("FutsalStatsMartes.json")
+			.then(response => response.json())
+			.then(data => {
+				if (data.matches && data.matches.length > 0) {
+					// Calcular estadísticas
+					const totalGoles = calcularTotalGoles(data);
+					const victorias = calcularVictorias(data);
+					const topGoleadores = calcularTopGoleadores(data);
+					const topEncajados = calcularTopEncajados(data);
+
+					// Mostrar estadísticas
+					document.getElementById("total-goles").textContent = totalGoles;
+					renderizarGraficoVictorias(victorias);
+					renderizarLista("top-goleadores", topGoleadores);
+					renderizarLista("top-encajados", topEncajados);
+				} else {
+					mostrarDatosEjemplo();
+				}
+			})
+			.catch(() => mostrarDatosEjemplo());
+	});
+
+	function mostrarDatosEjemplo() {
+		document.getElementById("total-goles").textContent = 50;
+		renderizarGraficoVictorias({ red: 25, blue: 25 });
+		renderizarLista("top-goleadores", ["Jugador 1 (10)", "Jugador 2 (8)", "Jugador 3 (7)"]);
+		renderizarLista("top-encajados", ["Jugador A (15)", "Jugador B (12)", "Jugador C (10)"]);
+	}
+
+	function calcularTotalGoles(data) {
+		return data.matches.reduce((total, match) => {
+			const golesAzules = match.teams.blue[0].lineup.reduce((sum, player) => sum + player.goal, 0);
+			const golesRojos = match.teams.red[0].lineup.reduce((sum, player) => sum + player.goal, 0);
+			return total + golesAzules + golesRojos;
+		}, 0);
+	}
+
+	function calcularVictorias(data) {
+		const victorias = { red: 0, blue: 0 };
+		data.matches.forEach(match => {
+			if (match.result === "VictoryRed") {
+				victorias.red++;
+			} else if (match.result === "VictoryBlue") {
+				victorias.blue++;
+			}
+		});
+		return victorias;
+	}
+
+	function calcularTopGoleadores(data) {
+    const goleadores = {};
+
+    // Recorrer los partidos y sumar los goles de cada jugador
+    data.matches.forEach(match => {
+        match.teams.blue[0].lineup.forEach(player => {
+            if (!goleadores[player.name]) {
+                goleadores[player.name] = 0;
+            }
+            goleadores[player.name] += player.goal;
+        });
+
+        match.teams.red[0].lineup.forEach(player => {
+            if (!goleadores[player.name]) {
+                goleadores[player.name] = 0;
+            }
+            goleadores[player.name] += player.goal;
+        });
+    });
+
+    // Ordenar los jugadores por goles y devolver el top 3 (incluyendo empates)
+    const sorted = Object.entries(goleadores).sort((a, b) => b[1] - a[1]);
+    const top = [];
+    let rank = 1;
+
+    for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && sorted[i][1] < sorted[i - 1][1]) {
+            rank++;
+        }
+        if (rank > 3) break;
+        top.push(`${sorted[i][0]} (${sorted[i][1]})`);
+    }
+
+    return top;
+}
+
+	function calcularTopEncajados(data) {
+		const encajados = {};
+		data.matches.forEach(match => {
+			match.teams.blue[0].lineup.concat(match.teams.red[0].lineup).forEach(player => {
+				if (!encajados[player.name]) {
+					encajados[player.name] = 0;
+				}
+				encajados[player.name] += player.keeper;
+			});
+		});
+		return obtenerTop(encajados);
+	}
+
+	function obtenerTop(obj) {
+		const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+		const top = [];
+		let rank = 1;
+		for (let i = 0; i < sorted.length; i++) {
+			if (i > 0 && sorted[i][1] < sorted[i - 1][1]) {
+				rank++;
+			}
+			if (rank > 3) break;
+			top.push(`${sorted[i][0]} (${sorted[i][1]})`);
+		}
+		return top;
+	}
+
+function renderizarGraficoVictorias(victorias) {
+    // Obtener los datos de victorias desde el JSON
+    const victoriasTexto = `<span style='color: #36a2eb;'>${victorias.blue}</span> - <span style='color: #ff6384;'>${victorias.red}</span>`;
+
+    // Buscar el contenedor de victorias
+    const chartContainer = document.getElementById("victorias-display");
+    if (chartContainer) {
+        chartContainer.innerHTML = `<p style='fontSize: 2em; fontWeight: bold; textAlign: center;'>${victoriasTexto}</p>`;
+    }
+}	function renderizarLista(elementId, items) {
+		const ul = document.getElementById(elementId);
+		ul.innerHTML = "";
+		items.forEach(item => {
+			const li = document.createElement("li");
+			li.textContent = item;
+			ul.appendChild(li);
+		});
+	}
+
+	// Agregar event listener para estadísticas
+	const menuEstadisticas = document.getElementById('menu-estadisticas');
+	if (menuEstadisticas) {
+		menuEstadisticas.addEventListener('click', function(e) {
+			e.preventDefault();
+			mostrarEstadisticas();
+		});
+	}
+
+	function mostrarEstadisticas() {
+		// Ocultar contenido principal y mostrar estadísticas
+		mainContent.innerHTML = '';
+		
+		// Crear contenedor de estadísticas
+		const estadisticasContainer = document.createElement('div');
+		estadisticasContainer.className = 'estadisticas-container';
+		estadisticasContainer.innerHTML = `
+			<h1>Estadísticas de la Temporada</h1>
+			<div class="fila">
+				<div class="columna izquierda">
+					<h2>Número de Goles Totales</h2>
+					<p id="total-goles" class="estadistica-grande">Cargando...</p>
+				</div>
+				<div class="columna derecha izquierda">
+					<h2>Victorias</h2>
+					<div id="victorias-display">Cargando...</div>
+				</div>
+			</div>
+			<div class="fila">
+				<div class="columna izquierda">
+					<h2>Top 3 Goleadores</h2>
+					<ul id="top-goleadores">Cargando...</ul>
+				</div>
+				<div class="columna derecha izquierda">
+					<h2>Top 3 Encajados</h2>
+					<ul id="top-encajados">Cargando...</ul>
+				</div>
+			</div>
+		`;
+		
+		mainContent.appendChild(estadisticasContainer);
+		
+		// Cargar los datos si ya están disponibles
+		if (futsalData) {
+			cargarEstadisticas(futsalData);
+		}
+	}
+
+	function cargarEstadisticas(data) {
+		const totalGoles = calcularTotalGoles(data);
+		const victorias = calcularVictorias(data);
+		const topGoleadores = calcularTopGoleadores(data);
+		const topEncajados = calcularTopEncajados(data);
+
+		document.getElementById("total-goles").textContent = totalGoles;
+		renderizarGraficoVictorias(victorias);
+		renderizarLista("top-goleadores", topGoleadores);
+		renderizarLista("top-encajados", topEncajados);
+	}
+
+	// Funciones auxiliares para calcular estadísticas
+	function calcularTotalGoles(data) {
+		return data.matches.reduce((total, match) => {
+			const teamsData = match.teams[0];
+			const golesAzules = teamsData.blue[0].lineup[0].member.reduce((sum, player) => sum + player.goal, 0);
+			const golesRojos = teamsData.red[0].lineup[0].member.reduce((sum, player) => sum + player.goal, 0);
+			return total + golesAzules + golesRojos;
+		}, 0);
+	}
+
+	function calcularVictorias(data) {
+		const victorias = { red: 0, blue: 0 };
+		data.matches.forEach(match => {
+			if (match.result === "VictoryRed") {
+				victorias.red++;
+			} else if (match.result === "VictoryBlue") {
+				victorias.blue++;
+			}
+		});
+		return victorias;
+	}
+
+	function calcularTopGoleadores(data) {
+		const goleadores = {};
+
+		data.matches.forEach(match => {
+			const teamsData = match.teams[0];
+			
+			// Procesar equipo azul
+			teamsData.blue[0].lineup[0].member.forEach(player => {
+				if (!goleadores[player.name]) {
+					goleadores[player.name] = 0;
+				}
+				goleadores[player.name] += player.goal;
+			});
+
+			// Procesar equipo rojo
+			teamsData.red[0].lineup[0].member.forEach(player => {
+				if (!goleadores[player.name]) {
+					goleadores[player.name] = 0;
+				}
+				goleadores[player.name] += player.goal;
+			});
+		});
+
+		const sorted = Object.entries(goleadores).sort((a, b) => b[1] - a[1]);
+		const top = [];
+		let rank = 1;
+
+		for (let i = 0; i < sorted.length; i++) {
+			if (i > 0 && sorted[i][1] < sorted[i - 1][1]) {
+				rank++;
+			}
+			if (rank > 3) break;
+			top.push(`${sorted[i][0]} (${sorted[i][1]})`);
+		}
+
+		return top;
+	}
+
+	function calcularTopEncajados(data) {
+		const encajados = {};
+		
+		data.matches.forEach(match => {
+			const teamsData = match.teams[0];
+			
+			// Procesar equipo azul
+			teamsData.blue[0].lineup[0].member.forEach(player => {
+				if (!encajados[player.name]) {
+					encajados[player.name] = 0;
+				}
+				encajados[player.name] += player.keeper;
+			});
+
+			// Procesar equipo rojo
+			teamsData.red[0].lineup[0].member.forEach(player => {
+				if (!encajados[player.name]) {
+					encajados[player.name] = 0;
+				}
+				encajados[player.name] += player.keeper;
+			});
+		});
+
+		const sorted = Object.entries(encajados).sort((a, b) => b[1] - a[1]);
+		const top = [];
+		let rank = 1;
+
+		for (let i = 0; i < sorted.length; i++) {
+			if (i > 0 && sorted[i][1] < sorted[i - 1][1]) {
+				rank++;
+			}
+			if (rank > 3) break;
+			top.push(`${sorted[i][0]} (${sorted[i][1]})`);
+		}
+
+		return top;
+	}
+
+	function renderizarGraficoVictorias(victorias) {
+		const victoriasTexto = `<span style='color: #36a2eb;'>${victorias.blue}</span> - <span style='color: #ff6384;'>${victorias.red}</span>`;
+		const chartContainer = document.getElementById("victorias-display");
+		if (chartContainer) {
+			chartContainer.innerHTML = `<p style='font-size: 2.5em; font-weight: bold; text-align: center;'>${victoriasTexto}</p>`;
+		}
+	}
+
+	function renderizarLista(elementId, items) {
+		const ul = document.getElementById(elementId);
+		if (ul) {
+			ul.innerHTML = "";
+			items.forEach(item => {
+				const li = document.createElement("li");
+				li.textContent = item;
+				ul.appendChild(li);
+			});
+		}
 	}
 });

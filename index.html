@@ -14,12 +14,35 @@
 		<ul class="menu">
 			<li><a href="#" id="menu-clasificacion">Clasificación</a></li>
 			<li><a href="#" id="menu-historico">Histórico</a></li>
+			<li><a href="#" id="menu-estadisticas">Estadísticas</a></li>
 		</ul>
 	</div>
 	<div id="mobile-backdrop" class="mobile-backdrop"></div>
 	<div id="main-content" class="main-content">
 		<!-- El contenido se cargará aquí -->
 	</div>
+	<div id="estadisticas" class="estadisticas-container" style="display: none;">
+    <div class="fila">
+        <div class="columna izquierda">
+            <h2>Número de Goles Totales</h2>
+            <p id="total-goles" class="estadistica-grande">0</p>
+        </div>
+        <div class="columna derecha">
+            <h2>Victorias</h2>
+            <canvas id="victorias-chart"></canvas>
+        </div>
+    </div>
+    <div class="fila">
+        <div class="columna izquierda">
+            <h2>Top 3 Máximos Goleadores</h2>
+            <ul id="top-goleadores"></ul>
+        </div>
+        <div class="columna derecha">
+            <h2>Top 3 Máximos Jugadores que han Encajado Goles</h2>
+            <ul id="top-encajados"></ul>
+        </div>
+    </div>
+</div>
 	<script src="FutsalStats.js"></script>
 </body>
 </html>
