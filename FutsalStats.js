@@ -235,6 +235,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Obtener lista de fijos
 		const fijos = data.fijos || [];
+		
+		// Asegurar que todos los jugadores fijos estén en la lista, incluso si no han jugado
+		fijos.forEach(fijoName => {
+			if (!jugadores[fijoName]) {
+				jugadores[fijoName] = { 
+					puntos: 0, 
+					goles: 0, 
+					encajados: 0, 
+					ganados: 0, 
+					empatados: 0, 
+					perdidos: 0, 
+					mvps: 0 
+				};
+			}
+		});
 
 		// Ordenar por puntos
 		const clasificacion = Object.entries(jugadores)
@@ -248,9 +263,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			let clase = '';
 			let icono = '';
 			let fijoIcon = '';
+			let selectorIcon = '';
+			
 			if (fijos.includes(j.nombre)) {
 				fijoIcon = '⭐';
 			}
+			
+			// Ícono del próximo seleccionador
+			if (data.proximoSeleccionador && j.nombre === data.proximoSeleccionador) {
+				selectorIcon = '⚽';
+			}
+			
 			if (idx === 0) {
 				clase = 'primero';
 				icono = '🏆';
@@ -261,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			html += `<tr class="${clase}">
 				<td data-label="Posición">${idx + 1}</td>
-				<td data-label="Jugador">${j.nombre} ${icono} ${fijoIcon}</td>
+				<td data-label="Jugador">${j.nombre} ${icono} ${fijoIcon} ${selectorIcon}</td>
 				<td data-label="Puntos">${j.puntos.toFixed(2)}</td>
 				<td data-label="Goles">${j.goles}</td>
 				<td data-label="Encajados">${j.encajados}</td>
@@ -281,6 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				<li>Gol encajado: -0.25 puntos por cada gol encajado</li>
 				<li>MVP: +1 punto adicional por cada vez que ha sido MVP</li>
 				<li>⭐ Jugador fijo</li>
+				<li>⚽ Próximo seleccionador</li>
 			</ul>
 		</div>`;
 		
