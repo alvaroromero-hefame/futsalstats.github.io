@@ -7,15 +7,19 @@ document.addEventListener('DOMContentLoaded', function() {
 	const mobileBackdrop = document.getElementById('mobile-backdrop');
 
 	let futsalData = null;
+	let futsalDataJueves = null;
+	let currentDay = 'martes'; // 'martes' o 'jueves'
 	let isMobile = window.innerWidth <= 768;
 
-	// Cargar JSON
-	fetch('FutsalStatsMartes.json')
-		.then(res => res.json())
-		.then(data => {
-			futsalData = data;
-			mostrarClasificacion();
-		});
+	// Cargar ambos JSONs
+	Promise.all([
+		fetch('FutsalStatsMartes.json').then(res => res.json()),
+		fetch('FutsalStatsJueves.json').then(res => res.json()).catch(() => null)
+	]).then(([dataMartes, dataJueves]) => {
+		futsalData = dataMartes;
+		futsalDataJueves = dataJueves;
+		mostrarClasificacion();
+	});
 
 	// Function to check if device is mobile
 	function checkMobile() {
@@ -138,12 +142,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		closeMobileMenu();
 	});
 
+	// Función para obtener los datos del día actual
+	function getCurrentData() {
+		return currentDay === 'martes' ? futsalData : futsalDataJueves;
+	}
+
+
+
 	function mostrarClasificacion() {
-		if (!futsalData) {
+		const data = getCurrentData();
+		if (!data) {
 			mainContent.innerHTML = '<p>Cargando datos...</p>';
 			return;
 		}
-		const matches = futsalData.matches;
+		const matches = data.matches;
 		// Acumular puntos por jugador
 	const jugadores = {};
 	matches.forEach(match => {
@@ -222,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 
 		// Obtener lista de fijos
-		const fijos = futsalData.fijos || [];
+		const fijos = data.fijos || [];
 
 		// Ordenar por puntos
 		const clasificacion = Object.entries(jugadores)
@@ -271,20 +283,56 @@ document.addEventListener('DOMContentLoaded', function() {
 				<li>⭐ Jugador fijo</li>
 			</ul>
 		</div>`;
-		mainContent.innerHTML = html;
+		
+		// Añadir botones de cambio de día
+		const dayButtons = `
+			<div class="day-selector" style="text-align: center; margin: 20px 0;">
+				<button id="btn-martes-class" class="${currentDay === 'martes' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${currentDay === 'martes' ? '#007bff' : '#f0f0f0'}; color: ${currentDay === 'martes' ? 'white' : 'black'};">Martes</button>
+				<button id="btn-jueves-class" class="${currentDay === 'jueves' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${currentDay === 'jueves' ? '#007bff' : '#f0f0f0'}; color: ${currentDay === 'jueves' ? 'white' : 'black'};">Jueves</button>
+			</div>
+		`;
+		
+		mainContent.innerHTML = dayButtons + html;
+		
+		// Añadir event listeners para los botones de cambio de día en clasificación
+		const btnMartesClass = document.getElementById('btn-martes-class');
+		const btnJuevesClass = document.getElementById('btn-jueves-class');
+		
+		if (btnMartesClass) {
+			btnMartesClass.addEventListener('click', function() {
+				cambiarDiaClasificacion('martes');
+			});
+		}
+		
+		if (btnJuevesClass) {
+			btnJuevesClass.addEventListener('click', function() {
+				cambiarDiaClasificacion('jueves');
+			});
+		}
+	}
+
+	function cambiarDiaClasificacion(dia) {
+		currentDay = dia;
+		mostrarClasificacion(); // Volver a mostrar clasificación con el nuevo día
 	}
 
 	function mostrarHistorico() {
-		if (!futsalData) {
+		const data = getCurrentData();
+		if (!data) {
 			mainContent.innerHTML = '<p>Cargando datos...</p>';
 			return;
 		}
-		const matches = futsalData.matches;
+		const matches = data.matches;
 
 		// Filtros
 		mainContent.innerHTML = `
 			<h2>Histórico</h2>
 			<div class="filters">
+				<select id="filter-dia">
+					<option value="todos">Todos los días</option>
+					<option value="martes" ${currentDay === 'martes' ? 'selected' : ''}>Martes</option>
+					<option value="jueves" ${currentDay === 'jueves' ? 'selected' : ''}>Jueves</option>
+				</select>
 				<input type="date" id="filter-fecha" placeholder="Fecha">
 				<input type="text" id="filter-mvp" placeholder="MVP">
 				<input type="text" id="filter-lineup" placeholder="Integrante">
@@ -295,6 +343,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		`;
 
 		renderTable(matches);
+
+		// Event listener para el selector de día
+		const filterDia = document.getElementById('filter-dia');
+		if (filterDia) {
+			filterDia.addEventListener('change', function() {
+				const diaSeleccionado = this.value;
+				if (diaSeleccionado !== 'todos') {
+					currentDay = diaSeleccionado;
+					mostrarHistorico(); // Recargar histórico con el nuevo día
+				}
+			});
+		}
 
 		document.getElementById('filter-btn').onclick = function() {
 			const fecha = document.getElementById('filter-fecha').value;
@@ -543,6 +603,18 @@ function renderizarGraficoVictorias(victorias) {
 		estadisticasContainer.className = 'estadisticas-container';
 		estadisticasContainer.innerHTML = `
 			<h1>Estadísticas de la Temporada</h1>
+			<div class="day-selector" style="text-align: center; margin: 20px 0;">
+				<button id="btn-martes-stats" class="${currentDay === 'martes' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${currentDay === 'martes' ? '#007bff' : '#f0f0f0'}; color: ${currentDay === 'martes' ? 'white' : 'black'};">Martes</button>
+				<button id="btn-jueves-stats" class="${currentDay === 'jueves' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${currentDay === 'jueves' ? '#007bff' : '#f0f0f0'}; color: ${currentDay === 'jueves' ? 'white' : 'black'};">Jueves</button>
+			</div>
+			${currentDay === 'jueves' ? `
+			<div class="fila" style="justify-content: center;">
+				<div class="columna izquierda" style="max-width: 400px;">
+					<h2>💰 Recaudación</h2>
+					<p id="contador-no-fijos" class="estadistica-grande" style="color: #f39c12;">Cargando...</p>
+				</div>
+			</div>
+			` : ''}
 			<div class="fila">
 				<div class="columna izquierda">
 					<h2>Número de Goles Totales</h2>
@@ -567,10 +639,32 @@ function renderizarGraficoVictorias(victorias) {
 		
 		mainContent.appendChild(estadisticasContainer);
 		
-		// Cargar los datos si ya están disponibles
-		if (futsalData) {
-			cargarEstadisticas(futsalData);
+		// Añadir event listeners para los botones de cambio de día
+		const btnMartes = document.getElementById('btn-martes-stats');
+		const btnJueves = document.getElementById('btn-jueves-stats');
+		
+		if (btnMartes) {
+			btnMartes.addEventListener('click', function() {
+				cambiarDiaEstadisticas('martes');
+			});
 		}
+		
+		if (btnJueves) {
+			btnJueves.addEventListener('click', function() {
+				cambiarDiaEstadisticas('jueves');
+			});
+		}
+		
+		// Cargar los datos si ya están disponibles
+		const data = getCurrentData();
+		if (data) {
+			cargarEstadisticas(data);
+		}
+	}
+
+	function cambiarDiaEstadisticas(dia) {
+		currentDay = dia;
+		mostrarEstadisticas(); // Volver a mostrar estadísticas con el nuevo día
 	}
 
 	function cargarEstadisticas(data) {
@@ -583,6 +677,15 @@ function renderizarGraficoVictorias(victorias) {
 		renderizarGraficoVictorias(victorias);
 		renderizarLista("top-goleadores", topGoleadores);
 		renderizarLista("top-encajados", topEncajados);
+
+		// Si es jueves, calcular y mostrar contador de no fijos
+		if (currentDay === 'jueves') {
+			const contadorNoFijos = calcularContadorNoFijos(data);
+			const contadorElement = document.getElementById("contador-no-fijos");
+			if (contadorElement) {
+				contadorElement.textContent = contadorNoFijos + "€";
+			}
+		}
 	}
 
 	// Funciones auxiliares para calcular estadísticas
@@ -681,6 +784,33 @@ function renderizarGraficoVictorias(victorias) {
 		}
 
 		return top;
+	}
+
+	function calcularContadorNoFijos(data) {
+		// Obtener lista de jugadores fijos
+		const fijos = data.fijos || [];
+		const jugadoresNoFijos = new Set();
+
+		// Recorrer todos los partidos para encontrar jugadores que no sean fijos
+		data.matches.forEach(match => {
+			const teamsData = match.teams[0];
+			
+			// Procesar equipo azul
+			teamsData.blue[0].lineup[0].member.forEach(player => {
+				if (!fijos.includes(player.name)) {
+					jugadoresNoFijos.add(player.name);
+				}
+			});
+
+			// Procesar equipo rojo
+			teamsData.red[0].lineup[0].member.forEach(player => {
+				if (!fijos.includes(player.name)) {
+					jugadoresNoFijos.add(player.name);
+				}
+			});
+		});
+
+		return jugadoresNoFijos.size;
 	}
 
 	function renderizarGraficoVictorias(victorias) {
