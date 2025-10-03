@@ -19,7 +19,7 @@
         "result":"VictoryRed",
         "teams": [
             {
-            "blue": [
+            "red": [
                 {
                 "result": 78,
                 "lineup": [
@@ -55,7 +55,7 @@
                 ]
                 }
             ],
-            "red": [
+            "blue": [
                 {
                 "result": 7,
                 "lineup": [
