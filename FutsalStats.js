@@ -179,16 +179,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				resultadoRed = 'E';
 			}
 
-			// MVP
-			if (match.mvp && match.mvp.trim() !== '') {
-				if (!jugadores[match.mvp]) {
-					jugadores[match.mvp] = { puntos: 0, goles: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
-				}
-				if (jugadores[match.mvp].mvps === undefined) jugadores[match.mvp].mvps = 0;
-				jugadores[match.mvp].mvps++;
+		// MVP
+		if (match.mvp && match.mvp.trim() !== '' && match.mvp.trim() !== '-') {
+			if (!jugadores[match.mvp]) {
+				jugadores[match.mvp] = { puntos: 0, goles: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
 			}
-
-			// Procesar lineup azul
+			if (jugadores[match.mvp].mvps === undefined) jugadores[match.mvp].mvps = 0;
+			jugadores[match.mvp].mvps++;
+		}			// Procesar lineup azul
 			match.teams[0].blue[0].lineup[0].member.forEach(m => {
 				if (!jugadores[m.name]) {
 					jugadores[m.name] = { puntos: 0, goles: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
@@ -390,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					ok = ok && match.matchDate.startsWith(fecha);
 				}
 				if (mvp) {
-					ok = ok && match.mvp.toLowerCase().includes(mvp);
+					ok = ok && match.mvp && match.mvp.trim() !== '-' && match.mvp.toLowerCase().includes(mvp);
 				}
 				if (lineup) {
 					ok = ok && (
@@ -426,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			html += `<tr>
 				<td data-label="Fecha">${fecha}</td>
 				<td data-label="Resultado">${resultado}</td>
-				<td data-label="MVP">${match.mvp}</td>
+				<td data-label="MVP">${match.mvp && match.mvp.trim() !== '-' ? match.mvp : 'Sin MVP'}</td>
 				<td data-label="Detalle"><button class="detalle-btn" data-idx="${idx}">Ver detalle</button></td>
 			</tr>`;
 		});
@@ -457,7 +455,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function mostrarDetalle(match) {
 		const detalleDiv = document.getElementById('detalle-match');
-		const fijos = futsalData.fijos || [];
+		const data = getCurrentData();
+		const fijos = data ? data.fijos || [] : [];
 		let html = `<h3>Lineup</h3><div class="lineup-container">`;
 		html += `<div class="lineup-team blue-team"><h4>Azul</h4><ul>`;
 		match.teams[0].blue[0].lineup[0].member.forEach(m => {
