@@ -11,44 +11,44 @@
         "Miguel",
         "Andres"
     ],
-    "proximoSeleccionador": "Bienve",
+    "proximoSeleccionador": "Ruben Lopez",
     "matches": [
         {
-        "matchDate": "2025-09-30",
-        "mvp": "qqqqqz",
+        "matchDate": "2025-10-02",
+        "mvp": "-",
         "result":"VictoryRed",
         "teams": [
             {
             "blue": [
                 {
-                "result": 7,
+                "result": 78,
                 "lineup": [
                     {
                     "member": [
                         {
-                        "name": "asdasd",
-                        "goal": 0,
-                        "keeper": 2
-                        },
-                        {
-                        "name": "wwwww",
-                        "goal": 4,
+                        "name": "Alex",
+                        "goal": 3,
                         "keeper": 1
                         },
                         {
-                        "name": "eeee",
-                        "goal": 1,
-                        "keeper": 2
-                        },
-                        {
-                        "name": "rrr",
-                        "goal": 0,
-                        "keeper": 4
-                        },
-                        {
-                        "name": "tttt",
+                        "name": "Alvaro",
                         "goal": 2,
-                        "keeper": 2
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Miguel",
+                        "goal": 1,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "David",
+                        "goal": 2,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Emi",
+                        "goal": 0,
+                        "keeper": 6
                         }
                     ]
                     }
@@ -57,34 +57,34 @@
             ],
             "red": [
                 {
-                "result": 11,
+                "result": 7,
                 "lineup": [
                     {
                     "member": [
                         {
-                        "name": "yyyy",
-                        "goal": 2,
-                        "keeper": 0
-                        },
-                        {
-                        "name": "uuuu",
-                        "goal": 4,
-                        "keeper": 0
-                        },
-                        {
-                        "name": "iiii",
-                        "goal": 4,
+                        "name": "Antonio",
+                        "goal": 3,
                         "keeper": 2
                         },
                         {
-                        "name": "ffff",
+                        "name": "Alejandro",
+                        "goal": 1,
+                        "keeper": 3
+                        },
+                        {
+                        "name": "Bienve",
                         "goal": 0,
                         "keeper": 1
                         },
                         {
-                        "name": "dddddd",
+                        "name": "Andres",
                         "goal": 1,
-                        "keeper": 4
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Jose Antonio",
+                        "goal": 2,
+                        "keeper": 1
                         }
                     ]
                     }
