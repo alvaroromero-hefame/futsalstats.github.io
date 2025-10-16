@@ -182,20 +182,26 @@ document.addEventListener('DOMContentLoaded', function() {
 		// MVP
 		if (match.mvp && match.mvp.trim() !== '' && match.mvp.trim() !== '-') {
 			if (!jugadores[match.mvp]) {
-				jugadores[match.mvp] = { puntos: 0, goles: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
+				jugadores[match.mvp] = { puntos: 0, goles: 0, asistencias: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
 			}
 			if (jugadores[match.mvp].mvps === undefined) jugadores[match.mvp].mvps = 0;
 			jugadores[match.mvp].mvps++;
-		}			// Procesar lineup azul
-			match.teams[0].blue[0].lineup[0].member.forEach(m => {
-				if (!jugadores[m.name]) {
-					jugadores[m.name] = { puntos: 0, goles: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
-				}
+		}
+		
+		// Procesar lineup azul
+		match.teams[0].blue[0].lineup[0].member.forEach(m => {
+			if (!jugadores[m.name]) {
+				jugadores[m.name] = { puntos: 0, goles: 0, asistencias: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
+			}
 				// Puntos por victoria/empate
 				jugadores[m.name].puntos += puntosBlue;
 				// Goles
 				jugadores[m.name].puntos += m.goal * 0.25;
 				jugadores[m.name].goles += m.goal;
+				// Asistencias
+				const asistencias = m.assist || 0;
+				jugadores[m.name].puntos += asistencias * 0.25;
+				jugadores[m.name].asistencias += asistencias;
 				// Encajados
 				jugadores[m.name].puntos += (m.keeper ? m.keeper : 0) * -0.25;
 				jugadores[m.name].encajados += (m.keeper ? m.keeper : 0);
@@ -207,13 +213,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Procesar lineup rojo
 			match.teams[0].red[0].lineup[0].member.forEach(m => {
 				if (!jugadores[m.name]) {
-					jugadores[m.name] = { puntos: 0, goles: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
+					jugadores[m.name] = { puntos: 0, goles: 0, asistencias: 0, encajados: 0, ganados: 0, empatados: 0, perdidos: 0, mvps: 0 };
 				}
 				// Puntos por victoria/empate
 				jugadores[m.name].puntos += puntosRed;
 				// Goles
 				jugadores[m.name].puntos += m.goal * 0.25;
 				jugadores[m.name].goles += m.goal;
+				// Asistencias
+				const asistencias = m.assist || 0;
+				jugadores[m.name].puntos += asistencias * 0.25;
+				jugadores[m.name].asistencias += asistencias;
 				// Encajados
 				jugadores[m.name].puntos += (m.keeper ? m.keeper : 0) * -0.25;
 				jugadores[m.name].encajados += (m.keeper ? m.keeper : 0);
@@ -240,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				jugadores[fijoName] = { 
 					puntos: 0, 
 					goles: 0, 
+					asistencias: 0,
 					encajados: 0, 
 					ganados: 0, 
 					empatados: 0, 
@@ -256,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Renderizar tabla
 		let html = `<h2>Clasificación Liga</h2>
-		<table class="tabla-historico tabla-clasificacion"><thead><tr><th>Posición</th><th>Jugador</th><th>Puntos</th><th>Goles</th><th>Encajados</th><th>Ganados</th><th>Empatados</th><th>Perdidos</th><th>MVPs</th></tr></thead><tbody>`;
+		<table class="tabla-historico tabla-clasificacion"><thead><tr><th>Posición</th><th>Jugador</th><th>Puntos</th><th>Goles</th><th>Asistencias</th><th>Encajados</th><th>Ganados</th><th>Empatados</th><th>Perdidos</th><th>MVPs</th></tr></thead><tbody>`;
 		clasificacion.forEach((j, idx) => {
 			let clase = '';
 			let icono = '';
@@ -285,6 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				<td data-label="Jugador">${j.nombre} ${icono} ${fijoIcon} ${selectorIcon}</td>
 				<td data-label="Puntos">${j.puntos.toFixed(2)}</td>
 				<td data-label="Goles">${j.goles}</td>
+				<td data-label="Asistencias">${j.asistencias || 0}</td>
 				<td data-label="Encajados">${j.encajados}</td>
 				<td data-label="Ganados">${j.ganados}</td>
 				<td data-label="Empatados">${j.empatados}</td>
@@ -299,6 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				<li>Victoria: +3 puntos a cada jugador del equipo ganador</li>
 				<li>Empate: +1 punto a cada jugador de ambos equipos</li>
 				<li>Gol marcado: +0.25 puntos por cada gol</li>
+				<li>Asistencia: +0.25 puntos por cada asistencia</li>
 				<li>Gol encajado: -0.25 puntos por cada gol encajado</li>
 				<li>MVP: +1 punto adicional por cada vez que ha sido MVP</li>
 				<li>⭐ Jugador fijo</li>
@@ -461,13 +474,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		html += `<div class="lineup-team blue-team"><h4>Azul</h4><ul>`;
 		match.teams[0].blue[0].lineup[0].member.forEach(m => {
 			let fijoIcon = fijos.includes(m.name) ? ' ⭐' : '';
-			html += `<li>${m.name}${fijoIcon} (Goles: ${m.goal}, Encajados: ${m.keeper})</li>`;
+			const asistencias = m.assist || 0;
+			html += `<li>${m.name}${fijoIcon} (Goles: ${m.goal}, Asistencias: ${asistencias}, Encajados: ${m.keeper})</li>`;
 		});
 		html += `</ul></div>`;
 		html += `<div class="lineup-team red-team"><h4>Rojo</h4><ul>`;
 		match.teams[0].red[0].lineup[0].member.forEach(m => {
 			let fijoIcon = fijos.includes(m.name) ? ' ⭐' : '';
-			html += `<li>${m.name}${fijoIcon} (Goles: ${m.goal}, Encajados: ${m.keeper})</li>`;
+			const asistencias = m.assist || 0;
+			html += `<li>${m.name}${fijoIcon} (Goles: ${m.goal}, Asistencias: ${asistencias}, Encajados: ${m.keeper})</li>`;
 		});
 		html += `</ul></div>`;
 		html += `</div>`;
