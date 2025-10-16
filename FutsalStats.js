@@ -501,12 +501,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					const victorias = calcularVictorias(data);
 					const topGoleadores = calcularTopGoleadores(data);
 					const topEncajados = calcularTopEncajados(data);
+					const topAsistencias = calcularTopAsistencias(data);
 
 					// Mostrar estadísticas
 					document.getElementById("total-goles").textContent = totalGoles;
 					renderizarGraficoVictorias(victorias);
 					renderizarLista("top-goleadores", topGoleadores);
 					renderizarLista("top-encajados", topEncajados);
+					renderizarLista("top-asistencias", topAsistencias);
 				} else {
 					mostrarDatosEjemplo();
 				}
@@ -519,6 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		renderizarGraficoVictorias({ red: 25, blue: 25 });
 		renderizarLista("top-goleadores", ["Jugador 1 (10)", "Jugador 2 (8)", "Jugador 3 (7)"]);
 		renderizarLista("top-encajados", ["Jugador A (15)", "Jugador B (12)", "Jugador C (10)"]);
+		renderizarLista("top-asistencias", ["Jugador X (8)", "Jugador Y (6)", "Jugador Z (4)"]);
 	}
 
 	function calcularTotalGoles(data) {
@@ -588,6 +591,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		});
 		return obtenerTop(encajados);
+	}
+
+	function calcularTopAsistencias(data) {
+		const asistencias = {};
+		data.matches.forEach(match => {
+			match.teams.blue[0].lineup.concat(match.teams.red[0].lineup).forEach(player => {
+				if (!asistencias[player.name]) {
+					asistencias[player.name] = 0;
+				}
+				asistencias[player.name] += (player.assist || 0);
+			});
+		});
+		return obtenerTop(asistencias);
 	}
 
 	function obtenerTop(obj) {
@@ -673,6 +689,12 @@ function renderizarGraficoVictorias(victorias) {
 					<ul id="top-encajados">Cargando...</ul>
 				</div>
 			</div>
+			<div class="fila">
+				<div class="columna izquierda">
+					<h2>Top 3 Asistencias</h2>
+					<ul id="top-asistencias">Cargando...</ul>
+				</div>
+			</div>
 		`;
 		
 		mainContent.appendChild(estadisticasContainer);
@@ -710,11 +732,13 @@ function renderizarGraficoVictorias(victorias) {
 		const victorias = calcularVictorias(data);
 		const topGoleadores = calcularTopGoleadores(data);
 		const topEncajados = calcularTopEncajados(data);
+		const topAsistencias = calcularTopAsistencias(data);
 
 		document.getElementById("total-goles").textContent = totalGoles;
 		renderizarGraficoVictorias(victorias);
 		renderizarLista("top-goleadores", topGoleadores);
 		renderizarLista("top-encajados", topEncajados);
+		renderizarLista("top-asistencias", topAsistencias);
 
 		// Si es jueves, calcular y mostrar contador de no fijos
 		if (currentDay === 'jueves') {
@@ -810,6 +834,44 @@ function renderizarGraficoVictorias(victorias) {
 		});
 
 		const sorted = Object.entries(encajados).sort((a, b) => b[1] - a[1]);
+		const top = [];
+		let rank = 1;
+
+		for (let i = 0; i < sorted.length; i++) {
+			if (i > 0 && sorted[i][1] < sorted[i - 1][1]) {
+				rank++;
+			}
+			if (rank > 3) break;
+			top.push(`${sorted[i][0]} (${sorted[i][1]})`);
+		}
+
+		return top;
+	}
+
+	function calcularTopAsistencias(data) {
+		const asistencias = {};
+		
+		data.matches.forEach(match => {
+			const teamsData = match.teams[0];
+			
+			// Procesar equipo azul
+			teamsData.blue[0].lineup[0].member.forEach(player => {
+				if (!asistencias[player.name]) {
+					asistencias[player.name] = 0;
+				}
+				asistencias[player.name] += (player.assist || 0);
+			});
+
+			// Procesar equipo rojo
+			teamsData.red[0].lineup[0].member.forEach(player => {
+				if (!asistencias[player.name]) {
+					asistencias[player.name] = 0;
+				}
+				asistencias[player.name] += (player.assist || 0);
+			});
+		});
+
+		const sorted = Object.entries(asistencias).sort((a, b) => b[1] - a[1]);
 		const top = [];
 		let rank = 1;
 
