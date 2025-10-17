@@ -1,17 +1,17 @@
 {
     "fijos": [
-        "Bienve",
-        "Ruben Lopez",
-        "Carlos Toledo",
-        "Ruben",
-        "Jesus",
-        "Alejandro",
-        "Paco",
-        "Alvaro",
-        "Miguel",
-        "Andres"
+        "Alejandro",  
+        "Alvaro",  
+        "Andres",  
+        "Bienve",  
+        "Carlos Toledo",  
+        "Jesus",  
+        "Miguel",  
+        "Paco",  
+        "Ruben",  
+        "Ruben Lopez"
     ],
-    "proximoSeleccionador": "Ruben Lopez",
+    "proximoSeleccionador": "Andres",
     "matches": [
         {
         "matchDate": "2025-10-02",
