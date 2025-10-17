@@ -889,28 +889,28 @@ function renderizarGraficoVictorias(victorias) {
 	function calcularContadorNoFijos(data) {
 		// Obtener lista de jugadores fijos
 		const fijos = data.fijos || [];
-		const jugadoresNoFijos = new Set();
+		let contadorParticipaciones = 0;
 
-		// Recorrer todos los partidos para encontrar jugadores que no sean fijos
+		// Recorrer todos los partidos para contar participaciones de jugadores no fijos
 		data.matches.forEach(match => {
 			const teamsData = match.teams[0];
 			
 			// Procesar equipo azul
 			teamsData.blue[0].lineup[0].member.forEach(player => {
 				if (!fijos.includes(player.name)) {
-					jugadoresNoFijos.add(player.name);
+					contadorParticipaciones++;
 				}
 			});
 
 			// Procesar equipo rojo
 			teamsData.red[0].lineup[0].member.forEach(player => {
 				if (!fijos.includes(player.name)) {
-					jugadoresNoFijos.add(player.name);
+					contadorParticipaciones++;
 				}
 			});
 		});
 
-		return jugadoresNoFijos.size;
+		return contadorParticipaciones;
 	}
 
 	function renderizarGraficoVictorias(victorias) {
