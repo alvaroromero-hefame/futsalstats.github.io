@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	let futsalData = null;
 	let futsalDataJueves = null;
 	let currentDay = 'martes'; // 'martes' o 'jueves'
+	let filtroClasificacion = 'todos'; // 'todos' o 'soloFijos'
 	let isMobile = window.innerWidth <= 768;
 
 	// Cargar ambos JSONs
@@ -265,10 +266,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			.map(([nombre, datos]) => ({ nombre, ...datos }))
 			.sort((a, b) => b.puntos - a.puntos);
 
+		// Filtrar según el filtro seleccionado
+		const clasificacionFiltrada = filtroClasificacion === 'soloFijos' 
+			? clasificacion.filter(j => fijos.includes(j.nombre))
+			: clasificacion;
+
 		// Renderizar tabla
 		let html = `<h2>Clasificación Liga</h2>
 		<table class="tabla-historico tabla-clasificacion"><thead><tr><th>Posición</th><th>Jugador</th><th>Puntos</th><th>Goles</th><th>Asistencias</th><th>Encajados</th><th>Ganados</th><th>Empatados</th><th>Perdidos</th><th>MVPs</th></tr></thead><tbody>`;
-		clasificacion.forEach((j, idx) => {
+		clasificacionFiltrada.forEach((j, idx) => {
 			let clase = '';
 			let icono = '';
 			let fijoIcon = '';
@@ -287,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				clase = 'primero';
 				icono = '🏆';
 			}
-			if (idx === clasificacion.length - 1) {
+			if (idx === clasificacionFiltrada.length - 1) {
 				clase = 'ultimo';
 				icono = '😭';
 			}
@@ -319,11 +325,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			</ul>
 		</div>`;
 		
-		// Añadir botones de cambio de día
+		// Añadir botones de cambio de día y filtro
 		const dayButtons = `
 			<div class="day-selector" style="text-align: center; margin: 20px 0;">
 				<button id="btn-martes-class" class="${currentDay === 'martes' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${currentDay === 'martes' ? '#007bff' : '#f0f0f0'}; color: ${currentDay === 'martes' ? 'white' : 'black'};">Martes</button>
 				<button id="btn-jueves-class" class="${currentDay === 'jueves' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${currentDay === 'jueves' ? '#007bff' : '#f0f0f0'}; color: ${currentDay === 'jueves' ? 'white' : 'black'};">Jueves</button>
+			</div>
+			<div class="filter-selector" style="text-align: center; margin: 20px 0;">
+				<button id="btn-todos" class="${filtroClasificacion === 'todos' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${filtroClasificacion === 'todos' ? '#28a745' : '#f0f0f0'}; color: ${filtroClasificacion === 'todos' ? 'white' : 'black'};">Todos</button>
+				<button id="btn-solo-fijos" class="${filtroClasificacion === 'soloFijos' ? 'active' : ''}" style="margin: 0 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background: ${filtroClasificacion === 'soloFijos' ? '#28a745' : '#f0f0f0'}; color: ${filtroClasificacion === 'soloFijos' ? 'white' : 'black'};">Solo Fijos</button>
 			</div>
 		`;
 		
@@ -344,11 +354,32 @@ document.addEventListener('DOMContentLoaded', function() {
 				cambiarDiaClasificacion('jueves');
 			});
 		}
+
+		// Añadir event listeners para los botones del filtro
+		const btnTodos = document.getElementById('btn-todos');
+		const btnSoloFijos = document.getElementById('btn-solo-fijos');
+		
+		if (btnTodos) {
+			btnTodos.addEventListener('click', function() {
+				cambiarFiltroClasificacion('todos');
+			});
+		}
+		
+		if (btnSoloFijos) {
+			btnSoloFijos.addEventListener('click', function() {
+				cambiarFiltroClasificacion('soloFijos');
+			});
+		}
 	}
 
 	function cambiarDiaClasificacion(dia) {
 		currentDay = dia;
 		mostrarClasificacion(); // Volver a mostrar clasificación con el nuevo día
+	}
+
+	function cambiarFiltroClasificacion(filtro) {
+		filtroClasificacion = filtro;
+		mostrarClasificacion(); // Volver a mostrar clasificación con el nuevo filtro
 	}
 
 	function mostrarHistorico() {
