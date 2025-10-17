@@ -93,6 +93,96 @@
             ]
             }
         ]
+    },{
+        "matchDate": "2025-10-16",
+        "mvp": "Alex",
+        "result":"VictoryRed",
+        "teams": [
+            {
+            "red": [
+                {
+                "result": 5,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Alex",
+                        "goal": 2,
+                        "assist": 1,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Alvaro",
+                        "goal": 1,
+                        "assist": 0,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Fran",
+                        "goal": 1,
+                        "assist": 1,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Ruben Lopez",
+                        "goal": 0,
+                        "assist": 0,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Jesus",
+                        "goal": 1,
+                        "assist": 0,
+                        "keeper": 0
+                        }
+                    ]
+                    }
+                ]
+                }
+            ],
+            "blue": [
+                {
+                "result": 3,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Paco",
+                        "goal": 2,
+                        "assist": 0,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Ruben",
+                        "goal": 0,
+                        "assist": 1,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Alejandro",
+                        "goal": 0,
+                        "assist": 0,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Carlos Toledo",
+                        "goal": 0,
+                        "assist": 0,
+                        "keeper": 2
+                        },
+                        {
+                        "name": "Miguel",
+                        "goal": 1,
+                        "assist": 0,
+                        "keeper": 2
+                        }
+                    ]
+                    }
+                ]
+                }
+            ]
+            }
+        ]
     }
 ]
 }
