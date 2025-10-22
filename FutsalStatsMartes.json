@@ -11,7 +11,7 @@
         "Ricardo",
         "Ruben"
     ],
-    "proximoSeleccionador": "Javi Alcaraz",
+    "proximoSeleccionador": "Ricardo",
     "matches": [
         {
         "matchDate": "2025-09-30",
@@ -257,6 +257,97 @@
                         "goal": 2,
                         "assist": 1,
                         "keeper": 1
+                        }
+                    ]
+                    }
+                ]
+                }
+            ]
+            }
+        ]
+    },
+    {
+        "matchDate": "2025-10-21",
+        "mvp": "Alvaro",
+        "result":"VictoryBlue",
+        "teams": [
+            {
+            "blue": [
+                {
+                "result": 9,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Alvaro",
+                        "goal": 5,
+                        "assist": 0,
+                        "keeper": 2
+                        },
+                        {
+                        "name": "Javi Alcaraz",
+                        "goal": 2,
+                        "assist": 2,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Manolo",
+                        "goal": 0,
+                        "assist": 0,
+                        "keeper": 4
+                        },
+                        {
+                        "name": "Bienve",
+                        "goal": 1,
+                        "assist": 1,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Ricardo",
+                        "goal": 1,
+                        "assist": 0,
+                        "keeper": 1
+                        }
+                    ]
+                    }
+                ]
+                }
+            ],
+            "red": [
+                {
+                "result": 9,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Fran",
+                        "goal": 2,
+                        "assist": 2,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Carlos Alcaraz",
+                        "goal": 3,
+                        "assist": 1,
+                        "keeper": 3
+                        },
+                        {
+                        "name": "Carlos Toledo",
+                        "goal": 2,
+                        "assist": 0,
+                        "keeper": 2
+                        },
+                        {
+                        "name": "Jaime",
+                        "goal": 1,
+                        "assist": 4,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Miguel",
+                        "goal": 1,
+                        "assist": 1,
+                        "keeper": 3
                         }
                     ]
                     }
