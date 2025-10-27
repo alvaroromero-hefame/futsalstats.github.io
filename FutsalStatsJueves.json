@@ -183,6 +183,96 @@
             ]
             }
         ]
+    },{
+        "matchDate": "2025-10-23",
+        "mvp": "Fran",
+        "result":"VictoryBlue",
+        "teams": [
+            {
+            "red": [
+                {
+                "result": 9,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Fran",
+                        "goal": 5,
+                        "assist": 0,
+                        "keeper": 2
+                        },
+                        {
+                        "name": "Mario",
+                        "goal": 0,
+                        "assist": 1,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Jose Antonio",
+                        "goal": 1,
+                        "assist": 1,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Bienve",
+                        "goal": 1,
+                        "assist": 3,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Miguel",
+                        "goal": 2,
+                        "assist": 2,
+                        "keeper": 1
+                        }
+                    ]
+                    }
+                ]
+                }
+            ],
+            "blue": [
+                {
+                "result": 4,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "David",
+                        "goal": 0,
+                        "assist": 0,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Alvaro",
+                        "goal": 1,
+                        "assist": 1,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Luis",
+                        "goal": 2,
+                        "assist": 0,
+                        "keeper": 3
+                        },
+                        {
+                        "name": "Paco",
+                        "goal": 0,
+                        "assist": 1,
+                        "keeper": 3
+                        },
+                        {
+                        "name": "Ruben",
+                        "goal": 1,
+                        "assist": 0,
+                        "keeper": 3
+                        }
+                    ]
+                    }
+                ]
+                }
+            ]
+            }
+        ]
     }
 ]
 }
