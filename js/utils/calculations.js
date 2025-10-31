@@ -144,15 +144,44 @@ function procesarJugador(jugador, member, puntosVictoria, resultado) {
 }
 
 /**
+ * Obtiene los lineups de un partido en cualquier formato
+ * @param {Object} match - Partido
+ * @returns {Object} {blue: Array, red: Array}
+ */
+function getLineups(match) {
+    if (match.blue_lineup && match.red_lineup) {
+        // Estructura de Supabase (plana)
+        return {
+            blue: match.blue_lineup,
+            red: match.red_lineup
+        };
+    } else if (match.teams && match.teams[0]) {
+        // Estructura antigua (anidada)
+        return {
+            blue: match.teams[0].blue[0].lineup[0].member,
+            red: match.teams[0].red[0].lineup[0].member
+        };
+    }
+    console.warn('Estructura de partido no reconocida:', match);
+    return { blue: [], red: [] };
+}
+
+/**
  * Calcula el total de goles de todos los partidos
  * @param {Object} data - Datos con matches
  * @returns {number} Total de goles
  */
 export function calcularTotalGoles(data) {
     return data.matches.reduce((total, match) => {
-        const teamsData = match.teams[0];
-        const golesAzules = teamsData.blue[0].lineup[0].member.reduce((sum, player) => sum + player.goal, 0);
-        const golesRojos = teamsData.red[0].lineup[0].member.reduce((sum, player) => sum + player.goal, 0);
+        const lineups = getLineups(match);
+        const golesAzules = lineups.blue.reduce((sum, player) => {
+            const goles = player.goal !== undefined ? player.goal : (player.goles || 0);
+            return sum + goles;
+        }, 0);
+        const golesRojos = lineups.red.reduce((sum, player) => {
+            const goles = player.goal !== undefined ? player.goal : (player.goles || 0);
+            return sum + goles;
+        }, 0);
         return total + golesAzules + golesRojos;
     }, 0);
 }
@@ -183,22 +212,24 @@ export function calcularTopGoleadores(data) {
     const goleadores = {};
 
     data.matches.forEach(match => {
-        const teamsData = match.teams[0];
+        const lineups = getLineups(match);
         
         // Procesar equipo azul
-        teamsData.blue[0].lineup[0].member.forEach(player => {
+        lineups.blue.forEach(player => {
             if (!goleadores[player.name]) {
                 goleadores[player.name] = 0;
             }
-            goleadores[player.name] += player.goal;
+            const goles = player.goal !== undefined ? player.goal : (player.goles || 0);
+            goleadores[player.name] += goles;
         });
 
         // Procesar equipo rojo
-        teamsData.red[0].lineup[0].member.forEach(player => {
+        lineups.red.forEach(player => {
             if (!goleadores[player.name]) {
                 goleadores[player.name] = 0;
             }
-            goleadores[player.name] += player.goal;
+            const goles = player.goal !== undefined ? player.goal : (player.goles || 0);
+            goleadores[player.name] += goles;
         });
     });
 
@@ -214,22 +245,24 @@ export function calcularTopEncajados(data) {
     const encajados = {};
     
     data.matches.forEach(match => {
-        const teamsData = match.teams[0];
+        const lineups = getLineups(match);
         
         // Procesar equipo azul
-        teamsData.blue[0].lineup[0].member.forEach(player => {
+        lineups.blue.forEach(player => {
             if (!encajados[player.name]) {
                 encajados[player.name] = 0;
             }
-            encajados[player.name] += player.keeper;
+            const keeper = player.keeper !== undefined ? player.keeper : (player.portero || 0);
+            encajados[player.name] += keeper;
         });
 
         // Procesar equipo rojo
-        teamsData.red[0].lineup[0].member.forEach(player => {
+        lineups.red.forEach(player => {
             if (!encajados[player.name]) {
                 encajados[player.name] = 0;
             }
-            encajados[player.name] += player.keeper;
+            const keeper = player.keeper !== undefined ? player.keeper : (player.portero || 0);
+            encajados[player.name] += keeper;
         });
     });
 
@@ -245,22 +278,24 @@ export function calcularTopAsistencias(data) {
     const asistencias = {};
     
     data.matches.forEach(match => {
-        const teamsData = match.teams[0];
+        const lineups = getLineups(match);
         
         // Procesar equipo azul
-        teamsData.blue[0].lineup[0].member.forEach(player => {
+        lineups.blue.forEach(player => {
             if (!asistencias[player.name]) {
                 asistencias[player.name] = 0;
             }
-            asistencias[player.name] += (player.assist || 0);
+            const assists = player.assist !== undefined ? player.assist : (player.asistencias || 0);
+            asistencias[player.name] += assists;
         });
 
         // Procesar equipo rojo
-        teamsData.red[0].lineup[0].member.forEach(player => {
+        lineups.red.forEach(player => {
             if (!asistencias[player.name]) {
                 asistencias[player.name] = 0;
             }
-            asistencias[player.name] += (player.assist || 0);
+            const assists = player.assist !== undefined ? player.assist : (player.asistencias || 0);
+            asistencias[player.name] += assists;
         });
     });
 
@@ -298,17 +333,17 @@ export function calcularContadorNoFijos(data) {
     let contadorParticipaciones = 0;
 
     data.matches.forEach(match => {
-        const teamsData = match.teams[0];
+        const lineups = getLineups(match);
         
         // Procesar equipo azul
-        teamsData.blue[0].lineup[0].member.forEach(player => {
+        lineups.blue.forEach(player => {
             if (!fijos.includes(player.name)) {
                 contadorParticipaciones++;
             }
         });
 
         // Procesar equipo rojo
-        teamsData.red[0].lineup[0].member.forEach(player => {
+        lineups.red.forEach(player => {
             if (!fijos.includes(player.name)) {
                 contadorParticipaciones++;
             }
@@ -324,9 +359,17 @@ export function calcularContadorNoFijos(data) {
  * @returns {string} Resultado en formato "Azul X - Rojo Y"
  */
 export function getResultado(match) {
-    const blue = match.teams[0].blue[0].result;
-    const red = match.teams[0].red[0].result;
-    return `Azul ${blue} - Rojo ${red}`;
+    // Estructura de Supabase
+    if (match.blue_result !== undefined && match.red_result !== undefined) {
+        return `Azul ${match.blue_result} - Rojo ${match.red_result}`;
+    }
+    // Estructura antigua
+    if (match.teams && match.teams[0]) {
+        const blue = match.teams[0].blue[0].result;
+        const red = match.teams[0].red[0].result;
+        return `Azul ${blue} - Rojo ${red}`;
+    }
+    return 'Resultado no disponible';
 }
 
 /**
@@ -335,7 +378,6 @@ export function getResultado(match) {
  * @returns {Array} Array con todos los jugadores del partido
  */
 export function getAllMembers(match) {
-    const blueMembers = match.teams[0].blue[0].lineup[0].member;
-    const redMembers = match.teams[0].red[0].lineup[0].member;
-    return [...blueMembers, ...redMembers];
+    const lineups = getLineups(match);
+    return [...lineups.blue, ...lineups.red];
 }

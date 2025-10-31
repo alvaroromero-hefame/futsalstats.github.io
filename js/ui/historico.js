@@ -69,7 +69,7 @@ export class HistoricoView {
         `;
 
         matches.forEach((match, idx) => {
-            const fecha = formatDate(match.matchDate);
+            const fecha = formatDate(match.match_date || match.matchDate);
             const resultado = getResultado(match);
             html += `
                 <tr>
@@ -133,8 +133,9 @@ export class HistoricoView {
 
                 const filtered = matches.filter(match => {
                     let ok = true;
+                    const matchDate = match.match_date || match.matchDate;
                     if (fecha) {
-                        ok = ok && match.matchDate.startsWith(fecha);
+                        ok = ok && matchDate.startsWith(fecha);
                     }
                     if (mvp) {
                         ok = ok && match.mvp && match.mvp.trim() !== '-' && match.mvp.toLowerCase().includes(mvp);
