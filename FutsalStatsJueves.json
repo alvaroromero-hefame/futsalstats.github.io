@@ -184,96 +184,6 @@
             }
         ]
     },{
-        "matchDate": "2025-10-30",
-        "mvp": "-",
-        "result":"VictoryRed",
-        "teams": [
-            {
-            "red": [
-                {
-                "result": 8,
-                "lineup": [
-                    {
-                    "member": [
-                        {
-                        "name": "Carlos Toledo",
-                        "goal": 3,
-                        "assist": 1,
-                        "keeper": 0
-                        },
-                        {
-                        "name": "Ruben Lopez",
-                        "goal": 0,
-                        "assist": 1,
-                        "keeper": 0
-                        },
-                        {
-                        "name": "Juan",
-                        "goal": 1,
-                        "assist": 1,
-                        "keeper": 2
-                        },
-                        {
-                        "name": "Fran",
-                        "goal": 1,
-                        "assist": 2,
-                        "keeper": 2
-                        },
-                        {
-                        "name": "Jose Antonio",
-                        "goal": 3,
-                        "assist": 0,
-                        "keeper": 1
-                        }
-                    ]
-                    }
-                ]
-                }
-            ],
-            "blue": [
-                {
-                "result": 5,
-                "lineup": [
-                    {
-                    "member": [
-                        {
-                        "name": "Alvaro",
-                        "goal": 4,
-                        "assist": 0,
-                        "keeper": 0
-                        },
-                        {
-                        "name": "Jesus",
-                        "goal": 0,
-                        "assist": 1,
-                        "keeper": 2
-                        },
-                        {
-                        "name": "Andres",
-                        "goal": 0,
-                        "assist": 0,
-                        "keeper": 5
-                        },
-                        {
-                        "name": "Miguel",
-                        "goal": 1,
-                        "assist": 1,
-                        "keeper": 1
-                        },
-                        {
-                        "name": "Sergio",
-                        "goal": 0,
-                        "assist": 0,
-                        "keeper": 0
-                        }
-                    ]
-                    }
-                ]
-                }
-            ]
-            }
-        ]
-    },{
         "matchDate": "2025-10-23",
         "mvp": "Fran",
         "result":"VictoryBlue",
@@ -355,6 +265,96 @@
                         "goal": 1,
                         "assist": 0,
                         "keeper": 3
+                        }
+                    ]
+                    }
+                ]
+                }
+            ]
+            }
+        ]
+    },{
+        "matchDate": "2025-10-30",
+        "mvp": "Jose Antonio",
+        "result":"VictoryRed",
+        "teams": [
+            {
+            "red": [
+                {
+                "result": 8,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Carlos Toledo",
+                        "goal": 3,
+                        "assist": 1,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Ruben Lopez",
+                        "goal": 0,
+                        "assist": 1,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Juan",
+                        "goal": 1,
+                        "assist": 1,
+                        "keeper": 2
+                        },
+                        {
+                        "name": "Fran",
+                        "goal": 1,
+                        "assist": 2,
+                        "keeper": 2
+                        },
+                        {
+                        "name": "Jose Antonio",
+                        "goal": 3,
+                        "assist": 0,
+                        "keeper": 1
+                        }
+                    ]
+                    }
+                ]
+                }
+            ],
+            "blue": [
+                {
+                "result": 5,
+                "lineup": [
+                    {
+                    "member": [
+                        {
+                        "name": "Alvaro",
+                        "goal": 4,
+                        "assist": 0,
+                        "keeper": 0
+                        },
+                        {
+                        "name": "Jesus",
+                        "goal": 0,
+                        "assist": 1,
+                        "keeper": 2
+                        },
+                        {
+                        "name": "Andres",
+                        "goal": 0,
+                        "assist": 0,
+                        "keeper": 5
+                        },
+                        {
+                        "name": "Miguel",
+                        "goal": 1,
+                        "assist": 1,
+                        "keeper": 1
+                        },
+                        {
+                        "name": "Sergio",
+                        "goal": 0,
+                        "assist": 0,
+                        "keeper": 0
                         }
                     ]
                     }
