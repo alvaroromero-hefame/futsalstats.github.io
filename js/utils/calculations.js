@@ -1,0 +1,323 @@
+/**
+ * Calculations - Funciones de cálculo para estadísticas y clasificación
+ */
+
+/**
+ * Calcula la clasificación de jugadores basada en los partidos
+ * @param {Array} matches - Array de partidos
+ * @param {Array} fijos - Array con nombres de jugadores fijos
+ * @returns {Array} Array de jugadores con sus estadísticas, ordenado por puntos
+ */
+export function calcularClasificacion(matches, fijos = []) {
+    const jugadores = {};
+
+    matches.forEach(match => {
+        // Identificar puntos de victoria por el campo 'result'
+        let puntosBlue = 0, puntosRed = 0;
+        let resultadoBlue = '', resultadoRed = '';
+        
+        if (match.result === 'VictoryBlue') {
+            puntosBlue = 3;
+            puntosRed = 0;
+            resultadoBlue = 'G';
+            resultadoRed = 'P';
+        } else if (match.result === 'VictoryRed') {
+            puntosBlue = 0;
+            puntosRed = 3;
+            resultadoBlue = 'P';
+            resultadoRed = 'G';
+        } else if (match.result === 'Draw') {
+            puntosBlue = 1;
+            puntosRed = 1;
+            resultadoBlue = 'E';
+            resultadoRed = 'E';
+        }
+
+        // MVP
+        if (match.mvp && match.mvp.trim() !== '' && match.mvp.trim() !== '-') {
+            if (!jugadores[match.mvp]) {
+                jugadores[match.mvp] = crearJugadorVacio();
+            }
+            jugadores[match.mvp].mvps++;
+        }
+
+        // Procesar lineup azul
+        match.teams[0].blue[0].lineup[0].member.forEach(m => {
+            if (!jugadores[m.name]) {
+                jugadores[m.name] = crearJugadorVacio();
+            }
+            procesarJugador(jugadores[m.name], m, puntosBlue, resultadoBlue);
+        });
+
+        // Procesar lineup rojo
+        match.teams[0].red[0].lineup[0].member.forEach(m => {
+            if (!jugadores[m.name]) {
+                jugadores[m.name] = crearJugadorVacio();
+            }
+            procesarJugador(jugadores[m.name], m, puntosRed, resultadoRed);
+        });
+    });
+
+    // Sumar 1 punto por cada MVP
+    Object.values(jugadores).forEach(j => {
+        if (j.mvps) {
+            j.puntos += j.mvps;
+        }
+    });
+
+    // Asegurar que todos los jugadores fijos estén en la lista
+    fijos.forEach(fijoName => {
+        if (!jugadores[fijoName]) {
+            jugadores[fijoName] = crearJugadorVacio();
+        }
+    });
+
+    // Ordenar por puntos
+    return Object.entries(jugadores)
+        .map(([nombre, datos]) => ({ nombre, ...datos }))
+        .sort((a, b) => b.puntos - a.puntos);
+}
+
+/**
+ * Crea un objeto jugador vacío con todas las estadísticas inicializadas
+ * @returns {Object} Objeto jugador vacío
+ */
+function crearJugadorVacio() {
+    return {
+        puntos: 0,
+        goles: 0,
+        asistencias: 0,
+        encajados: 0,
+        ganados: 0,
+        empatados: 0,
+        perdidos: 0,
+        mvps: 0
+    };
+}
+
+/**
+ * Procesa las estadísticas de un jugador individual
+ * @param {Object} jugador - Objeto del jugador a actualizar
+ * @param {Object} member - Datos del miembro del partido
+ * @param {number} puntosVictoria - Puntos por victoria/empate
+ * @param {string} resultado - 'G', 'E' o 'P'
+ */
+function procesarJugador(jugador, member, puntosVictoria, resultado) {
+    // Puntos por victoria/empate
+    jugador.puntos += puntosVictoria;
+    
+    // Goles
+    jugador.puntos += member.goal * 0.25;
+    jugador.goles += member.goal;
+    
+    // Asistencias
+    const asistencias = member.assist || 0;
+    jugador.puntos += asistencias * 0.25;
+    jugador.asistencias += asistencias;
+    
+    // Encajados
+    jugador.puntos += (member.keeper ? member.keeper : 0) * -0.25;
+    jugador.encajados += (member.keeper ? member.keeper : 0);
+    
+    // Contar partidos
+    if (resultado === 'G') jugador.ganados++;
+    if (resultado === 'E') jugador.empatados++;
+    if (resultado === 'P') jugador.perdidos++;
+}
+
+/**
+ * Calcula el total de goles de todos los partidos
+ * @param {Object} data - Datos con matches
+ * @returns {number} Total de goles
+ */
+export function calcularTotalGoles(data) {
+    return data.matches.reduce((total, match) => {
+        const teamsData = match.teams[0];
+        const golesAzules = teamsData.blue[0].lineup[0].member.reduce((sum, player) => sum + player.goal, 0);
+        const golesRojos = teamsData.red[0].lineup[0].member.reduce((sum, player) => sum + player.goal, 0);
+        return total + golesAzules + golesRojos;
+    }, 0);
+}
+
+/**
+ * Calcula las victorias de cada equipo
+ * @param {Object} data - Datos con matches
+ * @returns {Object} Objeto con victorias {red: number, blue: number}
+ */
+export function calcularVictorias(data) {
+    const victorias = { red: 0, blue: 0 };
+    data.matches.forEach(match => {
+        if (match.result === "VictoryRed") {
+            victorias.red++;
+        } else if (match.result === "VictoryBlue") {
+            victorias.blue++;
+        }
+    });
+    return victorias;
+}
+
+/**
+ * Calcula el top 3 de goleadores
+ * @param {Object} data - Datos con matches
+ * @returns {Array} Array de strings con formato "Nombre (goles)"
+ */
+export function calcularTopGoleadores(data) {
+    const goleadores = {};
+
+    data.matches.forEach(match => {
+        const teamsData = match.teams[0];
+        
+        // Procesar equipo azul
+        teamsData.blue[0].lineup[0].member.forEach(player => {
+            if (!goleadores[player.name]) {
+                goleadores[player.name] = 0;
+            }
+            goleadores[player.name] += player.goal;
+        });
+
+        // Procesar equipo rojo
+        teamsData.red[0].lineup[0].member.forEach(player => {
+            if (!goleadores[player.name]) {
+                goleadores[player.name] = 0;
+            }
+            goleadores[player.name] += player.goal;
+        });
+    });
+
+    return obtenerTop3(goleadores);
+}
+
+/**
+ * Calcula el top 3 de jugadores con más goles encajados
+ * @param {Object} data - Datos con matches
+ * @returns {Array} Array de strings con formato "Nombre (encajados)"
+ */
+export function calcularTopEncajados(data) {
+    const encajados = {};
+    
+    data.matches.forEach(match => {
+        const teamsData = match.teams[0];
+        
+        // Procesar equipo azul
+        teamsData.blue[0].lineup[0].member.forEach(player => {
+            if (!encajados[player.name]) {
+                encajados[player.name] = 0;
+            }
+            encajados[player.name] += player.keeper;
+        });
+
+        // Procesar equipo rojo
+        teamsData.red[0].lineup[0].member.forEach(player => {
+            if (!encajados[player.name]) {
+                encajados[player.name] = 0;
+            }
+            encajados[player.name] += player.keeper;
+        });
+    });
+
+    return obtenerTop3(encajados);
+}
+
+/**
+ * Calcula el top 3 de jugadores con más asistencias
+ * @param {Object} data - Datos con matches
+ * @returns {Array} Array de strings con formato "Nombre (asistencias)"
+ */
+export function calcularTopAsistencias(data) {
+    const asistencias = {};
+    
+    data.matches.forEach(match => {
+        const teamsData = match.teams[0];
+        
+        // Procesar equipo azul
+        teamsData.blue[0].lineup[0].member.forEach(player => {
+            if (!asistencias[player.name]) {
+                asistencias[player.name] = 0;
+            }
+            asistencias[player.name] += (player.assist || 0);
+        });
+
+        // Procesar equipo rojo
+        teamsData.red[0].lineup[0].member.forEach(player => {
+            if (!asistencias[player.name]) {
+                asistencias[player.name] = 0;
+            }
+            asistencias[player.name] += (player.assist || 0);
+        });
+    });
+
+    return obtenerTop3(asistencias);
+}
+
+/**
+ * Obtiene el top 3 de un objeto de estadísticas
+ * @param {Object} obj - Objeto con nombre:valor
+ * @returns {Array} Array de strings con formato "Nombre (valor)"
+ */
+function obtenerTop3(obj) {
+    const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+    const top = [];
+    let rank = 1;
+
+    for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && sorted[i][1] < sorted[i - 1][1]) {
+            rank++;
+        }
+        if (rank > 3) break;
+        top.push(`${sorted[i][0]} (${sorted[i][1]})`);
+    }
+
+    return top;
+}
+
+/**
+ * Calcula el contador de participaciones de jugadores no fijos
+ * @param {Object} data - Datos con matches y fijos
+ * @returns {number} Número total de participaciones de no fijos
+ */
+export function calcularContadorNoFijos(data) {
+    const fijos = data.fijos || [];
+    let contadorParticipaciones = 0;
+
+    data.matches.forEach(match => {
+        const teamsData = match.teams[0];
+        
+        // Procesar equipo azul
+        teamsData.blue[0].lineup[0].member.forEach(player => {
+            if (!fijos.includes(player.name)) {
+                contadorParticipaciones++;
+            }
+        });
+
+        // Procesar equipo rojo
+        teamsData.red[0].lineup[0].member.forEach(player => {
+            if (!fijos.includes(player.name)) {
+                contadorParticipaciones++;
+            }
+        });
+    });
+
+    return contadorParticipaciones;
+}
+
+/**
+ * Obtiene el resultado de un partido en formato string
+ * @param {Object} match - Datos del partido
+ * @returns {string} Resultado en formato "Azul X - Rojo Y"
+ */
+export function getResultado(match) {
+    const blue = match.teams[0].blue[0].result;
+    const red = match.teams[0].red[0].result;
+    return `Azul ${blue} - Rojo ${red}`;
+}
+
+/**
+ * Obtiene todos los miembros de un partido (ambos equipos)
+ * @param {Object} match - Datos del partido
+ * @returns {Array} Array con todos los jugadores del partido
+ */
+export function getAllMembers(match) {
+    const blueMembers = match.teams[0].blue[0].lineup[0].member;
+    const redMembers = match.teams[0].red[0].lineup[0].member;
+    return [...blueMembers, ...redMembers];
+}

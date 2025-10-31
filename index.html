@@ -4,7 +4,11 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Futsal Stats</title>
-	<link rel="stylesheet" href="FutsalStats.css">
+	<!-- CSS modularizado -->
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/sidebar.css">
+	<link rel="stylesheet" href="css/tables.css">
+	<link rel="stylesheet" href="css/mobile.css">
 </head>
 <body>
 	<!-- Toggle button outside sidebar so it's always visible -->
@@ -17,32 +21,14 @@
 			<li><a href="#" id="menu-estadisticas">Estadísticas</a></li>
 		</ul>
 	</div>
+	
 	<div id="mobile-backdrop" class="mobile-backdrop"></div>
+	
 	<div id="main-content" class="main-content">
-		<!-- El contenido se cargará aquí -->
+		<!-- El contenido se cargará dinámicamente aquí -->
 	</div>
-	<div id="estadisticas" class="estadisticas-container" style="display: none;">
-    <div class="fila">
-        <div class="columna izquierda">
-            <h2>Número de Goles Totales</h2>
-            <p id="total-goles" class="estadistica-grande">0</p>
-        </div>
-        <div class="columna derecha">
-            <h2>Victorias</h2>
-            <canvas id="victorias-chart"></canvas>
-        </div>
-    </div>
-    <div class="fila">
-        <div class="columna izquierda">
-            <h2>Top 3 Máximos Goleadores</h2>
-            <ul id="top-goleadores"></ul>
-        </div>
-        <div class="columna derecha">
-            <h2>Top 3 Máximos Jugadores que han Encajado Goles</h2>
-            <ul id="top-encajados"></ul>
-        </div>
-    </div>
-</div>
-	<script src="FutsalStats.js"></script>
+	
+	<!-- JavaScript modularizado con ES6 modules -->
+	<script type="module" src="js/main.js"></script>
 </body>
 </html>

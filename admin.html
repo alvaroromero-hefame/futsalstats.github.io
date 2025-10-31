@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Futsal Stats</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🔐 Admin Panel</h1>
+                <p>Futsal Stats</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required autocomplete="email" placeholder="admin@futsalstats.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+                </div>
+                <div id="login-error" class="error-message" style="display: none;"></div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    Iniciar Sesión
+                </button>
+            </form>
+            <div class="login-footer">
+                <a href="index.html">← Volver a la aplicación</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-screen" class="admin-screen" style="display: none;">
+        <!-- El contenido se cargará dinámicamente -->
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        import { config } from './js/config.js';
+        import { AdminAuth } from './js/admin/auth.js';
+        import { AdminPanel } from './js/admin/panel.js';
+        import { DataManager } from './js/dataManager.js';
+
+        // Inicializar aplicación admin
+        class AdminApp {
+            constructor() {
+                this.supabase = null;
+                this.auth = null;
+                this.panel = null;
+                this.dataManager = null;
+            }
+
+            async init() {
+                // Crear cliente Supabase
+                if (!config.supabase.url || !config.supabase.anonKey) {
+                    this.showError('Supabase no está configurado');
+                    return;
+                }
+
+                this.supabase = createClient(config.supabase.url, config.supabase.anonKey);
+                this.auth = new AdminAuth(this.supabase);
+                this.dataManager = new DataManager(this.supabase);
+
+                // Verificar parámetro logout
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('logout') === 'true') {
+                    await this.auth.logout();
+                    window.location.href = 'admin.html';
+                    return;
+                }
+
+                // Verificar sesión existente
+                const hasSession = await this.auth.init();
+                if (hasSession) {
+                    this.showAdminPanel();
+                } else {
+                    this.showLoginScreen();
+                }
+
+                // Escuchar cambios de autenticación
+                this.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN') {
+                        this.showAdminPanel();
+                    } else if (event === 'SIGNED_OUT') {
+                        this.showLoginScreen();
+                    }
+                });
+            }
+
+            showLoginScreen() {
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('admin-screen').style.display = 'none';
+
+                const loginForm = document.getElementById('login-form');
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.handleLogin();
+                });
+            }
+
+            async handleLogin() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errorDiv = document.getElementById('login-error');
+
+                // Ocultar error previo
+                errorDiv.style.display = 'none';
+
+                // Mostrar loading
+                const submitBtn = document.querySelector('#login-form button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Iniciando sesión...';
+                submitBtn.disabled = true;
+
+                const result = await this.auth.login(email, password);
+
+                if (result.success) {
+                    // El cambio de pantalla se manejará en onAuthStateChange
+                } else {
+                    errorDiv.textContent = '❌ ' + (result.error || 'Error al iniciar sesión');
+                    errorDiv.style.display = 'block';
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            }
+
+            async showAdminPanel() {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-screen').style.display = 'block';
+
+                // Crear panel si no existe
+                if (!this.panel) {
+                    this.panel = new AdminPanel(this.supabase, this.dataManager);
+                    window.adminPanel = this.panel; // Para métodos onclick
+                }
+
+                // Renderizar panel (ahora es async)
+                const container = document.getElementById('admin-screen');
+                await this.panel.render(container);
+            }
+
+            showError(message) {
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;">
+                        <h1>❌ Error</h1>
+                        <p>${message}</p>
+                        <a href="index.html" class="btn btn-primary">Volver al inicio</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Iniciar app
+        const app = new AdminApp();
+        app.init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+/* Estilos del menú lateral (sidebar) */
+.sidebar {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 220px;
+	height: 100%;
+	background: #222e3c;
+	color: #fff;
+	transition: width 0.3s;
+	overflow: hidden;
+	z-index: 1000;
+}
+
+.sidebar.collapsed {
+	width: 60px;
+}
+
+/* Botón de toggle del sidebar */
+.toggle-btn {
+	background: #222e3c;
+	color: #fff;
+	border: none;
+	font-size: 1.5em;
+	padding: 10px 15px;
+	cursor: pointer;
+	width: auto;
+	text-align: center;
+	position: fixed;
+	top: 15px;
+	left: 15px;
+	z-index: 2500;
+	border-radius: 8px;
+	min-width: 50px;
+	min-height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Menú de navegación */
+.menu {
+	list-style: none;
+	padding: 0;
+	margin: 30px 0 0 0;
+}
+
+.menu li {
+	margin: 20px 0;
+}
+
+.menu a {
+	color: #fff;
+	text-decoration: none;
+	font-size: 1.1em;
+	padding: 10px 20px;
+	display: block;
+	transition: background 0.2s;
+}
+
+.menu a:hover {
+	background: #1a2230;
+}
+
+/* Backdrop para móvil */
+.mobile-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 1500;
+	display: none;
+}
+
+.mobile-backdrop.active {
+	display: block;
+}
+
+/* Ajustes del sidebar cuando está colapsado */
+.sidebar.collapsed ~ .main-content {
+	margin-left: 60px;
+}

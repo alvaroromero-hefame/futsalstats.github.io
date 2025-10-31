@@ -1,0 +1,34 @@
+# Archivos de entorno local
+.env
+.env.local
+.env.*.local
+
+# Node modules (si decides usar npm en el futuro)
+node_modules/
+package-lock.json
+
+# Archivos de configuración local
+config.local.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build (para futuro)
+dist/
+build/
+
+# Temporal
+temp/
+tmp/

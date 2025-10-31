@@ -1,0 +1,331 @@
+/* Estilos específicos para dispositivos móviles */
+
+/* Mobile First - Estilos base para móviles */
+@media screen and (max-width: 768px) {
+	/* Mobile sidebar overlay */
+	.sidebar {
+		width: 100% !important;
+		max-width: 280px !important;
+		transform: translateX(-100%) !important;
+		transition: transform 0.3s ease !important;
+		z-index: 2000 !important;
+		position: fixed !important;
+		left: 0 !important;
+		top: 0 !important;
+		height: 100vh !important;
+	}
+	
+	.sidebar.mobile-open {
+		transform: translateX(0) !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+	}
+	
+	.sidebar.collapsed {
+		width: 100%;
+		max-width: 280px;
+		transform: translateX(-100%);
+	}
+	
+	/* Main content adjustments for mobile */
+	.main-content {
+		margin-left: 0 !important;
+		padding: 15px !important;
+		padding-top: 100px !important; /* Espacio para el botón flotante */
+		width: 100% !important;
+		box-sizing: border-box !important;
+	}
+	
+	.sidebar.collapsed ~ .main-content {
+		margin-left: 0;
+	}
+	
+	/* Mobile toggle button - más grande y visible */
+	.toggle-btn {
+		font-size: 2em;
+		padding: 15px;
+		width: 70px;
+		height: 70px;
+		border-radius: 50%;
+		background: #e53935;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+		color: #fff;
+		border: 3px solid #fff;
+		top: 25px;
+		left: 25px;
+		transition: all 0.3s ease;
+	}
+	
+	.toggle-btn:hover, .toggle-btn:active {
+		background: #c62828;
+		transform: scale(1.1);
+		box-shadow: 0 6px 25px rgba(0,0,0,0.9);
+	}
+	
+	.toggle-btn:focus {
+		outline: 3px solid #4CAF50;
+		outline-offset: 2px;
+	}
+	
+	/* Mobile filters */
+	.filters {
+		flex-direction: column;
+		gap: 15px;
+	}
+	
+	.filters input, .filters select, .filters button {
+		padding: 12px 15px;
+		font-size: 1.1em;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	
+	/* Mobile tables - card layout */
+	.tabla-historico, .tabla-clasificacion {
+		display: block;
+		width: 100%;
+		overflow-x: auto;
+		white-space: nowrap;
+		-webkit-overflow-scrolling: touch;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	}
+	
+	.tabla-historico thead {
+		display: none;
+	}
+	
+	.tabla-historico tbody, .tabla-historico tr {
+		display: block;
+		width: 100%;
+	}
+	
+	.tabla-historico tr {
+		background: #fff;
+		margin-bottom: 15px;
+		padding: 15px;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+		border: none;
+		position: relative;
+		white-space: normal;
+	}
+	
+	.tabla-historico tr:last-child {
+		margin-bottom: 0;
+	}
+	
+	.tabla-historico td {
+		display: block;
+		text-align: left;
+		border: none;
+		padding: 8px 0;
+		position: relative;
+		padding-left: 40%;
+		word-wrap: break-word;
+	}
+	
+	.tabla-historico td:before {
+		content: attr(data-label) ": ";
+		position: absolute;
+		left: 0;
+		width: 35%;
+		font-weight: bold;
+		color: #222e3c;
+		text-align: left;
+	}
+	
+	.tabla-historico td:last-child {
+		padding-bottom: 0;
+	}
+	
+	/* Mobile buttons */
+	.detalle-btn {
+		width: 100%;
+		padding: 12px;
+		font-size: 1.1em;
+		margin-top: 10px;
+	}
+	
+	/* Mobile lineup */
+	.lineup-container {
+		flex-direction: column;
+		gap: 15px;
+	}
+	
+	.lineup-team {
+		padding: 20px;
+	}
+	
+	.lineup-team h4 {
+		font-size: 1.3em;
+		margin-bottom: 15px;
+	}
+	
+	.lineup-team li {
+		padding: 10px 0;
+		font-size: 1.1em;
+	}
+	
+	/* Mobile menu improvements */
+	.menu a {
+		padding: 15px 20px;
+		font-size: 1.2em;
+		border-bottom: 1px solid rgba(255,255,255,0.1);
+	}
+	
+	/* Mobile estadísticas */
+	.fila {
+		flex-direction: column;
+	}
+	
+	.columna {
+		margin: 10px 0;
+	}
+}
+
+/* Específico para móviles en portrait */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+	.toggle-btn {
+		display: flex !important;
+		position: fixed !important;
+		top: 20px !important;
+		left: 20px !important;
+		z-index: 9999 !important;
+		width: 60px !important;
+		height: 60px !important;
+		background: #e53935 !important;
+		color: white !important;
+		border: 2px solid white !important;
+		border-radius: 50% !important;
+		font-size: 1.8em !important;
+		box-shadow: 0 4px 15px rgba(0,0,0,0.7) !important;
+	}
+	
+	.main-content {
+		padding-top: 110px !important;
+	}
+}
+
+/* Tablet styles */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+	.sidebar {
+		width: 200px;
+		position: fixed !important;
+		transform: translateX(0) !important;
+	}
+	
+	.main-content {
+		margin-left: 200px;
+		padding: 25px;
+		padding-top: 25px;
+	}
+	
+	.sidebar.collapsed {
+		width: 60px;
+	}
+	
+	.sidebar.collapsed ~ .main-content {
+		margin-left: 60px;
+	}
+	
+	/* Tablet toggle button */
+	.toggle-btn {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: 100%;
+		height: auto;
+		border-radius: 0;
+		background: #222e3c;
+		border: none;
+		box-shadow: none;
+		font-size: 1.5em;
+		padding: 10px 15px;
+	}
+	
+	/* Tablet table adjustments */
+	.tabla-historico th, .tabla-historico td {
+		padding: 8px;
+		font-size: 0.95em;
+	}
+	
+	/* Tablet filters */
+	.filters {
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+	
+	.filters input, .filters select, .filters button {
+		flex: 1;
+		min-width: 200px;
+	}
+	
+	/* Tablet lineup */
+	.lineup-container {
+		gap: 20px;
+	}
+	
+	.lineup-team {
+		padding: 18px;
+	}
+}
+
+/* Landscape orientation adjustments for tablets */
+@media screen and (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+	.sidebar {
+		width: 180px;
+	}
+	
+	.main-content {
+		margin-left: 180px;
+		padding: 20px;
+	}
+	
+	.sidebar.collapsed ~ .main-content {
+		margin-left: 60px;
+	}
+}
+
+/* Large screens */
+@media screen and (min-width: 1025px) {
+	.main-content {
+		padding: 30px;
+		margin-left: 220px;
+	}
+	
+	/* Desktop toggle button positioning */
+	.toggle-btn {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: 100%;
+		height: auto;
+		border-radius: 0;
+		background: #222e3c;
+		border: none;
+		box-shadow: none;
+		font-size: 1.5em;
+		padding: 10px 15px;
+		text-align: left;
+	}
+	
+	.sidebar {
+		position: fixed !important;
+		transform: translateX(0) !important;
+		width: 220px !important;
+		max-width: none !important;
+	}
+}
+
+/* Ocultar el botón de contraer en escritorio */
+@media (min-width: 1024px) {
+	.toggle-btn {
+		display: none;
+	}
+
+	.sidebar {
+		position: relative;
+		width: 220px;
+	}
+}
