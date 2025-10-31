@@ -68,6 +68,17 @@
 	background: #f4f4f4;
 }
 
+/* Efecto hover para filas clickeables */
+.tabla-historico tr[data-player] {
+	transition: all 0.2s ease;
+}
+
+.tabla-historico tr[data-player]:hover {
+	background: #e3f2fd !important;
+	transform: scale(1.01);
+	box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
 /* Clasificación: primero y último */
 .tabla-historico tr.primero {
 	background: #c8f7c5 !important;

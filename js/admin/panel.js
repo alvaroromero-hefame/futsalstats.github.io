@@ -531,6 +531,69 @@ export class AdminPanel {
     }
 
     /**
+     * Añade un jugador extra con datos precargados (para edición)
+     */
+    addExtraPlayerWithData(team, playerData) {
+        const container = document.getElementById(`${team}-players-extras`);
+        const extraId = `extra-${team}-${Date.now()}-${Math.random()}`;
+        
+        // Cuando editamos, el jugador ya existe - simplemente mostrarlo seleccionado
+        const playerName = playerData.name || '';
+        
+        const extraHTML = `
+            <div class="player-extra-row" id="${extraId}">
+                <select class="extra-player-select" data-extra-id="${extraId}">
+                    <option value="">-- Seleccionar eventual --</option>
+                    ${this.eventualPlayers.map(p => 
+                        `<option value="${p.name}" ${p.name === playerName ? 'selected' : ''}>${p.name}</option>`
+                    ).join('')}
+                    <option value="__new__">+ Nuevo jugador...</option>
+                </select>
+                <input type="text" class="extra-player-name" placeholder="Nombre nuevo jugador" 
+                       value="${playerName}"
+                       style="display: none;">
+                <div class="player-stats">
+                    <div class="stat-group">
+                        <label class="stat-label">Goles</label>
+                        <input type="number" min="0" value="${playerData.goal || playerData.goles || 0}" 
+                               class="stat-input" data-stat="goles">
+                    </div>
+                    <div class="stat-group">
+                        <label class="stat-label">Asist.</label>
+                        <input type="number" min="0" value="${playerData.assist || playerData.asistencias || 0}" 
+                               class="stat-input" data-stat="asistencias">
+                    </div>
+                    <div class="stat-group">
+                        <label class="stat-label">Enc.</label>
+                        <input type="number" min="0" value="${playerData.keeper || playerData.portero || 0}" 
+                               class="stat-input" data-stat="portero" title="Goles encajados como portero">
+                    </div>
+                </div>
+                <button type="button" class="btn-icon btn-delete" onclick="adminPanel.removeExtraPlayer('${extraId}')">
+                    ❌
+                </button>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', extraHTML);
+        
+        // Añadir listener para el select
+        const select = document.querySelector(`[data-extra-id="${extraId}"]`);
+        const nameInput = select.nextElementSibling;
+        
+        select.addEventListener('change', (e) => {
+            if (e.target.value === '__new__') {
+                nameInput.style.display = 'block';
+                nameInput.required = true;
+            } else {
+                nameInput.style.display = 'none';
+                nameInput.required = false;
+                nameInput.value = '';
+            }
+        });
+    }
+
+    /**
      * Actualiza el select de MVP
      */
     updateMVPSelect(players) {
@@ -626,6 +689,11 @@ export class AdminPanel {
                 red_lineup: redLineup
             };
 
+            console.log('💾 Guardando partido con lineups:', {
+                blue: blueLineup,
+                red: redLineup
+            });
+
             // Decidir si insertar o actualizar
             if (this.editingMatchId) {
                 // Actualizar partido existente
@@ -707,15 +775,19 @@ export class AdminPanel {
                 const asistencias = parseInt(stats.querySelector('[data-stat="asistencias"]').value) || 0;
                 const portero = parseInt(stats.querySelector('[data-stat="portero"]').value) || 0;
 
-                players.push({
+                const player = {
                     name: playerName,
                     goles: goles,
                     asistencias: asistencias,
                     portero: portero
-                });
+                };
+                
+                console.log(`✅ Jugador ${team} agregado:`, player);
+                players.push(player);
             }
         });
 
+        console.log(`📋 Total jugadores fijos ${team}:`, players.length, players);
         return players;
     }
 
@@ -745,48 +817,123 @@ export class AdminPanel {
                     throw new Error('Nombre de jugador nuevo vacío');
                 }
 
-                // Crear el jugador en la base de datos si es nuevo
+                // Verificar si el jugador ya existe en players
                 try {
-                    // 1. Insertar jugador en la tabla players
-                    const { data: newPlayer, error: playerError } = await this.supabase
+                    const { data: existingPlayer, error: checkError } = await this.supabase
                         .from('players')
-                        .insert({ 
-                            name: playerName,
-                            // Fallback para estructura antigua
-                            day: this.currentDay,
-                            is_fixed: false
-                        })
-                        .select()
-                        .single();
+                        .select('id')
+                        .eq('name', playerName)
+                        .maybeSingle();
 
-                    if (playerError && !playerError.message.includes('duplicate')) {
-                        throw playerError;
+                    if (checkError) {
+                        console.error('Error verificando jugador existente:', checkError);
+                        throw checkError;
                     }
 
-                    // 2. Si existe la tabla player_availability, insertar disponibilidad
-                    if (newPlayer) {
+                    let playerId = existingPlayer ? existingPlayer.id : null;
+
+                    // Si no existe, crearlo
+                    if (!playerId) {
+                        const { data: newPlayer, error: playerError } = await this.supabase
+                            .from('players')
+                            .insert({ 
+                                name: playerName,
+                                day: this.currentDay,
+                                is_fixed: false
+                            })
+                            .select()
+                            .single();
+
+                        if (playerError) {
+                            console.error('Error insertando jugador:', playerError);
+                            throw playerError;
+                        }
+                        
+                        playerId = newPlayer.id;
+                        console.log(`✅ Jugador "${playerName}" creado en players`);
+                    } else {
+                        console.log(`ℹ️ Jugador "${playerName}" ya existe en players (ID: ${playerId})`);
+                    }
+
+                    // Añadir a player_availability si no está para este día
+                    if (playerId) {
                         try {
-                            const { error: availError } = await this.supabase
+                            const { data: availCheck, error: availCheckError } = await this.supabase
+                                .from('player_availability')
+                                .select('*')
+                                .eq('player_id', playerId)
+                                .eq('day', this.currentDay)
+                                .maybeSingle();
+
+                            if (!availCheck) {
+                                const { error: availError } = await this.supabase
+                                    .from('player_availability')
+                                    .insert({
+                                        player_id: playerId,
+                                        day: this.currentDay,
+                                        is_fixed: false
+                                    });
+
+                                if (availError && !availError.message.includes('does not exist')) {
+                                    console.warn('Error creando disponibilidad:', availError);
+                                } else if (!availError) {
+                                    console.log(`✅ Jugador "${playerName}" añadido como eventual del ${this.currentDay}`);
+                                }
+                            } else {
+                                console.log(`ℹ️ Jugador "${playerName}" ya está en disponibilidad del ${this.currentDay}`);
+                            }
+                        } catch (availErr) {
+                            console.log('→ Tabla player_availability no existe (usando estructura antigua)');
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error gestionando jugador:', err);
+                    throw err;
+                }
+            } else if (select.value) {
+                playerName = select.value;
+                
+                // Verificar si el jugador eventual ya está registrado para este día
+                try {
+                    // Buscar el ID del jugador
+                    const { data: player, error: playerError } = await this.supabase
+                        .from('players')
+                        .select('id')
+                        .eq('name', playerName)
+                        .single();
+
+                    if (player && !playerError) {
+                        // Verificar si ya existe en player_availability para este día
+                        const { data: existing, error: checkError } = await this.supabase
+                            .from('player_availability')
+                            .select('*')
+                            .eq('player_id', player.id)
+                            .eq('day', this.currentDay)
+                            .maybeSingle();
+
+                        if (checkError && !checkError.message.includes('does not exist')) {
+                            console.warn('Error verificando disponibilidad:', checkError);
+                        }
+
+                        // Si no existe, agregarlo como eventual
+                        if (!existing) {
+                            const { error: insertError } = await this.supabase
                                 .from('player_availability')
                                 .insert({
-                                    player_id: newPlayer.id,
+                                    player_id: player.id,
                                     day: this.currentDay,
                                     is_fixed: false
                                 });
 
-                            if (availError && !availError.message.includes('duplicate') && !availError.message.includes('does not exist')) {
-                                console.warn('Error creando disponibilidad:', availError);
+                            if (!insertError) {
+                                console.log(`✅ Jugador "${playerName}" añadido automáticamente como eventual del ${this.currentDay}`);
                             }
-                        } catch (availErr) {
-                            // Ignorar si la tabla no existe (estructura antigua)
-                            console.log('→ Tabla player_availability no existe aún (usando estructura antigua)');
                         }
                     }
                 } catch (err) {
-                    console.warn('Jugador ya existe o error menor:', err);
+                    // Ignorar errores (puede ser estructura antigua sin player_availability)
+                    console.log('→ No se pudo actualizar player_availability (posiblemente estructura antigua)');
                 }
-            } else if (select.value) {
-                playerName = select.value;
             } else {
                 continue; // Saltar si no hay selección
             }
@@ -819,17 +966,56 @@ export class AdminPanel {
             const day = document.getElementById('player-day').value;
             const isFixed = document.getElementById('player-fixed').checked;
 
-            const { error } = await this.supabase
+            // Verificar si el jugador ya existe
+            const { data: existingPlayer, error: checkError } = await this.supabase
                 .from('players')
-                .insert({
-                    name: name,
-                    day: day,
-                    is_fixed: isFixed
-                });
+                .select('id')
+                .eq('name', name)
+                .maybeSingle();
 
-            if (error) throw error;
+            if (checkError) throw checkError;
 
-            this.showNotification('✅ Jugador añadido correctamente', 'success');
+            let playerId;
+
+            // Si el jugador no existe, crearlo
+            if (!existingPlayer) {
+                const { data: newPlayer, error: insertError } = await this.supabase
+                    .from('players')
+                    .insert({
+                        name: name,
+                        day: day,
+                        is_fixed: isFixed
+                    })
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+                playerId = newPlayer.id;
+            } else {
+                playerId = existingPlayer.id;
+                console.log(`ℹ️ Jugador "${name}" ya existe, actualizando disponibilidad`);
+            }
+
+            // Añadir/actualizar en player_availability
+            try {
+                const { error: availError } = await this.supabase
+                    .from('player_availability')
+                    .upsert({
+                        player_id: playerId,
+                        day: day,
+                        is_fixed: isFixed
+                    }, {
+                        onConflict: 'player_id,day'
+                    });
+
+                if (availError && !availError.message.includes('does not exist')) {
+                    console.warn('Error en player_availability:', availError);
+                }
+            } catch (availErr) {
+                console.log('→ Tabla player_availability no disponible (estructura antigua)');
+            }
+
+            this.showNotification('✅ Jugador añadido/actualizado correctamente', 'success');
             document.getElementById('player-form').reset();
             this.loadPlayers();
 
@@ -949,14 +1135,28 @@ export class AdminPanel {
                     </div>
                     <div class="match-players">
                         <div class="team-players">
-                            <strong>Azul:</strong> ${m.blue_lineup.map(p => 
-                                `${p.name}${p.goles ? ` ⚽${p.goles}` : ''}${p.asistencias ? ` 🎯${p.asistencias}` : ''}${p.portero ? ` 🧤${p.portero}` : ''}`
-                            ).join(', ')}
+                            <strong>Azul:</strong> ${m.blue_lineup.map(p => {
+                                const goles = p.goal || p.goles || 0;
+                                const asists = p.assist || p.asistencias || 0;
+                                const portero = p.keeper || p.portero || 0;
+                                let stats = '';
+                                if (goles > 0) stats += ` ⚽${goles}`;
+                                if (asists > 0) stats += ` 🎯${asists}`;
+                                if (portero > 0) stats += ` 🧤${portero}`;
+                                return `${p.name}${stats}`;
+                            }).join(', ')}
                         </div>
                         <div class="team-players">
-                            <strong>Rojo:</strong> ${m.red_lineup.map(p => 
-                                `${p.name}${p.goles ? ` ⚽${p.goles}` : ''}${p.asistencias ? ` 🎯${p.asistencias}` : ''}${p.portero ? ` 🧤${p.portero}` : ''}`
-                            ).join(', ')}
+                            <strong>Rojo:</strong> ${m.red_lineup.map(p => {
+                                const goles = p.goal || p.goles || 0;
+                                const asists = p.assist || p.asistencias || 0;
+                                const portero = p.keeper || p.portero || 0;
+                                let stats = '';
+                                if (goles > 0) stats += ` ⚽${goles}`;
+                                if (asists > 0) stats += ` 🎯${asists}`;
+                                if (portero > 0) stats += ` 🧤${portero}`;
+                                return `${p.name}${stats}`;
+                            }).join(', ')}
                         </div>
                     </div>
                 </div>
@@ -1034,67 +1234,95 @@ export class AdminPanel {
                 mvpSelect.value = match.mvp;
             }
 
+            // Obtener lista de jugadores fijos para identificar extras
+            // Usar la misma lógica que loadPlayers()
+            let fixedPlayerNames = [];
+            
+            // Intentar primero con la nueva estructura
+            try {
+                const { data: fixedPlayersData } = await this.supabase
+                    .from('player_availability')
+                    .select('player_id, players(name)')
+                    .eq('day', match.day)
+                    .eq('is_fixed', true);
+                
+                if (fixedPlayersData && fixedPlayersData.length > 0) {
+                    fixedPlayerNames = fixedPlayersData.map(p => p.players.name);
+                    console.log('👥 Jugadores fijos del día (nueva estructura):', fixedPlayerNames);
+                } else {
+                    throw new Error('No data in player_availability');
+                }
+            } catch (error) {
+                // Fallback a estructura antigua
+                console.log('→ Usando estructura antigua para identificar fijos');
+                const { data: fixedData } = await this.supabase
+                    .from('players')
+                    .select('name')
+                    .or(`day.eq.${match.day},day.eq.ambos`)
+                    .eq('is_fixed', true);
+                
+                fixedPlayerNames = fixedData ? fixedData.map(p => p.name) : [];
+            }
+
             // Marcar jugadores del equipo azul
             match.blue_lineup.forEach(player => {
-                console.log('🔵 Cargando jugador azul:', player);
-                const checkbox = document.querySelector(`#blue-players-fixed input[value="${player.name}"]`);
-                if (checkbox) {
-                    checkbox.checked = true;
-                    
-                    // Mostrar estadísticas
-                    const row = checkbox.closest('.player-stat-row');
-                    const stats = row.querySelector('.player-stats');
-                    stats.style.display = 'flex';
-                    
-                    // Rellenar valores (los datos vienen como goal, assist, keeper de la BD)
-                    const golesInput = stats.querySelector('[data-stat="goles"]');
-                    const asistInput = stats.querySelector('[data-stat="asistencias"]');
-                    const porteroInput = stats.querySelector('[data-stat="portero"]');
-                    
-                    console.log('Inputs encontrados:', { golesInput, asistInput, porteroInput });
-                    console.log('Valores a asignar:', { 
-                        goles: player.goal || player.goles, 
-                        asistencias: player.assist || player.asistencias, 
-                        portero: player.keeper || player.portero 
-                    });
-                    
-                    if (golesInput) golesInput.value = player.goal || player.goles || 0;
-                    if (asistInput) asistInput.value = player.assist || player.asistencias || 0;
-                    if (porteroInput) porteroInput.value = player.keeper || player.portero || 0;
+                // Verificar si es jugador fijo o extra
+                const isFixed = fixedPlayerNames.includes(player.name);
+                
+                if (isFixed) {
+                    // Jugador fijo - marcar checkbox
+                    const checkbox = document.querySelector(`#blue-players-fixed input[value="${player.name}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        
+                        // Mostrar estadísticas
+                        const row = checkbox.closest('.player-stat-row');
+                        const stats = row.querySelector('.player-stats');
+                        stats.style.display = 'flex';
+                        
+                        // Rellenar valores
+                        const golesInput = stats.querySelector('[data-stat="goles"]');
+                        const asistInput = stats.querySelector('[data-stat="asistencias"]');
+                        const porteroInput = stats.querySelector('[data-stat="portero"]');
+                        
+                        if (golesInput) golesInput.value = player.goal || player.goles || 0;
+                        if (asistInput) asistInput.value = player.assist || player.asistencias || 0;
+                        if (porteroInput) porteroInput.value = player.keeper || player.portero || 0;
+                    }
                 } else {
-                    console.warn('❌ No se encontró checkbox para:', player.name);
+                    // Jugador extra - crear fila extra
+                    this.addExtraPlayerWithData('blue', player);
                 }
             });
 
             // Marcar jugadores del equipo rojo
             match.red_lineup.forEach(player => {
-                console.log('🔴 Cargando jugador rojo:', player);
-                const checkbox = document.querySelector(`#red-players-fixed input[value="${player.name}"]`);
-                if (checkbox) {
-                    checkbox.checked = true;
-                    
-                    // Mostrar estadísticas
-                    const row = checkbox.closest('.player-stat-row');
-                    const stats = row.querySelector('.player-stats');
-                    stats.style.display = 'flex';
-                    
-                    // Rellenar valores (los datos vienen como goal, assist, keeper de la BD)
-                    const golesInput = stats.querySelector('[data-stat="goles"]');
-                    const asistInput = stats.querySelector('[data-stat="asistencias"]');
-                    const porteroInput = stats.querySelector('[data-stat="portero"]');
-                    
-                    console.log('Inputs encontrados:', { golesInput, asistInput, porteroInput });
-                    console.log('Valores a asignar:', { 
-                        goles: player.goal || player.goles, 
-                        asistencias: player.assist || player.asistencias, 
-                        portero: player.keeper || player.portero 
-                    });
-                    
-                    if (golesInput) golesInput.value = player.goal || player.goles || 0;
-                    if (asistInput) asistInput.value = player.assist || player.asistencias || 0;
-                    if (porteroInput) porteroInput.value = player.keeper || player.portero || 0;
+                // Verificar si es jugador fijo o extra
+                const isFixed = fixedPlayerNames.includes(player.name);
+                
+                if (isFixed) {
+                    // Jugador fijo - marcar checkbox
+                    const checkbox = document.querySelector(`#red-players-fixed input[value="${player.name}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        
+                        // Mostrar estadísticas
+                        const row = checkbox.closest('.player-stat-row');
+                        const stats = row.querySelector('.player-stats');
+                        stats.style.display = 'flex';
+                        
+                        // Rellenar valores
+                        const golesInput = stats.querySelector('[data-stat="goles"]');
+                        const asistInput = stats.querySelector('[data-stat="asistencias"]');
+                        const porteroInput = stats.querySelector('[data-stat="portero"]');
+                        
+                        if (golesInput) golesInput.value = player.goal || player.goles || 0;
+                        if (asistInput) asistInput.value = player.assist || player.asistencias || 0;
+                        if (porteroInput) porteroInput.value = player.keeper || player.portero || 0;
+                    }
                 } else {
-                    console.warn('❌ No se encontró checkbox para:', player.name);
+                    // Jugador extra - crear fila extra
+                    this.addExtraPlayerWithData('red', player);
                 }
             });
 

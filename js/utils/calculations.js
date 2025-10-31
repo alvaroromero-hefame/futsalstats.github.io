@@ -41,8 +41,24 @@ export function calcularClasificacion(matches, fijos = []) {
             jugadores[match.mvp].mvps++;
         }
 
+        // Detectar estructura de datos (Supabase vs antigua)
+        let blueLineup, redLineup;
+        
+        if (match.blue_lineup && match.red_lineup) {
+            // Estructura de Supabase (plana)
+            blueLineup = match.blue_lineup;
+            redLineup = match.red_lineup;
+        } else if (match.teams && match.teams[0]) {
+            // Estructura antigua (anidada)
+            blueLineup = match.teams[0].blue[0].lineup[0].member;
+            redLineup = match.teams[0].red[0].lineup[0].member;
+        } else {
+            console.warn('Estructura de partido no reconocida:', match);
+            return;
+        }
+
         // Procesar lineup azul
-        match.teams[0].blue[0].lineup[0].member.forEach(m => {
+        blueLineup.forEach(m => {
             if (!jugadores[m.name]) {
                 jugadores[m.name] = crearJugadorVacio();
             }
@@ -50,7 +66,7 @@ export function calcularClasificacion(matches, fijos = []) {
         });
 
         // Procesar lineup rojo
-        match.teams[0].red[0].lineup[0].member.forEach(m => {
+        redLineup.forEach(m => {
             if (!jugadores[m.name]) {
                 jugadores[m.name] = crearJugadorVacio();
             }
@@ -106,18 +122,20 @@ function procesarJugador(jugador, member, puntosVictoria, resultado) {
     // Puntos por victoria/empate
     jugador.puntos += puntosVictoria;
     
-    // Goles
-    jugador.puntos += member.goal * 0.25;
-    jugador.goles += member.goal;
+    // Goles (soportar ambos formatos: goal y goles)
+    const goles = member.goal !== undefined ? member.goal : (member.goles || 0);
+    jugador.puntos += goles * 0.25;
+    jugador.goles += goles;
     
-    // Asistencias
-    const asistencias = member.assist || 0;
+    // Asistencias (soportar ambos formatos: assist y asistencias)
+    const asistencias = member.assist !== undefined ? member.assist : (member.asistencias || 0);
     jugador.puntos += asistencias * 0.25;
     jugador.asistencias += asistencias;
     
-    // Encajados
-    jugador.puntos += (member.keeper ? member.keeper : 0) * -0.25;
-    jugador.encajados += (member.keeper ? member.keeper : 0);
+    // Encajados (soportar ambos formatos: keeper y portero)
+    const encajados = member.keeper !== undefined ? member.keeper : (member.portero || 0);
+    jugador.puntos += encajados * -0.25;
+    jugador.encajados += encajados;
     
     // Contar partidos
     if (resultado === 'G') jugador.ganados++;

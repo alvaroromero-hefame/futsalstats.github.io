@@ -3,11 +3,13 @@
  */
 import { calcularClasificacion } from '../utils/calculations.js';
 import { renderDaySelector, renderLeyendaClasificacion } from '../utils/rendering.js';
+import { PlayerStatsModal } from './playerStats.js';
 
 export class ClasificacionView {
     constructor(dataManager, container) {
         this.dataManager = dataManager;
         this.container = container;
+        this.statsModal = new PlayerStatsModal(dataManager);
     }
 
     /**
@@ -85,7 +87,7 @@ export class ClasificacionView {
             }
             
             html += `
-                <tr class="${clase}">
+                <tr class="${clase}" data-player="${j.nombre}" style="cursor: pointer;">
                     <td data-label="Posición">${idx + 1}</td>
                     <td data-label="Jugador">${j.nombre} ${icono} ${fijoIcon} ${selectorIcon}</td>
                     <td data-label="Puntos">${j.puntos.toFixed(2)}</td>
@@ -124,5 +126,14 @@ export class ClasificacionView {
                 this.render();
             });
         }
+
+        // Event listeners para clicks en jugadores
+        const playerRows = this.container.querySelectorAll('tr[data-player]');
+        playerRows.forEach(row => {
+            row.addEventListener('click', () => {
+                const playerName = row.getAttribute('data-player');
+                this.statsModal.show(playerName);
+            });
+        });
     }
 }
