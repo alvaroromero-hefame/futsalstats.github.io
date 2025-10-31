@@ -35,9 +35,14 @@ export class AdminPanel {
             <div class="admin-panel">
                 <div class="admin-header">
                     <h1>📊 Panel de Administración</h1>
-                    <button id="admin-logout" class="btn btn-secondary">
-                        🚪 Cerrar Sesión
-                    </button>
+                    <div class="admin-header-actions">
+                        <button id="admin-help" class="btn btn-help" title="Ayuda">
+                            ❓
+                        </button>
+                        <button id="admin-logout" class="btn btn-secondary">
+                            🚪 Cerrar Sesión
+                        </button>
+                    </div>
                 </div>
 
                 <div class="admin-content">
@@ -248,6 +253,11 @@ export class AdminPanel {
             if (confirm('¿Seguro que quieres cerrar sesión?')) {
                 window.location.href = 'admin.html?logout=true';
             }
+        });
+
+        // Ayuda
+        document.getElementById('admin-help').addEventListener('click', () => {
+            this.showHelpModal();
         });
     }
 
@@ -1452,6 +1462,115 @@ export class AdminPanel {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+
+    /**
+     * Muestra el modal de ayuda
+     */
+    showHelpModal() {
+        // Crear modal si no existe
+        let modal = document.getElementById('help-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'help-modal';
+            modal.className = 'help-modal';
+            modal.innerHTML = `
+                <div class="help-modal-content">
+                    <button class="help-modal-close">&times;</button>
+                    <h2>📖 Guía de Uso - Panel de Administración</h2>
+                    
+                    <div class="help-section">
+                        <h3>🔄 Selector de Día</h3>
+                        <p>Usa los botones <strong>Martes</strong> y <strong>Jueves</strong> en la parte superior para cambiar entre los días de la semana. Todos los datos (partidos, jugadores) se filtrarán según el día seleccionado.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>⚽ Añadir Nuevo Partido</h3>
+                        <ol>
+                            <li><strong>Fecha:</strong> Selecciona la fecha del partido</li>
+                            <li><strong>MVP:</strong> Selecciona el jugador MVP del partido (opcional)</li>
+                            <li><strong>Goles:</strong> Indica los goles de cada equipo (Azul y Rojo)</li>
+                            <li><strong>Jugadores Fijos:</strong> Marca los jugadores que participaron del equipo fijo</li>
+                            <li><strong>Jugadores Extras:</strong> Haz clic en "+ Agregar Eventual" para añadir jugadores no fijos
+                                <ul>
+                                    <li>Selecciona de la lista o elige "+ Nuevo jugador..." para crear uno</li>
+                                    <li>Indica sus goles, asistencias y encajados</li>
+                                </ul>
+                            </li>
+                            <li>Haz clic en <strong>"💾 Guardar Partido"</strong></li>
+                        </ol>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>✏️ Editar Partido</h3>
+                        <p>En la sección <strong>Partidos Recientes</strong>:</p>
+                        <ul>
+                            <li>Usa los filtros de fecha para buscar partidos específicos</li>
+                            <li>Haz clic en <strong>✏️ Editar</strong> para modificar un partido existente</li>
+                            <li>El formulario se rellenará automáticamente con los datos</li>
+                            <li>La fecha no puede editarse en modo edición</li>
+                            <li>Haz clic en <strong>"🔄 Actualizar Partido"</strong> para guardar cambios</li>
+                            <li>Puedes <strong>Cancelar</strong> para volver al modo normal</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>👥 Gestión de Jugadores</h3>
+                        <p>Usa esta sección para añadir nuevos jugadores a la base de datos:</p>
+                        <ul>
+                            <li><strong>Nombre:</strong> Nombre del jugador</li>
+                            <li><strong>Día:</strong> Martes o Jueves</li>
+                            <li><strong>Jugador Fijo:</strong> Marca si es jugador fijo o eventual</li>
+                        </ul>
+                        <p><strong>Nota:</strong> Los jugadores eventuales también se crean automáticamente al añadirlos en un partido con "+ Nuevo jugador..."</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>⚙️ Configuración</h3>
+                        <p>Selecciona el <strong>Próximo Seleccionador</strong> que aparecerá en la clasificación con el icono ⚽</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>📋 Lista de Jugadores</h3>
+                        <p>Muestra todos los jugadores del día seleccionado con sus iconos:</p>
+                        <ul>
+                            <li><strong>⭐</strong> = Jugador fijo</li>
+                            <li><strong>Sin icono</strong> = Jugador eventual</li>
+                        </ul>
+                        <p>Puedes eliminar jugadores haciendo clic en el botón <strong>❌</strong></p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>💡 Consejos</h3>
+                        <ul>
+                            <li>Los datos se actualizan automáticamente en la aplicación principal</li>
+                            <li>Puedes editar las estadísticas de un partido ya creado</li>
+                            <li>Los jugadores eventuales añadidos en partidos se guardan automáticamente</li>
+                            <li>Usa los filtros de fecha en "Partidos Recientes" para encontrar partidos antiguos</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-footer">
+                        <p><strong>¿Problemas o dudas?</strong> Contacta con el administrador del sistema</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Event listener para cerrar
+            const closeBtn = modal.querySelector('.help-modal-close');
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        modal.style.display = 'flex';
     }
 }
 
