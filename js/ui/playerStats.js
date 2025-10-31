@@ -67,12 +67,6 @@ export class PlayerStatsModal {
                         <h3>📈 Promedios por Partido</h3>
                         <canvas id="chart-averages"></canvas>
                     </div>
-                    
-                    <!-- Gráfico 3: Partidos ganados por mes -->
-                    <div class="stats-card full-width">
-                        <h3>🏆 Victorias por Mes</h3>
-                        <canvas id="chart-wins-by-month"></canvas>
-                    </div>
 
                     <!-- Resumen de estadísticas -->
                     <div class="stats-summary full-width">
@@ -96,6 +90,12 @@ export class PlayerStatsModal {
                             <span class="stat-value" id="stat-win-rate">0%</span>
                             <span class="stat-label">% Victorias</span>
                         </div>
+                    </div>
+                    
+                    <!-- Gráfico 3: Partidos ganados por mes -->
+                    <div class="stats-card full-width">
+                        <h3>🏆 Victorias por Mes</h3>
+                        <canvas id="chart-wins-by-month"></canvas>
                     </div>
                 </div>
             </div>
