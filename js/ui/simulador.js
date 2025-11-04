@@ -298,26 +298,25 @@ export class SimuladorView {
         });
 
         // PASO 4: Convertir a array y calcular promedios
-        // Para jugadores fijos en múltiples días, crear una entrada por cada día
+        // Agrupar jugadores por nombre (un jugador = una entrada con todas sus estadísticas)
         this.allPlayers = [];
         Object.entries(playerStats).forEach(([name, stats]) => {
             const playerInfo = playersInfo[name] || { days: ['unknown'], is_fixed: false };
             
-            // Si el jugador es fijo en múltiples días, crear una entrada por día
-            playerInfo.days.forEach(day => {
-                this.allPlayers.push({
-                    name,
-                    day: day,
-                    is_fixed: playerInfo.is_fixed,
-                    matches: stats.matches,
-                    winRate: stats.matches > 0 ? (stats.wins / stats.matches * 100).toFixed(1) : 0,
-                    goalsPerGame: stats.matches > 0 ? (stats.goals / stats.matches).toFixed(2) : 0,
-                    assistsPerGame: stats.matches > 0 ? (stats.assists / stats.matches).toFixed(2) : 0,
-                    keeperPerGame: stats.matches > 0 ? (stats.keeper / stats.matches).toFixed(2) : 0,
-                    avgGoals: stats.matches > 0 ? (stats.goals / stats.matches).toFixed(2) : 0,
-                    avgAssists: stats.matches > 0 ? (stats.assists / stats.matches).toFixed(2) : 0,
-                    avgKeeper: stats.matches > 0 ? (stats.keeper / stats.matches).toFixed(2) : 0
-                });
+            // Crear una sola entrada por jugador con todos sus días
+            this.allPlayers.push({
+                name,
+                days: playerInfo.days, // Array de días donde juega
+                day: playerInfo.days[0], // Día principal para compatibilidad
+                is_fixed: playerInfo.is_fixed,
+                matches: stats.matches,
+                winRate: stats.matches > 0 ? (stats.wins / stats.matches * 100).toFixed(1) : 0,
+                goalsPerGame: stats.matches > 0 ? (stats.goals / stats.matches).toFixed(2) : 0,
+                assistsPerGame: stats.matches > 0 ? (stats.assists / stats.matches).toFixed(2) : 0,
+                keeperPerGame: stats.matches > 0 ? (stats.keeper / stats.matches).toFixed(2) : 0,
+                avgGoals: stats.matches > 0 ? (stats.goals / stats.matches).toFixed(2) : 0,
+                avgAssists: stats.matches > 0 ? (stats.assists / stats.matches).toFixed(2) : 0,
+                avgKeeper: stats.matches > 0 ? (stats.keeper / stats.matches).toFixed(2) : 0
             });
         });
         
@@ -506,6 +505,12 @@ export class SimuladorView {
         this.selectedPlayers[team].splice(index, 1);
         this.updateTeamDisplay(team);
         this.updateSimulatorButtons();
+        
+        // Ocultar resultado de simulación al quitar jugadores
+        const resultContainer = document.getElementById('simulation-result');
+        if (resultContainer) {
+            resultContainer.style.display = 'none';
+        }
     }
 
     /**
@@ -604,7 +609,7 @@ export class SimuladorView {
         
         // Filtrar solo jugadores fijos del día seleccionado
         const fixedPlayers = this.allPlayers.filter(player => 
-            player.is_fixed && player.day === selectedDay
+            player.is_fixed && player.days.includes(selectedDay)
         );
         
         if (fixedPlayers.length < 10) {
