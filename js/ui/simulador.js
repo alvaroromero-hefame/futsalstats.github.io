@@ -32,6 +32,22 @@ export class SimuladorView {
                     Selecciona 5 jugadores para cada equipo y ve las estadísticas del partido simulado
                 </p>
 
+                <div class="generator-controls">
+                    <div class="generator-selector">
+                        <label for="day-selector">Seleccionar día:</label>
+                        <select id="day-selector" class="day-select">
+                            <option value="martes">Martes</option>
+                            <option value="jueves">Jueves</option>
+                        </select>
+                    </div>
+                    <button id="generate-balanced-teams" class="btn btn-generator">
+                        ⚖️ Generador de Fijos
+                    </button>
+                    <p class="generator-description">
+                        Genera automáticamente dos equipos equilibrados usando solo jugadores fijos del día seleccionado
+                    </p>
+                </div>
+
                 <div class="teams-simulator">
                     <!-- Equipo Azul -->
                     <div class="team-simulator team-blue">
@@ -107,8 +123,76 @@ export class SimuladorView {
      */
     calculateAllPlayersStats(data) {
         const playerStats = {};
+        const playersInfo = {}; // Mover al inicio para tener toda la info desde el principio
         
-        // Procesar datos de martes y jueves
+        // PASO 1: Obtener información de jugadores fijos de ambos días
+        ['martes', 'jueves'].forEach(day => {
+            if (data[day]) {
+                // Para datos JSON: usar array "fijos"
+                if (data[day].fijos) {
+                    data[day].fijos.forEach(playerName => {
+                        // Limpiar espacios en blanco al inicio y final del nombre
+                        const cleanName = playerName.trim();
+                        
+                        // Si el jugador ya existe, añadir el día adicional
+                        if (!playersInfo[cleanName]) {
+                            playersInfo[cleanName] = {
+                                days: [day], // Array de días donde es fijo
+                                is_fixed: true
+                            };
+                        } else {
+                            // Jugador fijo en múltiples días
+                            if (!playersInfo[cleanName].days.includes(day)) {
+                                playersInfo[cleanName].days.push(day);
+                            }
+                        }
+                        // Inicializar stats para jugadores fijos
+                        if (!playerStats[cleanName]) {
+                            playerStats[cleanName] = {
+                                matches: 0,
+                                wins: 0,
+                                goals: 0,
+                                assists: 0,
+                                keeper: 0
+                            };
+                        }
+                    });
+                }
+                // Para datos Supabase: usar array "players"
+                else if (data[day].players) {
+                    data[day].players.forEach(player => {
+                        // Si el jugador ya existe, añadir el día adicional
+                        if (!playersInfo[player.name]) {
+                            playersInfo[player.name] = {
+                                days: [day], // Array de días donde es fijo
+                                is_fixed: player.is_fixed
+                            };
+                        } else {
+                            // Jugador en múltiples días
+                            if (!playersInfo[player.name].days.includes(day)) {
+                                playersInfo[player.name].days.push(day);
+                            }
+                            // Actualizar is_fixed si es true en cualquier día
+                            if (player.is_fixed) {
+                                playersInfo[player.name].is_fixed = true;
+                            }
+                        }
+                        // Inicializar stats para jugadores fijos
+                        if (player.is_fixed && !playerStats[player.name]) {
+                            playerStats[player.name] = {
+                                matches: 0,
+                                wins: 0,
+                                goals: 0,
+                                assists: 0,
+                                keeper: 0
+                            };
+                        }
+                    });
+                }
+            }
+        });
+        
+        // PASO 2: Procesar datos de partidos de martes y jueves
         ['martes', 'jueves'].forEach(day => {
             if (data[day] && data[day].matches) {
                 data[day].matches.forEach(match => {
@@ -175,17 +259,71 @@ export class SimuladorView {
             }
         });
 
-        // Convertir a array y calcular promedios
-        this.allPlayers = Object.entries(playerStats)
-            .map(([name, stats]) => ({
-                name,
-                matches: stats.matches,
-                winRate: stats.matches > 0 ? (stats.wins / stats.matches * 100).toFixed(1) : 0,
-                avgGoals: stats.matches > 0 ? (stats.goals / stats.matches).toFixed(2) : 0,
-                avgAssists: stats.matches > 0 ? (stats.assists / stats.matches).toFixed(2) : 0,
-                avgKeeper: stats.matches > 0 ? (stats.keeper / stats.matches).toFixed(2) : 0
-            }))
-            .filter(player => player.matches > 0)
+        // PASO 3: Marcar jugadores que aparecen en partidos pero no están en la lista de fijos como eventuales
+        Object.keys(playerStats).forEach(playerName => {
+            if (!playersInfo[playerName]) {
+                // Determinar el día basándose en donde aparece más frecuentemente
+                let martesCount = 0, juevesCount = 0;
+                
+                ['martes', 'jueves'].forEach(day => {
+                    if (data[day] && data[day].matches) {
+                        data[day].matches.forEach(match => {
+                            let blueLineup, redLineup;
+                            if (match.blue_lineup && match.red_lineup) {
+                                blueLineup = match.blue_lineup;
+                                redLineup = match.red_lineup;
+                            } else if (match.teams && match.teams[0]) {
+                                blueLineup = match.teams[0].blue[0].lineup[0].member;
+                                redLineup = match.teams[0].red[0].lineup[0].member;
+                            } else {
+                                return;
+                            }
+
+                            const allPlayersInMatch = [...blueLineup, ...redLineup];
+                            if (allPlayersInMatch.some(p => p.name === playerName)) {
+                                if (day === 'martes') martesCount++;
+                                else juevesCount++;
+                            }
+                        });
+                    }
+                });
+
+                // Asignar al día donde aparece más frecuentemente
+                const dominantDay = martesCount >= juevesCount ? 'martes' : 'jueves';
+                playersInfo[playerName] = {
+                    days: [dominantDay],
+                    is_fixed: false
+                };
+            }
+        });
+
+        // PASO 4: Convertir a array y calcular promedios
+        // Para jugadores fijos en múltiples días, crear una entrada por cada día
+        this.allPlayers = [];
+        Object.entries(playerStats).forEach(([name, stats]) => {
+            const playerInfo = playersInfo[name] || { days: ['unknown'], is_fixed: false };
+            
+            // Si el jugador es fijo en múltiples días, crear una entrada por día
+            playerInfo.days.forEach(day => {
+                this.allPlayers.push({
+                    name,
+                    day: day,
+                    is_fixed: playerInfo.is_fixed,
+                    matches: stats.matches,
+                    winRate: stats.matches > 0 ? (stats.wins / stats.matches * 100).toFixed(1) : 0,
+                    goalsPerGame: stats.matches > 0 ? (stats.goals / stats.matches).toFixed(2) : 0,
+                    assistsPerGame: stats.matches > 0 ? (stats.assists / stats.matches).toFixed(2) : 0,
+                    keeperPerGame: stats.matches > 0 ? (stats.keeper / stats.matches).toFixed(2) : 0,
+                    avgGoals: stats.matches > 0 ? (stats.goals / stats.matches).toFixed(2) : 0,
+                    avgAssists: stats.matches > 0 ? (stats.assists / stats.matches).toFixed(2) : 0,
+                    avgKeeper: stats.matches > 0 ? (stats.keeper / stats.matches).toFixed(2) : 0
+                });
+            });
+        });
+        
+        // Filtrar y ordenar
+        this.allPlayers = this.allPlayers
+            .filter(player => player.matches > 0 || player.is_fixed)
             .sort((a, b) => a.name.localeCompare(b.name));
     }
 
@@ -202,6 +340,11 @@ export class SimuladorView {
      * Adjunta los event listeners
      */
     attachEventListeners() {
+        // Botón generador de equipos equilibrados
+        document.getElementById('generate-balanced-teams').addEventListener('click', () => {
+            this.generateBalancedTeams();
+        });
+
         // Botón añadir jugador azul
         document.getElementById('add-blue-player').addEventListener('click', () => {
             this.addPlayerToTeam('blue');
@@ -450,6 +593,126 @@ export class SimuladorView {
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * Genera equipos equilibrados usando solo jugadores fijos
+     */
+    generateBalancedTeams() {
+        // Obtener el día seleccionado
+        const selectedDay = document.getElementById('day-selector').value;
+        
+        // Filtrar solo jugadores fijos del día seleccionado
+        const fixedPlayers = this.allPlayers.filter(player => 
+            player.is_fixed && player.day === selectedDay
+        );
+        
+        if (fixedPlayers.length < 10) {
+            alert(`Se necesitan al menos 10 jugadores fijos del ${selectedDay} para generar equipos equilibrados. Actualmente hay ${fixedPlayers.length} jugadores fijos.`);
+            return;
+        }
+
+        // Limpiar equipos actuales
+        this.selectedPlayers = { blue: [], red: [] };
+
+        // Calcular puntuaciones de rendimiento
+        const scoredPlayers = fixedPlayers.map(player => ({
+            ...player,
+            performanceScore: this.calculatePerformanceScore(player)
+        }));
+
+        // Ordenar por puntuación
+        scoredPlayers.sort((a, b) => b.performanceScore - a.performanceScore);
+
+        // ALEATORIZACIÓN: Agrupar en niveles de habilidad y mezclar dentro de cada nivel
+        const topTier = scoredPlayers.slice(0, 3); // Top 3
+        const midTier = scoredPlayers.slice(3, 7); // Medios 4
+        const lowTier = scoredPlayers.slice(7, 10); // Bajos 3
+        
+        this.shuffleArray(topTier);
+        this.shuffleArray(midTier);
+        this.shuffleArray(lowTier);
+
+        // Recombinar
+        const shuffledPlayers = [...topTier, ...midTier, ...lowTier];
+
+        // Algoritmo de balanceo: distribuir alternadamente
+        for (let i = 0; i < Math.min(10, shuffledPlayers.length); i++) {
+            const player = shuffledPlayers[i];
+            
+            // Alternar entre equipos, pero equilibrando las puntuaciones
+            if (i % 2 === 0) {
+                // Los pares van al equipo con menor puntuación acumulada
+                const blueTotal = this.calculateTeamTotalScore(this.selectedPlayers.blue);
+                const redTotal = this.calculateTeamTotalScore(this.selectedPlayers.red);
+                
+                if (this.selectedPlayers.blue.length < 5 && (blueTotal <= redTotal || this.selectedPlayers.red.length >= 5)) {
+                    this.selectedPlayers.blue.push(player);
+                } else if (this.selectedPlayers.red.length < 5) {
+                    this.selectedPlayers.red.push(player);
+                }
+            } else {
+                // Los impares van al equipo con mayor puntuación acumulada para equilibrar
+                const blueTotal = this.calculateTeamTotalScore(this.selectedPlayers.blue);
+                const redTotal = this.calculateTeamTotalScore(this.selectedPlayers.red);
+                
+                if (this.selectedPlayers.red.length < 5 && (redTotal <= blueTotal || this.selectedPlayers.blue.length >= 5)) {
+                    this.selectedPlayers.red.push(player);
+                } else if (this.selectedPlayers.blue.length < 5) {
+                    this.selectedPlayers.blue.push(player);
+                }
+            }
+        }
+
+        // Actualizar la visualización
+        this.updateTeamDisplay('blue');
+        this.updateTeamDisplay('red');
+        this.updateSimulatorButtons();
+    }
+
+    /**
+     * Calcula una puntuación de rendimiento combinada para un jugador
+     */
+    calculatePerformanceScore(player) {
+        const weights = {
+            winRate: 0.3,
+            goalsPerGame: 0.25,
+            assistsPerGame: 0.25,
+            keeperDefenseRate: 0.2 // Menor encajados = mejor
+        };
+
+        const winRate = player.winRate || 0;
+        const goalsPerGame = player.goalsPerGame || 0;
+        const assistsPerGame = player.assistsPerGame || 0;
+        const keeperPerGame = player.keeperPerGame || 0;
+        
+        // Para keeper, invertimos el valor (menos encajados = mejor)
+        const keeperDefenseRate = keeperPerGame > 0 ? 100 - (keeperPerGame * 10) : 50;
+
+        return (
+            winRate * weights.winRate +
+            goalsPerGame * 10 * weights.goalsPerGame +
+            assistsPerGame * 10 * weights.assistsPerGame +
+            keeperDefenseRate * weights.keeperDefenseRate
+        );
+    }
+
+    /**
+     * Calcula la puntuación total de un equipo
+     */
+    calculateTeamTotalScore(team) {
+        return team.reduce((total, player) => total + this.calculatePerformanceScore(player), 0);
+    }
+
+    /**
+     * Mezcla aleatoriamente un array (Fisher-Yates shuffle)
+     */
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 
     /**

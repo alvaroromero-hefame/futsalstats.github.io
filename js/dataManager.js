@@ -1,41 +1,23 @@
 /**
- * DataManager - Gestión centralizada de datos
- * Prioriza Supabase, fallback a JSON local
+ * DataManager - Gestión centralizada de datos desde Supabase
  */
 export class DataManager {
-    constructor(supabaseClient = null) {
+    constructor(supabaseClient) {
+        if (!supabaseClient) {
+            throw new Error('❌ Supabase client es requerido');
+        }
         this.supabase = supabaseClient;
         this.futsalDataMartes = null;
         this.futsalDataJueves = null;
         this.currentDay = 'martes';
-        this.dataSource = 'json'; // 'supabase' o 'json'
-    }
-
-    /**
-     * Carga datos desde Supabase o JSON según disponibilidad
-     */
-    async loadData() {
-        console.log('📥 Cargando datos...');
-        
-        // Intentar cargar desde Supabase primero
-        if (this.supabase) {
-            const supabaseSuccess = await this.loadFromSupabase();
-            if (supabaseSuccess) {
-                this.dataSource = 'supabase';
-                console.log('✅ Datos cargados desde Supabase');
-                return true;
-            }
-            console.log('⚠️ Supabase no disponible, usando JSON local');
-        }
-
-        // Fallback a JSON local
-        return await this.loadFromJSON();
     }
 
     /**
      * Carga datos desde Supabase
      */
-    async loadFromSupabase() {
+    async loadData() {
+        console.log('📥 Cargando datos desde Supabase...');
+        
         try {
             // Cargar datos de martes
             const martesData = await this.loadDayFromSupabase('martes');
@@ -50,10 +32,15 @@ export class DataManager {
             }
 
             // Verificar que al menos un día tenga datos
-            return this.futsalDataMartes !== null || this.futsalDataJueves !== null;
+            if (!this.futsalDataMartes && !this.futsalDataJueves) {
+                throw new Error('No hay datos disponibles en Supabase');
+            }
+
+            console.log('✅ Datos cargados desde Supabase correctamente');
+            return true;
         } catch (error) {
             console.error('❌ Error cargando desde Supabase:', error);
-            return false;
+            throw error;
         }
     }
 
@@ -62,14 +49,24 @@ export class DataManager {
      */
     async loadDayFromSupabase(day) {
         try {
-            // Cargar jugadores fijos
-            const { data: players, error: playersError } = await this.supabase
-                .from('players')
-                .select('*')
-                .or(`day.eq.${day},day.eq.ambos`)
+            // Cargar jugadores fijos desde player_availability con JOIN a tabla players
+            const { data: availability, error: availError } = await this.supabase
+                .from('player_availability')
+                .select('player_id, is_fixed, players(name)')
+                .eq('day', day)
                 .eq('is_fixed', true);
 
-            if (playersError) throw playersError;
+            if (availError) throw availError;
+
+            console.log(`🔍 DEBUG - Availability con nombres para ${day}:`, availability);
+
+            // Convertir a array de nombres
+            const players = availability?.map(a => ({ 
+                name: a.players?.name || 'Unknown', 
+                is_fixed: true 
+            })) || [];
+
+            console.log(`🔍 DEBUG - Jugadores fijos cargados para ${day}:`, players?.length, players?.map(p => p.name));
 
             // Cargar partidos
             const { data: matches, error: matchesError } = await this.supabase
@@ -108,13 +105,18 @@ export class DataManager {
     }
 
     /**
-     * Transforma un partido de Supabase al formato JSON original
+     * Transforma un partido de Supabase al formato esperado
      */
     transformMatchFromSupabase(match) {
         return {
             matchDate: match.match_date,
             mvp: match.mvp || '',
             result: match.result,
+            blue_lineup: match.blue_lineup,
+            red_lineup: match.red_lineup,
+            blue_result: match.blue_result,
+            red_result: match.red_result,
+            // Mantener compatibilidad con formato antiguo
             teams: [
                 {
                     blue: [
@@ -140,28 +142,6 @@ export class DataManager {
                 }
             ]
         };
-    }
-
-    /**
-     * Carga datos desde archivos JSON locales
-     */
-    async loadFromJSON() {
-        try {
-            const [dataMartes, dataJueves] = await Promise.all([
-                fetch('data/FutsalStatsMartes.json').then(res => res.json()),
-                fetch('data/FutsalStatsJueves.json').then(res => res.json()).catch(() => null)
-            ]);
-            
-            this.futsalDataMartes = dataMartes;
-            this.futsalDataJueves = dataJueves;
-            this.dataSource = 'json';
-            
-            console.log('✅ Datos cargados desde JSON local');
-            return true;
-        } catch (error) {
-            console.error('❌ Error cargando datos JSON:', error);
-            return false;
-        }
     }
 
     /**
@@ -194,20 +174,6 @@ export class DataManager {
      */
     hasData() {
         return this.getCurrentData() !== null;
-    }
-
-    /**
-     * Obtiene la fuente de datos actual
-     */
-    getDataSource() {
-        return this.dataSource;
-    }
-
-    /**
-     * Verifica si Supabase está disponible
-     */
-    isSupabaseAvailable() {
-        return this.supabase !== null && this.dataSource === 'supabase';
     }
 
     /**

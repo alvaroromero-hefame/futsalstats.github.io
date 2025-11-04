@@ -13,16 +13,10 @@ export const config = {
         anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xcWJldXdleXhhdHN4anNlcG5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NzE0ODEsImV4cCI6MjA3NzM0NzQ4MX0.ZWrWEX9_55wIeew8p4Ar0zojHUMf7_2mtsuNI4aws_Y'
     },
     
-    // Rutas de datos locales (fallback)
-    data: {
-        martesUrl: 'data/FutsalStatsMartes.json',
-        juevesUrl: 'data/FutsalStatsJueves.json'
-    },
-    
     // Configuración de la aplicación
     app: {
         defaultDay: 'martes',
-        version: '2.0.0'
+        version: '3.0.0'
     }
 };
 
@@ -31,15 +25,20 @@ export function validateConfig() {
     const errors = [];
     
     if (!config.supabase.url) {
-        errors.push('Supabase URL no configurada');
+        errors.push('❌ Supabase URL no configurada');
     }
     
-    if (config.supabase.anonKey === 'YOUR_SUPABASE_ANON_KEY_HERE') {
-        console.warn('⚠️ Supabase Anon Key no configurada. La aplicación funcionará con datos locales.');
+    if (!config.supabase.anonKey || config.supabase.anonKey === 'YOUR_SUPABASE_ANON_KEY_HERE') {
+        errors.push('❌ Supabase Anon Key no configurada');
+    }
+    
+    if (errors.length > 0) {
+        console.error('❌ Errores de configuración:', errors);
+        throw new Error('Configuración inválida: ' + errors.join(', '));
     }
     
     return {
-        isValid: errors.length === 0,
-        errors
+        isValid: true,
+        errors: []
     };
 }

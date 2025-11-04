@@ -117,7 +117,6 @@ class FutsalApp {
      * Muestra información sobre la fuente de datos en uso
      */
     showDataSourceInfo() {
-        const source = this.dataManager.getDataSource();
         const badge = document.createElement('div');
         badge.id = 'data-source-badge';
         badge.style.cssText = `
@@ -132,15 +131,10 @@ class FutsalApp {
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         `;
 
-        if (source === 'supabase') {
-            badge.textContent = '🟢 Supabase';
-            badge.style.backgroundColor = '#10b981';
-            badge.style.color = 'white';
-        } else {
-            badge.textContent = '🟡 JSON Local';
-            badge.style.backgroundColor = '#f59e0b';
-            badge.style.color = 'white';
-        }
+        // Solo Supabase disponible ahora
+        badge.textContent = '🟢 Supabase';
+        badge.style.backgroundColor = '#10b981';
+        badge.style.color = 'white';
 
         document.body.appendChild(badge);
     }

@@ -1,28 +1,35 @@
 # Futsal Stats
 
-Aplicación web para gestionar estadísticas de partidos de fútbol sala.
+Aplicación web para gestionar estadísticas de partidos de fútbol sala con Supabase.
 
 ## 📁 Estructura del Proyecto
 
 ```
 futsalstats.github.io/
 ├── index.html                 # Página principal
-├── data/                      # Datos JSON
-│   ├── FutsalStatsMartes.json
-│   └── FutsalStatsJueves.json
+├── admin.html                 # Panel de administración
 ├── css/                       # Estilos modulares
 │   ├── main.css              # Estilos generales y base
 │   ├── sidebar.css           # Estilos del menú lateral
 │   ├── tables.css            # Estilos de tablas y estadísticas
-│   └── mobile.css            # Estilos responsive para móviles
+│   ├── mobile.css            # Estilos responsive para móviles
+│   ├── player-stats.css      # Estilos para estadísticas de jugadores
+│   ├── simulador.css         # Estilos para simulador de partidos
+│   └── admin.css             # Estilos para panel de administración
 ├── js/                        # JavaScript modular
 │   ├── main.js               # Punto de entrada principal
-│   ├── dataManager.js        # Gestión de datos
+│   ├── config.js             # Configuración de Supabase
+│   ├── dataManager.js        # Gestión de datos con Supabase
 │   ├── ui/                   # Módulos de interfaz
 │   │   ├── sidebar.js        # Gestión del menú lateral
 │   │   ├── clasificacion.js  # Vista de clasificación
 │   │   ├── historico.js      # Vista de histórico de partidos
-│   │   └── estadisticas.js   # Vista de estadísticas
+│   │   ├── estadisticas.js   # Vista de estadísticas
+│   │   ├── playerStats.js    # Estadísticas detalladas de jugador
+│   │   └── simulador.js      # Simulador de partidos
+│   ├── admin/                # Módulos de administración
+│   │   ├── auth.js           # Autenticación
+│   │   └── panel.js          # Panel de administración
 │   └── utils/                # Utilidades
 │       ├── calculations.js   # Funciones de cálculo
 │       └── rendering.js      # Funciones de renderizado
@@ -34,6 +41,9 @@ futsalstats.github.io/
 - **Clasificación**: Ranking de jugadores con puntuación basada en victorias, goles, asistencias y MVPs
 - **Histórico**: Registro completo de todos los partidos con filtros de búsqueda
 - **Estadísticas**: Análisis de datos como goleadores, asistencias y victorias
+- **Simulador de Partidos**: Genera equipos equilibrados y predice resultados
+- **Panel de Administración**: Gestión completa de partidos, jugadores y configuración
+- **Supabase Backend**: Base de datos PostgreSQL en la nube
 - **Responsive**: Diseño adaptado para móviles, tablets y escritorio
 - **Selector de días**: Soporte para ligas de Martes y Jueves
 
@@ -42,10 +52,10 @@ futsalstats.github.io/
 ### Módulos Principales
 
 #### `dataManager.js`
-Gestiona la carga y acceso a los datos desde archivos JSON.
-- Carga asíncrona de datos
+Gestiona la carga y acceso a los datos desde Supabase.
+- Carga de datos desde Supabase PostgreSQL
 - Gestión del día actual seleccionado (Martes/Jueves)
-- Verificación de estado de carga
+- Transformación de datos al formato esperado por la aplicación
 
 #### `calculations.js`
 Contiene todas las funciones de cálculo de estadísticas:
@@ -88,47 +98,55 @@ Funciones reutilizables para generar HTML:
 
 FutsalStats utiliza un **sistema híbrido inteligente**:
 
-- **🟢 Supabase (preferido)**: Base de datos en la nube con sincronización en tiempo real
-- **🟡 JSON Local (fallback)**: Archivos locales como respaldo
+## � Fuente de Datos
 
-La aplicación detecta automáticamente la mejor fuente disponible y muestra un indicador visual en la esquina inferior derecha.
+La aplicación utiliza **Supabase** como fuente única de datos:
 
-### 🔄 Comportamiento Automático
+- **🟢 Supabase**: Base de datos PostgreSQL en la nube con sincronización en tiempo real
 
-```
-Intenta Supabase → ✅ Éxito: Usa Supabase
-                 → ❌ Fallo: Usa JSON Local
-```
+La aplicación requiere Supabase configurado correctamente en `js/config.js`.
 
-Para más detalles, consulta: **[`DATASOURCE.md`](DATASOURCE.md )**
+Para más detalles sobre la configuración, consulta: **[`SUPABASE.md`](SUPABASE.md)**
 
 ## 💻 Tecnologías
 
 - **HTML5**
 - **CSS3** (con diseño responsive)
 - **JavaScript ES6+** (módulos)
-- **Fetch API** para carga de datos
-- **Supabase** (base de datos en la nube - opcional)
+- **Supabase** (base de datos PostgreSQL en la nube)
+- **Supabase Client Library** para comunicación con la base de datos
 
 ## 🔌 Integración con Supabase
 
-La aplicación está integrada con Supabase para almacenamiento de datos en la nube. La configuración se encuentra en `js/config.js`.
+La aplicación está completamente integrada con Supabase para almacenamiento y gestión de datos.
 
-### Características de Supabase:
+### Características:
 - 🌐 Base de datos PostgreSQL en la nube
-- 🔄 Sincronización en tiempo real (disponible)
+- 🔄 Datos en tiempo real
 - 🔒 Row Level Security para seguridad
-- 📊 Almacenamiento persistente de partidos
+- 📊 Almacenamiento persistente de partidos, jugadores y configuración
+- 🔐 Autenticación para panel de administración
 
-**Modo fallback**: Si Supabase no está disponible, la aplicación funciona con archivos JSON locales.
+### Configuración Requerida:
 
-Ver [SUPABASE.md](SUPABASE.md) para más información sobre la integración.
+1. **Crea una cuenta en Supabase**: https://supabase.com
+2. **Configura las credenciales** en `js/config.js`:
+   ```javascript
+   supabase: {
+       url: 'https://tu-proyecto.supabase.co',
+       anonKey: 'tu-anon-key-aqui'
+   }
+   ```
+3. **Ejecuta los scripts SQL** en Supabase (ver `SUPABASE-SETUP.md`)
+
+Ver [SUPABASE.md](SUPABASE.md) para documentación completa de la integración.
 
 ## 🚀 Uso
 
-1. Abre `index.html` en un navegador web
-2. Los datos se cargan automáticamente desde la carpeta `data/`
-3. Navega entre las diferentes secciones usando el menú lateral
+1. **Configurar Supabase** (ver sección anterior)
+2. **Abrir la aplicación**: Abre `index.html` en un navegador web
+3. **Navegación**: Usa el menú lateral para acceder a diferentes secciones
+4. **Administración**: Accede a `admin.html` para gestionar datos (requiere autenticación)
 
 ## 📊 Criterios de Puntuación
 
