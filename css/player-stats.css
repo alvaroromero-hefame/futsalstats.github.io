@@ -147,4 +147,141 @@
     .stat-box {
         min-width: 100%;
     }
+
+    .ai-badges {
+        flex-direction: column;
+    }
+
+    .ai-two-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   AI Analysis Section
+   ============================================ */
+
+.ai-analysis-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.ai-analysis-card h3 {
+    color: white;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.ai-analysis-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ai-badges {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ai-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.ai-badge:hover {
+    transform: translateY(-2px);
+}
+
+.ai-badge .badge-icon {
+    font-size: 24px;
+}
+
+.ai-badge .badge-text {
+    font-size: 14px;
+}
+
+.score-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.ai-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.ai-section h4 {
+    margin: 0 0 12px 0;
+    color: white;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-profile-description {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.ai-summary p {
+    margin: 8px 0;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.ai-two-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.ai-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ai-list li {
+    padding: 8px 0;
+    line-height: 1.5;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-list li:last-child {
+    border-bottom: none;
+}
+
+.strengths-list li::before {
+    content: '✓ ';
+    color: #10b981;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.improvements-list li::before {
+    content: '→ ';
+    color: #fbbf24;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.recommendations-list li::before {
+    content: '• ';
+    color: #60a5fa;
+    font-weight: bold;
+    margin-right: 5px;
 }
