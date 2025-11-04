@@ -2,8 +2,6 @@
  * PlayerStatsModal - Modal con estadísticas detalladas del jugador
  */
 
-import { AIPlayerAnalyzer } from '../services/aiAnalyzer.js';
-
 export class PlayerStatsModal {
     constructor(dataManager) {
         this.dataManager = dataManager;
@@ -11,7 +9,6 @@ export class PlayerStatsModal {
         this.chart1 = null;
         this.chart2 = null;
         this.chart3 = null;
-        this.aiAnalyzer = new AIPlayerAnalyzer();
     }
 
     /**
@@ -59,14 +56,6 @@ export class PlayerStatsModal {
                 <h2 id="player-stats-title"></h2>
                 
                 <div class="player-stats-grid">
-                    <!-- NUEVA SECCIÓN: Análisis IA -->
-                    <div class="stats-card ai-analysis-card full-width">
-                        <h3>🤖 Análisis IA del Jugador</h3>
-                        <div id="ai-analysis-content" class="ai-analysis-content">
-                            <!-- Se llenará dinámicamente -->
-                        </div>
-                    </div>
-
                     <!-- Gráfico 1: Evolución de goles, asistencias y encajados -->
                     <div class="stats-card">
                         <h3>📊 Evolución Temporal</h3>
@@ -232,97 +221,6 @@ export class PlayerStatsModal {
         document.getElementById('stat-total-assists').textContent = stats.totals.assists;
         document.getElementById('stat-total-keeper').textContent = stats.totals.keeper;
         document.getElementById('stat-win-rate').textContent = `${stats.totals.winRate}%`;
-        
-        // Generar análisis IA
-        this.generateAIAnalysis(stats);
-    }
-
-    /**
-     * Genera y muestra el análisis IA del jugador
-     */
-    generateAIAnalysis(stats) {
-        const analysis = this.aiAnalyzer.analyze(stats);
-        const container = document.getElementById('ai-analysis-content');
-        
-        container.innerHTML = `
-            <!-- Badges principales -->
-            <div class="ai-badges">
-                <div class="ai-badge" style="background: ${analysis.profile.color};">
-                    <span class="badge-icon">${analysis.profile.icon}</span>
-                    <span class="badge-text">${analysis.profile.type}</span>
-                </div>
-                <div class="ai-badge" style="background: ${analysis.level.color};">
-                    <span class="badge-icon">${analysis.level.icon}</span>
-                    <span class="badge-text">${analysis.level.level}</span>
-                </div>
-                <div class="ai-badge" style="background: ${analysis.trend.color};">
-                    <span class="badge-icon">${analysis.trend.icon}</span>
-                    <span class="badge-text">${analysis.trend.trend}</span>
-                </div>
-                <div class="ai-badge score-badge">
-                    <span class="badge-icon">📊</span>
-                    <span class="badge-text">Score: ${analysis.score}/100</span>
-                </div>
-            </div>
-
-            <!-- Descripción del perfil -->
-            <div class="ai-section">
-                <p class="ai-profile-description">
-                    <strong>${analysis.profile.description}</strong> - ${analysis.trend.description}
-                </p>
-            </div>
-
-            <!-- Resumen -->
-            <div class="ai-section">
-                <h4>📝 Resumen del Perfil</h4>
-                <div class="ai-summary">
-                    ${analysis.summary.map(line => `<p>• ${line}</p>`).join('')}
-                </div>
-            </div>
-
-            <!-- Fortalezas y Mejoras -->
-            <div class="ai-two-columns">
-                <div class="ai-section">
-                    <h4>💪 Fortalezas Principales</h4>
-                    <ul class="ai-list strengths-list">
-                        ${analysis.strengths.map(s => `<li>${s}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="ai-section">
-                    <h4>📈 Áreas de Mejora</h4>
-                    <ul class="ai-list improvements-list">
-                        ${analysis.improvements.map(i => `<li>${i}</li>`).join('')}
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Recomendaciones Tácticas -->
-            <div class="ai-section">
-                <h4>🎯 Recomendaciones Tácticas</h4>
-                <ul class="ai-list recommendations-list">
-                    ${analysis.recommendations.map(r => `<li>${r}</li>`).join('')}
-                </ul>
-            </div>
-
-            <!-- Compatibilidad -->
-            ${analysis.teamCompatibility.ideal.length > 0 || analysis.teamCompatibility.needsSupport.length > 0 ? `
-                <div class="ai-section">
-                    <h4>👥 Compatibilidad de Equipo</h4>
-                    ${analysis.teamCompatibility.ideal.length > 0 ? `
-                        <p><strong>Combina bien con:</strong></p>
-                        <ul class="ai-list">
-                            ${analysis.teamCompatibility.ideal.map(c => `<li>${c}</li>`).join('')}
-                        </ul>
-                    ` : ''}
-                    ${analysis.teamCompatibility.needsSupport.length > 0 ? `
-                        <p><strong>Necesita apoyo de:</strong></p>
-                        <ul class="ai-list">
-                            ${analysis.teamCompatibility.needsSupport.map(c => `<li>${c}</li>`).join('')}
-                        </ul>
-                    ` : ''}
-                </div>
-            ` : ''}
-        `;
     }
 
     /**
