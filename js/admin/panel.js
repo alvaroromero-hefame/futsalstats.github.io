@@ -616,9 +616,12 @@ export class AdminPanel {
      * Actualiza el select de próximo seleccionador
      */
     updateNextSelectorSelect(players) {
+        // Filtrar solo jugadores fijos y ordenar alfabéticamente
+        const fixedPlayers = players.filter(p => p.is_fixed).sort((a, b) => a.name.localeCompare(b.name));
+        
         const selectorSelect = document.getElementById('next-selector');
         selectorSelect.innerHTML = '<option value="">Seleccionar...</option>' + 
-            players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+            fixedPlayers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
         
         // Cargar valor actual
         this.loadCurrentSettings();
