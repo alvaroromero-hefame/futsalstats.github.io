@@ -7,6 +7,7 @@ import { SidebarManager } from './ui/sidebar.js';
 import { ClasificacionView } from './ui/clasificacion.js';
 import { HistoricoView } from './ui/historico.js';
 import { EstadisticasView } from './ui/estadisticas.js';
+import { SimuladorView } from './ui/simulador.js';
 import { config } from './config.js';
 
 /**
@@ -49,7 +50,8 @@ class FutsalApp {
         this.views = {
             clasificacion: new ClasificacionView(this.dataManager, this.mainContent),
             historico: new HistoricoView(this.dataManager, this.mainContent),
-            estadisticas: new EstadisticasView(this.dataManager, this.mainContent)
+            estadisticas: new EstadisticasView(this.dataManager, this.mainContent),
+            simulador: new SimuladorView(this.dataManager, this.mainContent)
         };
         
         // Configurar navegación
@@ -150,7 +152,8 @@ class FutsalApp {
         const menuItems = [
             { id: 'menu-clasificacion', view: 'clasificacion' },
             { id: 'menu-historico', view: 'historico' },
-            { id: 'menu-estadisticas', view: 'estadisticas' }
+            { id: 'menu-estadisticas', view: 'estadisticas' },
+            { id: 'menu-simulador', view: 'simulador' }
         ];
 
         menuItems.forEach(({ id, view }) => {
@@ -182,6 +185,11 @@ class FutsalApp {
             
             // Renderizar vista
             this.views[viewName].render();
+            
+            // Configurar instancia global para simulador
+            if (viewName === 'simulador') {
+                window.simuladorView = this.views[viewName];
+            }
         } else {
             console.error('❌ Vista no encontrada:', viewName);
         }

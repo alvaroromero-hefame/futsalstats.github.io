@@ -217,4 +217,14 @@ export class DataManager {
         console.log('🔄 Recargando datos...');
         return await this.loadData();
     }
+
+    /**
+     * Obtiene todos los datos (martes y jueves) para el simulador
+     */
+    getAllData() {
+        return {
+            martes: this.futsalDataMartes,
+            jueves: this.futsalDataJueves
+        };
+    }
 }

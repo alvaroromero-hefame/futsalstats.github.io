@@ -1,0 +1,330 @@
+/* ============================================
+   Simulador de Partidos Styles
+   ============================================ */
+
+.simulador-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.simulador-container h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.simulador-description {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.teams-simulator {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.team-simulator {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.team-simulator h2 {
+    margin: 0 0 20px 0;
+    font-size: 24px;
+    text-align: center;
+}
+
+.team-blue h2 {
+    color: #3b82f6;
+}
+
+.team-red h2 {
+    color: #ef4444;
+}
+
+.player-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.player-select {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+}
+
+.player-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.team-players-list {
+    margin-bottom: 20px;
+}
+
+.no-players {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 6px;
+    margin: 0;
+}
+
+.players-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.players-stats-table th,
+.players-stats-table td {
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.players-stats-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+    font-size: 12px;
+}
+
+.players-stats-table td:first-child {
+    text-align: left;
+}
+
+.btn-remove-player {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-remove-player:hover {
+    background: #fee2e2;
+}
+
+.team-stats {
+    border-top: 2px solid #e2e8f0;
+    padding-top: 15px;
+}
+
+.team-summary h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #374151;
+}
+
+.team-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.stat-item {
+    text-align: center;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.simulation-result {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin: 30px 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border: 3px solid #10b981;
+}
+
+.simulation-result h2 {
+    text-align: center;
+    color: #10b981;
+    margin: 0 0 30px 0;
+    font-size: 28px;
+}
+
+.vs-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 30px;
+    align-items: center;
+}
+
+.team-prediction {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+}
+
+.team-prediction-blue {
+    border-left: 4px solid #3b82f6;
+}
+
+.team-prediction-red {
+    border-left: 4px solid #ef4444;
+}
+
+.team-prediction h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+}
+
+.team-prediction-blue h3 {
+    color: #3b82f6;
+}
+
+.team-prediction-red h3 {
+    color: #ef4444;
+}
+
+.vs-divider {
+    font-size: 32px;
+    font-weight: bold;
+    color: #6b7280;
+    text-align: center;
+}
+
+.prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.prediction-item {
+    text-align: center;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.prediction-value {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+.prediction-label {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.simulator-actions {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.simulator-actions .btn {
+    margin: 0 10px;
+    font-size: 16px;
+    padding: 12px 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .teams-simulator {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .vs-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .vs-divider {
+        order: -1;
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .simulador-container {
+        padding: 15px;
+    }
+    
+    .team-simulator {
+        padding: 20px;
+    }
+    
+    .players-stats-table {
+        font-size: 11px;
+    }
+    
+    .players-stats-table th,
+    .players-stats-table td {
+        padding: 6px 2px;
+    }
+    
+    .team-stats-grid,
+    .prediction-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .simulation-result {
+        padding: 20px;
+    }
+    
+    .simulation-result h2 {
+        font-size: 24px;
+    }
+    
+    .player-selector {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .players-stats-table th:not(:first-child):not(:last-child),
+    .players-stats-table td:not(:first-child):not(:last-child) {
+        display: none;
+    }
+    
+    .players-stats-table th:first-child,
+    .players-stats-table td:first-child {
+        width: 70%;
+    }
+    
+    .players-stats-table th:last-child,
+    .players-stats-table td:last-child {
+        width: 30%;
+    }
+}
