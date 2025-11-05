@@ -21,6 +21,7 @@
     <title>Admin - Futsal Stats</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/security-dashboard.css">
 </head>
 <body class="admin-body">
     <!-- Login Screen -->
@@ -61,6 +62,7 @@
         import { AuthManager } from './js/auth/authManager.js';
         import { AdminPanel } from './js/admin/panel.js';
         import { DataManager } from './js/dataManager.js';
+        import { globalSessionTimeout } from './js/security/sessionTimeout.js';
 
         // Inicializar aplicación admin
         class AdminApp {
@@ -69,6 +71,7 @@
                 this.auth = null;
                 this.panel = null;
                 this.dataManager = null;
+                this.sessionTimeout = null;
             }
 
             async init() {
@@ -162,6 +165,21 @@
             async showAdminPanel() {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-screen').style.display = 'block';
+
+                // Iniciar Session Timeout
+                if (!this.sessionTimeout) {
+                    this.sessionTimeout = globalSessionTimeout;
+                    this.sessionTimeout.onTimeout = async () => {
+                        console.log('⏰ Sesión expirada - cerrando...');
+                        await this.auth.logout();
+                        this.sessionTimeout.showTimeoutMessage();
+                        setTimeout(() => {
+                            window.location.href = '/admin.html';
+                        }, 2000);
+                    };
+                    this.sessionTimeout.start();
+                    console.log('✅ Session timeout activado (15 minutos)');
+                }
 
                 // Crear panel si no existe
                 if (!this.panel) {

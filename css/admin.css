@@ -1085,3 +1085,30 @@
         font-size: 18px;
     }
 }
+
+/* ============================================
+   Security Dashboard Integration in Admin Panel
+   ============================================ */
+#security-dashboard-container {
+    margin-top: 20px;
+    border-radius: 12px;
+    background: white;
+    padding: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#toggle-security-dashboard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#toggle-security-dashboard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}

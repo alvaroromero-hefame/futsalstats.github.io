@@ -1,5 +1,7 @@
 import { globalCSRF } from '../security/csrfProtection.js';
+import { globalHoneypot } from '../security/honeypot.js';
 import { AuditLogger } from '../utils/logger.js';
+import { SecurityDashboard } from '../ui/securityDashboard.js';
 
 /**
  * AdminPanel - Panel de administración para gestionar partidos
@@ -9,9 +11,12 @@ export class AdminPanel {
         this.supabase = supabaseClient;
         this.dataManager = dataManager;
         this.csrf = globalCSRF;
+        this.honeypot = globalHoneypot;
         this.logger = new AuditLogger(supabaseClient);
+        this.securityDashboard = new SecurityDashboard(supabaseClient, this.logger);
         this.container = null;
         this.currentDay = 'martes';
+        this.currentTab = 'matches'; // Nueva propiedad para tabs
         this.matchFilters = {
             dateFrom: null,
             dateTo: null
@@ -209,6 +214,17 @@ export class AdminPanel {
                             </button>
                         </form>
                     </div>
+
+                    <!-- Panel de Seguridad -->
+                    <div class="admin-section">
+                        <h2>🛡️ Panel de Seguridad</h2>
+                        <button id="toggle-security-dashboard" class="btn btn-primary">
+                            📊 Ver Dashboard de Seguridad
+                        </button>
+                        <div id="security-dashboard-container" style="display: none; margin-top: 20px;">
+                            <!-- Se cargará dinámicamente -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Modal de confirmación -->
@@ -244,16 +260,19 @@ export class AdminPanel {
         // Formulario de partido
         const matchForm = document.getElementById('match-form');
         this.csrf.addTokenToForm(matchForm); // Agregar token CSRF
+        this.honeypot.addToForm(matchForm); // Agregar honeypot anti-bot
         matchForm.addEventListener('submit', (e) => this.handleMatchSubmit(e));
 
         // Formulario de jugador
         const playerForm = document.getElementById('player-form');
         this.csrf.addTokenToForm(playerForm); // Agregar token CSRF
+        this.honeypot.addToForm(playerForm); // Agregar honeypot
         playerForm.addEventListener('submit', (e) => this.handlePlayerSubmit(e));
 
         // Formulario de configuración
         const settingsForm = document.getElementById('settings-form');
         this.csrf.addTokenToForm(settingsForm); // Agregar token CSRF
+        this.honeypot.addToForm(settingsForm); // Agregar honeypot
         settingsForm.addEventListener('submit', (e) => this.handleSettingsSubmit(e));
 
         // Logout
@@ -266,6 +285,11 @@ export class AdminPanel {
         // Ayuda
         document.getElementById('admin-help').addEventListener('click', () => {
             this.showHelpModal();
+        });
+
+        // Toggle Security Dashboard
+        document.getElementById('toggle-security-dashboard')?.addEventListener('click', async () => {
+            await this.toggleSecurityDashboard();
         });
     }
 
@@ -666,6 +690,18 @@ export class AdminPanel {
         if (!this.csrf.validateToken(csrfToken)) {
             this.showNotification('❌ Token de seguridad inválido. Recarga la página.', 'error');
             console.error('🔒 CSRF validation failed');
+            return;
+        }
+
+        // Validar honeypot anti-bot
+        const honeypotValidation = this.honeypot.validate(e.target);
+        if (honeypotValidation.isBot) {
+            console.error('🤖 Bot detectado:', honeypotValidation.reason);
+            await this.logger.logSecurityEvent('BOT_DETECTED', {
+                form: 'match-form',
+                reason: honeypotValidation.reason
+            });
+            this.showNotification('❌ Error de validación. Por favor, intenta de nuevo.', 'error');
             return;
         }
 
@@ -1614,6 +1650,32 @@ export class AdminPanel {
         }
 
         modal.style.display = 'flex';
+    }
+
+    /**
+     * Toggle del Dashboard de Seguridad
+     */
+    async toggleSecurityDashboard() {
+        const container = document.getElementById('security-dashboard-container');
+        const button = document.getElementById('toggle-security-dashboard');
+        
+        if (!container) return;
+
+        if (container.style.display === 'none') {
+            // Mostrar dashboard
+            button.textContent = '🔼 Ocultar Dashboard';
+            container.style.display = 'block';
+            
+            // Renderizar dashboard (solo la primera vez o refrescar)
+            await this.securityDashboard.render('security-dashboard-container');
+        } else {
+            // Ocultar dashboard
+            button.textContent = '📊 Ver Dashboard de Seguridad';
+            container.style.display = 'none';
+            
+            // Detener auto-refresh si está activo
+            this.securityDashboard.stopAutoRefresh();
+        }
     }
 }
 

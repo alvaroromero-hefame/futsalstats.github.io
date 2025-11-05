@@ -3,6 +3,17 @@
  * Protección contra XSS, validación de datos, etc.
  */
 
+/**
+ * Error personalizado de seguridad
+ */
+export class SecurityError extends Error {
+    constructor(message, code = 'SECURITY_ERROR') {
+        super(message);
+        this.name = 'SecurityError';
+        this.code = code;
+    }
+}
+
 export class SecurityUtils {
     /**
      * Sanitiza texto para prevenir ataques XSS

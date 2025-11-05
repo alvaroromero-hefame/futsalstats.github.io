@@ -42,6 +42,26 @@ export {
 // Fase 2: Audit Logging
 export { AuditLogger } from '../utils/logger.js';
 
+// Fase 3: Protecciones Avanzadas
+export { 
+    Honeypot, 
+    globalHoneypot, 
+    protectForm, 
+    validateHoneypot 
+} from './honeypot.js';
+
+export { 
+    IPWhitelist, 
+    globalIPWhitelist, 
+    protectWithIP 
+} from './ipWhitelist.js';
+
+export { 
+    SessionTimeout, 
+    globalSessionTimeout, 
+    startSessionTimeout 
+} from './sessionTimeout.js';
+
 /**
  * Configuración de seguridad por defecto
  */
@@ -69,18 +89,48 @@ export const securityConfig = {
         enabled: true,
         consoleLogging: true,
         retentionDays: 90
+    },
+    honeypot: {
+        enabled: true,
+        fieldName: 'website',
+        minTime: 800
+    },
+    ipWhitelist: {
+        enabled: false, // Cambiar a true para habilitar
+        strictMode: false,
+        bypassOnLocalhost: true
+    },
+    sessionTimeout: {
+        enabled: true,
+        timeout: 15 * 60 * 1000,      // 15 minutos
+        warningTime: 2 * 60 * 1000     // Warning 2 min antes
     }
 };
 
 /**
  * Inicializar todos los módulos de seguridad
  */
-export function initializeSecurity(supabaseClient) {
+export function initializeSecurity(supabaseClient, options = {}) {
     console.log('🔐 Inicializando módulos de seguridad...');
     
     // Crear instancias
     const authManager = new AuthManager(supabaseClient);
     const auditLogger = new AuditLogger(supabaseClient);
+    
+    // Fase 3: Inicializar protecciones avanzadas
+    if (options.enableHoneypot !== false) {
+        globalHoneypot.protectForms('form');
+        console.log('  - ✅ Honeypot activado en formularios');
+    }
+    
+    if (options.enableSessionTimeout !== false) {
+        globalSessionTimeout.start();
+        console.log('  - ✅ Session Timeout activado (15 min)');
+    }
+    
+    if (options.enableIPWhitelist && globalIPWhitelist.enabled) {
+        console.log('  - ✅ IP Whitelist activado');
+    }
     
     console.log('✅ Módulos de seguridad inicializados:');
     console.log('  - ✅ XSS Sanitization');
@@ -89,11 +139,16 @@ export function initializeSecurity(supabaseClient) {
     console.log('  - ✅ CSRF Protection');
     console.log('  - ✅ Audit Logging');
     console.log('  - ✅ Authentication (Supabase)');
+    console.log('  - ✅ Honeypot (Anti-bot)');
+    console.log('  - ✅ Session Timeout');
     
     return {
         authManager,
         auditLogger,
         rateLimiter: globalRateLimiter,
-        csrf: globalCSRF
+        csrf: globalCSRF,
+        honeypot: globalHoneypot,
+        sessionTimeout: globalSessionTimeout,
+        ipWhitelist: globalIPWhitelist
     };
 }
