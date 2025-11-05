@@ -1,3 +1,6 @@
+import { globalCSRF } from '../security/csrfProtection.js';
+import { AuditLogger } from '../utils/logger.js';
+
 /**
  * AdminPanel - Panel de administración para gestionar partidos
  */
@@ -5,6 +8,8 @@ export class AdminPanel {
     constructor(supabaseClient, dataManager) {
         this.supabase = supabaseClient;
         this.dataManager = dataManager;
+        this.csrf = globalCSRF;
+        this.logger = new AuditLogger(supabaseClient);
         this.container = null;
         this.currentDay = 'martes';
         this.matchFilters = {
@@ -238,14 +243,17 @@ export class AdminPanel {
 
         // Formulario de partido
         const matchForm = document.getElementById('match-form');
+        this.csrf.addTokenToForm(matchForm); // Agregar token CSRF
         matchForm.addEventListener('submit', (e) => this.handleMatchSubmit(e));
 
         // Formulario de jugador
         const playerForm = document.getElementById('player-form');
+        this.csrf.addTokenToForm(playerForm); // Agregar token CSRF
         playerForm.addEventListener('submit', (e) => this.handlePlayerSubmit(e));
 
         // Formulario de configuración
         const settingsForm = document.getElementById('settings-form');
+        this.csrf.addTokenToForm(settingsForm); // Agregar token CSRF
         settingsForm.addEventListener('submit', (e) => this.handleSettingsSubmit(e));
 
         // Logout
@@ -652,7 +660,19 @@ export class AdminPanel {
     async handleMatchSubmit(e) {
         e.preventDefault();
 
+        // Validar token CSRF
+        const formData = new FormData(e.target);
+        const csrfToken = formData.get('csrf_token');
+        if (!this.csrf.validateToken(csrfToken)) {
+            this.showNotification('❌ Token de seguridad inválido. Recarga la página.', 'error');
+            console.error('🔒 CSRF validation failed');
+            return;
+        }
+
         try {
+            // Obtener usuario actual
+            const { data: { user } } = await this.supabase.auth.getUser();
+            
             // Recoger datos del formulario
             const matchDate = document.getElementById('match-date').value;
             const mvp = document.getElementById('match-mvp').value || null;
@@ -717,6 +737,14 @@ export class AdminPanel {
 
                 if (error) throw error;
 
+                // Log de auditoría
+                await this.logger.logMatchUpdated(
+                    this.editingMatchId,
+                    { date: matchDate }, // old data simplificado
+                    matchData,
+                    user?.id
+                );
+
                 this.showNotification('✅ Partido actualizado correctamente', 'success');
                 
                 // Resetear modo edición
@@ -735,17 +763,29 @@ export class AdminPanel {
                 
             } else {
                 // Insertar nuevo partido
-                const { error } = await this.supabase
+                const { data: insertedMatch, error } = await this.supabase
                     .from('matches')
-                    .insert(matchData);
+                    .insert(matchData)
+                    .select()
+                    .single();
 
                 if (error) throw error;
+
+                // Log de auditoría
+                await this.logger.logMatchCreated(
+                    { ...matchData, id: insertedMatch.id },
+                    user?.id
+                );
 
                 this.showNotification('✅ Partido guardado correctamente', 'success');
             }
 
             // Limpiar formulario
             document.getElementById('match-form').reset();
+            
+            // Regenerar token CSRF
+            const matchForm = document.getElementById('match-form');
+            this.csrf.addTokenToForm(matchForm);
             
             // Limpiar jugadores extras
             document.getElementById('blue-players-extras').innerHTML = '';

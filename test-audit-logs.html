@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Audit Logs - Diagnóstico</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .status.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .test-section h2 {
+            color: #34495e;
+            margin-top: 0;
+        }
+        #logs {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 Diagnóstico de Audit Logs</h1>
+        
+        <div class="test-section">
+            <h2>1. Verificar Conexión a Supabase</h2>
+            <button onclick="testConnection()">🔌 Test Conexión</button>
+            <div id="connection-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Verificar Tabla audit_logs</h2>
+            <button onclick="testTableExists()">📋 Verificar Tabla</button>
+            <div id="table-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Test de Inserción Directa</h2>
+            <button onclick="testDirectInsert()">➕ Insertar Log de Prueba</button>
+            <div id="insert-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Test con AuditLogger</h2>
+            <button onclick="testAuditLogger()">📝 Test Logger</button>
+            <div id="logger-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Ver Logs Recientes</h2>
+            <button onclick="viewRecentLogs()">👁️ Ver Logs</button>
+            <div id="logs"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>6. Verificar Permisos RLS</h2>
+            <button onclick="testRLS()">🔒 Test RLS</button>
+            <div id="rls-status"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        import { config } from './js/config.js';
+        import { AuditLogger } from './js/utils/logger.js';
+
+        // Cliente Supabase global
+        window.supabase = createClient(config.supabase.url, config.supabase.anonKey);
+        window.logger = new AuditLogger(window.supabase);
+
+        console.log('✅ Módulos cargados');
+        console.log('📍 Supabase URL:', config.supabase.url);
+        console.log('🔑 Anon Key:', config.supabase.anonKey.substring(0, 20) + '...');
+
+        // Test 1: Conexión
+        window.testConnection = async function() {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Verificando conexión...</div>';
+
+            try {
+                const { data, error } = await window.supabase
+                    .from('players')
+                    .select('count')
+                    .limit(1);
+
+                if (error) throw error;
+
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Conexión exitosa a Supabase
+                        <br>URL: ${config.supabase.url}
+                    </div>
+                `;
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error de conexión: ${error.message}
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+            }
+        };
+
+        // Test 2: Tabla existe
+        window.testTableExists = async function() {
+            const statusDiv = document.getElementById('table-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Verificando tabla audit_logs...</div>';
+
+            try {
+                const { data, error } = await window.supabase
+                    .from('audit_logs')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    if (error.code === '42P01') { // Table not found
+                        statusDiv.innerHTML = `
+                            <div class="status error">
+                                ❌ La tabla 'audit_logs' NO existe en Supabase
+                                <br><br>
+                                <strong>Solución:</strong>
+                                <ol>
+                                    <li>Abre Supabase Dashboard → SQL Editor</li>
+                                    <li>Copia el contenido de <code>supabase-audit-logs.sql</code></li>
+                                    <li>Ejecuta el script</li>
+                                    <li>Vuelve a probar</li>
+                                </ol>
+                            </div>
+                        `;
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ La tabla 'audit_logs' existe
+                            <br>Registros actuales: ${data[0]?.count || 0}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error verificando tabla: ${error.message}
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+            }
+        };
+
+        // Test 3: Inserción directa
+        window.testDirectInsert = async function() {
+            const statusDiv = document.getElementById('insert-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Insertando registro de prueba...</div>';
+
+            try {
+                const testLog = {
+                    action: 'TEST_INSERT',
+                    table_name: 'test',
+                    record_id: 'test-123',
+                    details: JSON.stringify({ test: true, timestamp: new Date().toISOString() }),
+                    user_id: null,
+                    ip_address: 'test',
+                    user_agent: navigator.userAgent,
+                    timestamp: new Date().toISOString()
+                };
+
+                console.log('📤 Insertando:', testLog);
+
+                const { data, error } = await window.supabase
+                    .from('audit_logs')
+                    .insert([testLog])
+                    .select();
+
+                if (error) throw error;
+
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Inserción exitosa!
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                console.log('✅ Insert exitoso:', data);
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error en inserción: ${error.message}
+                        <br><strong>Código:</strong> ${error.code}
+                        <br><strong>Detalles:</strong> ${error.details || 'N/A'}
+                        <br><strong>Hint:</strong> ${error.hint || 'N/A'}
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+                console.error('❌ Insert falló:', error);
+            }
+        };
+
+        // Test 4: AuditLogger
+        window.testAuditLogger = async function() {
+            const statusDiv = document.getElementById('logger-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Probando AuditLogger...</div>';
+
+            try {
+                console.log('🧪 Testing AuditLogger...');
+                const result = await window.logger.log(
+                    'TEST_LOGGER',
+                    { message: 'Test from diagnostic page', timestamp: new Date().toISOString() },
+                    null,
+                    'test_table',
+                    'test-456'
+                );
+
+                console.log('📊 Resultado:', result);
+
+                if (result.success) {
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ AuditLogger funciona correctamente!
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ AuditLogger retornó error:
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Excepción en AuditLogger: ${error.message}
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+                console.error('❌ Logger exception:', error);
+            }
+        };
+
+        // Test 5: Ver logs
+        window.viewRecentLogs = async function() {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerHTML = '<div class="status info">⏳ Cargando logs...</div>';
+
+            try {
+                const { data, error } = await window.supabase
+                    .from('audit_logs')
+                    .select('*')
+                    .order('timestamp', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                if (data.length === 0) {
+                    logsDiv.innerHTML = `
+                        <div class="status info">
+                            ℹ️ No hay logs en la tabla (aún)
+                        </div>
+                    `;
+                } else {
+                    logsDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ ${data.length} logs encontrados
+                        </div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                logsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error consultando logs: ${error.message}
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+            }
+        };
+
+        // Test 6: RLS
+        window.testRLS = async function() {
+            const statusDiv = document.getElementById('rls-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Verificando políticas RLS...</div>';
+
+            try {
+                // Verificar si podemos SELECT (debería fallar si no somos admin)
+                const { data: selectData, error: selectError } = await window.supabase
+                    .from('audit_logs')
+                    .select('*')
+                    .limit(1);
+
+                // Verificar si podemos INSERT (debería funcionar siempre)
+                const { data: insertData, error: insertError } = await window.supabase
+                    .from('audit_logs')
+                    .insert([{
+                        action: 'TEST_RLS',
+                        details: JSON.stringify({ test: true }),
+                        ip_address: 'test',
+                        user_agent: 'test',
+                        timestamp: new Date().toISOString()
+                    }])
+                    .select();
+
+                let html = '<div>';
+                
+                if (selectError) {
+                    html += `<div class="status info">
+                        ℹ️ SELECT bloqueado (normal si no eres admin)
+                        <br>Error: ${selectError.message}
+                    </div>`;
+                } else {
+                    html += `<div class="status success">
+                        ✅ SELECT permitido (eres admin o RLS deshabilitado)
+                    </div>`;
+                }
+
+                if (insertError) {
+                    html += `<div class="status error">
+                        ❌ INSERT bloqueado (problema de RLS)
+                        <br>Error: ${insertError.message}
+                    </div>`;
+                } else {
+                    html += `<div class="status success">
+                        ✅ INSERT permitido (política correcta)
+                    </div>`;
+                }
+
+                html += '</div>';
+                statusDiv.innerHTML = html;
+
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error en test RLS: ${error.message}
+                    </div>
+                `;
+            }
+        };
+
+        // Auto-ejecutar test de conexión al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Página de diagnóstico cargada');
+        });
+    </script>
+</body>
+</html>

@@ -1,12 +1,15 @@
+import { globalRateLimiter } from './security/rateLimiter.js';
+
 /**
  * DataManager - Gestión centralizada de datos desde Supabase
  */
 export class DataManager {
-    constructor(supabaseClient) {
+    constructor(supabaseClient, rateLimiter = globalRateLimiter) {
         if (!supabaseClient) {
             throw new Error('❌ Supabase client es requerido');
         }
         this.supabase = supabaseClient;
+        this.rateLimiter = rateLimiter;
         this.futsalDataMartes = null;
         this.futsalDataJueves = null;
         this.currentDay = 'martes';
@@ -48,6 +51,13 @@ export class DataManager {
      * Carga datos de un día específico desde Supabase
      */
     async loadDayFromSupabase(day) {
+        // Verificar rate limiting
+        if (!this.rateLimiter.canMakeRequest()) {
+            const status = this.rateLimiter.getStatus();
+            console.warn('⚠️ Rate limit excedido. Reintenta en', status.resetTime - Date.now(), 'ms');
+            throw new Error('Too many requests. Please wait a moment.');
+        }
+
         try {
             // Cargar jugadores fijos desde player_availability con JOIN a tabla players
             const { data: availability, error: availError } = await this.supabase
