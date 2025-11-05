@@ -10,6 +10,7 @@ import {
     calcularContadorNoFijos
 } from '../utils/calculations.js';
 import { renderDaySelector, renderList, renderGraficoVictorias } from '../utils/rendering.js';
+import { SecurityUtils } from '../utils/security.js';
 
 export class EstadisticasView {
     constructor(dataManager, container) {

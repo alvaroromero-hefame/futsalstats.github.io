@@ -2,6 +2,8 @@
  * Rendering - Funciones de renderizado reutilizables
  */
 
+import { SecurityUtils } from './security.js';
+
 /**
  * Renderiza el selector de días (Martes/Jueves)
  * @param {string} currentDay - Día actual seleccionado
@@ -64,22 +66,26 @@ export function renderDetallePartido(match, fijos = []) {
     // Equipo azul
     html += `<div class="lineup-team blue-team"><h4>Azul</h4><ul>`;
     blueLineup.forEach(m => {
+        // Sanitizar nombre del jugador
+        const sanitizedName = SecurityUtils.sanitizeHTML(m.name);
         let fijoIcon = fijos.includes(m.name) ? ' ⭐' : '';
-        const goles = m.goal !== undefined ? m.goal : (m.goles || 0);
-        const asistencias = m.assist !== undefined ? m.assist : (m.asistencias || 0);
-        const encajados = m.keeper !== undefined ? m.keeper : (m.portero || 0);
-        html += `<li>${m.name}${fijoIcon} (Goles: ${goles}, Asistencias: ${asistencias}, Encajados: ${encajados})</li>`;
+        const goles = SecurityUtils.sanitizeNumber(m.goal !== undefined ? m.goal : (m.goles || 0));
+        const asistencias = SecurityUtils.sanitizeNumber(m.assist !== undefined ? m.assist : (m.asistencias || 0));
+        const encajados = SecurityUtils.sanitizeNumber(m.keeper !== undefined ? m.keeper : (m.portero || 0));
+        html += `<li>${sanitizedName}${fijoIcon} (Goles: ${goles}, Asistencias: ${asistencias}, Encajados: ${encajados})</li>`;
     });
     html += `</ul></div>`;
     
     // Equipo rojo
     html += `<div class="lineup-team red-team"><h4>Rojo</h4><ul>`;
     redLineup.forEach(m => {
+        // Sanitizar nombre del jugador
+        const sanitizedName = SecurityUtils.sanitizeHTML(m.name);
         let fijoIcon = fijos.includes(m.name) ? ' ⭐' : '';
-        const goles = m.goal !== undefined ? m.goal : (m.goles || 0);
-        const asistencias = m.assist !== undefined ? m.assist : (m.asistencias || 0);
-        const encajados = m.keeper !== undefined ? m.keeper : (m.portero || 0);
-        html += `<li>${m.name}${fijoIcon} (Goles: ${goles}, Asistencias: ${asistencias}, Encajados: ${encajados})</li>`;
+        const goles = SecurityUtils.sanitizeNumber(m.goal !== undefined ? m.goal : (m.goles || 0));
+        const asistencias = SecurityUtils.sanitizeNumber(m.assist !== undefined ? m.assist : (m.asistencias || 0));
+        const encajados = SecurityUtils.sanitizeNumber(m.keeper !== undefined ? m.keeper : (m.portero || 0));
+        html += `<li>${sanitizedName}${fijoIcon} (Goles: ${goles}, Asistencias: ${asistencias}, Encajados: ${encajados})</li>`;
     });
     html += `</ul></div>`;
     
@@ -97,7 +103,10 @@ export function renderList(items) {
         return '<li>No hay datos</li>';
     }
     
-    return items.map(item => `<li>${item}</li>`).join('');
+    return items.map(item => {
+        const sanitized = SecurityUtils.sanitizeHTML(String(item));
+        return `<li>${sanitized}</li>`;
+    }).join('');
 }
 
 /**
@@ -106,7 +115,9 @@ export function renderList(items) {
  * @returns {string} HTML del gráfico
  */
 export function renderGraficoVictorias(victorias) {
-    const victoriasTexto = `<span style='color: #36a2eb;'>${victorias.blue}</span> - <span style='color: #ff6384;'>${victorias.red}</span>`;
+    const blueWins = SecurityUtils.sanitizeNumber(victorias.blue, 0);
+    const redWins = SecurityUtils.sanitizeNumber(victorias.red, 0);
+    const victoriasTexto = `<span style='color: #36a2eb;'>${blueWins}</span> - <span style='color: #ff6384;'>${redWins}</span>`;
     return `<p style='font-size: 2.5em; font-weight: bold; text-align: center;'>${victoriasTexto}</p>`;
 }
 

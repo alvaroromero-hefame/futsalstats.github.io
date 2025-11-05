@@ -1,8 +1,9 @@
 /**
- * HistoricoView - Vista de histórico de partidos
+ * HistoricoView - Vista del histórico de partidos
  */
 import { getResultado, getAllMembers } from '../utils/calculations.js';
 import { formatDate, renderDetallePartido } from '../utils/rendering.js';
+import { SecurityUtils } from '../utils/security.js';
 
 export class HistoricoView {
     constructor(dataManager, container) {
@@ -127,9 +128,9 @@ export class HistoricoView {
         // Event listener para botón de búsqueda
         if (filterBtn) {
             filterBtn.onclick = () => {
-                const fecha = document.getElementById('filter-fecha').value;
-                const mvp = document.getElementById('filter-mvp').value.toLowerCase();
-                const lineup = document.getElementById('filter-lineup').value.toLowerCase();
+                const fecha = SecurityUtils.sanitizeHTML(document.getElementById('filter-fecha').value);
+                const mvp = SecurityUtils.sanitizeHTML(document.getElementById('filter-mvp').value.toLowerCase());
+                const lineup = SecurityUtils.sanitizeHTML(document.getElementById('filter-lineup').value.toLowerCase());
 
                 const filtered = matches.filter(match => {
                     let ok = true;

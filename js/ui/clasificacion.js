@@ -4,6 +4,7 @@
 import { calcularClasificacion } from '../utils/calculations.js';
 import { renderDaySelector, renderLeyendaClasificacion } from '../utils/rendering.js';
 import { PlayerStatsModal } from './playerStats.js';
+import { SecurityUtils } from '../utils/security.js';
 
 export class ClasificacionView {
     constructor(dataManager, container) {
@@ -68,6 +69,9 @@ export class ClasificacionView {
             let fijoIcon = '';
             let selectorIcon = '';
             
+            // Sanitizar nombre del jugador
+            const nombreSanitizado = SecurityUtils.sanitizeHTML(j.nombre);
+            
             if (fijos.includes(j.nombre)) {
                 fijoIcon = '⭐';
             }
@@ -86,18 +90,28 @@ export class ClasificacionView {
                 icono = '😭';
             }
             
+            // Sanitizar todos los valores numéricos
+            const puntos = SecurityUtils.sanitizeNumber(j.puntos, 0).toFixed(2);
+            const goles = SecurityUtils.sanitizeNumber(j.goles, 0);
+            const asistencias = SecurityUtils.sanitizeNumber(j.asistencias || 0, 0);
+            const encajados = SecurityUtils.sanitizeNumber(j.encajados, 0);
+            const ganados = SecurityUtils.sanitizeNumber(j.ganados, 0);
+            const empatados = SecurityUtils.sanitizeNumber(j.empatados, 0);
+            const perdidos = SecurityUtils.sanitizeNumber(j.perdidos, 0);
+            const mvps = SecurityUtils.sanitizeNumber(j.mvps || 0, 0);
+            
             html += `
-                <tr class="${clase}" data-player="${j.nombre}" style="cursor: pointer;">
+                <tr class="${clase}" data-player="${SecurityUtils.sanitizeAttribute(j.nombre)}" style="cursor: pointer;">
                     <td data-label="Posición">${idx + 1}</td>
-                    <td data-label="Jugador">${j.nombre} ${icono} ${fijoIcon} ${selectorIcon}</td>
-                    <td data-label="Puntos">${j.puntos.toFixed(2)}</td>
-                    <td data-label="Goles">${j.goles}</td>
-                    <td data-label="Asistencias">${j.asistencias || 0}</td>
-                    <td data-label="Encajados">${j.encajados}</td>
-                    <td data-label="Ganados">${j.ganados}</td>
-                    <td data-label="Empatados">${j.empatados}</td>
-                    <td data-label="Perdidos">${j.perdidos}</td>
-                    <td data-label="MVPs">${j.mvps || 0}</td>
+                    <td data-label="Jugador">${nombreSanitizado} ${icono} ${fijoIcon} ${selectorIcon}</td>
+                    <td data-label="Puntos">${puntos}</td>
+                    <td data-label="Goles">${goles}</td>
+                    <td data-label="Asistencias">${asistencias}</td>
+                    <td data-label="Encajados">${encajados}</td>
+                    <td data-label="Ganados">${ganados}</td>
+                    <td data-label="Empatados">${empatados}</td>
+                    <td data-label="Perdidos">${perdidos}</td>
+                    <td data-label="MVPs">${mvps}</td>
                 </tr>
             `;
         });
