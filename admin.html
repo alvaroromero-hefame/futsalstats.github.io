@@ -58,7 +58,7 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
         import { config } from './js/config.js';
-        import { AdminAuth } from './js/admin/auth.js';
+        import { AuthManager } from './js/auth/authManager.js';
         import { AdminPanel } from './js/admin/panel.js';
         import { DataManager } from './js/dataManager.js';
 
@@ -72,15 +72,13 @@
             }
 
             async init() {
-                // Crear cliente Supabase
-                if (!config.supabase.url || !config.supabase.anonKey) {
-                    this.showError('Supabase no está configurado');
-                    return;
-                }
-
-                this.supabase = createClient(config.supabase.url, config.supabase.anonKey);
-                this.auth = new AdminAuth(this.supabase);
+                // Crear AuthManager (crea su propio cliente Supabase internamente)
+                this.auth = new AuthManager();
+                this.supabase = this.auth.supabase; // Reutilizar el cliente de AuthManager
                 this.dataManager = new DataManager(this.supabase);
+
+                // Inicializar AuthManager
+                await this.auth.init();
 
                 // Verificar parámetro logout
                 const urlParams = new URLSearchParams(window.location.search);
@@ -91,9 +89,17 @@
                 }
 
                 // Verificar sesión existente
-                const hasSession = await this.auth.init();
-                if (hasSession) {
-                    this.showAdminPanel();
+                const authStatus = await this.auth.checkAuth();
+                if (authStatus.authenticated) {
+                    // Verificar que sea admin
+                    const isAdmin = await this.auth.isAdmin();
+                    if (isAdmin) {
+                        this.showAdminPanel();
+                    } else {
+                        this.showError('❌ No tienes permisos de administrador');
+                        await this.auth.logout();
+                        this.showLoginScreen();
+                    }
                 } else {
                     this.showLoginScreen();
                 }
@@ -101,7 +107,15 @@
                 // Escuchar cambios de autenticación
                 this.auth.onAuthStateChange((event, session) => {
                     if (event === 'SIGNED_IN') {
-                        this.showAdminPanel();
+                        // Verificar rol admin antes de mostrar panel
+                        this.auth.isAdmin().then(isAdmin => {
+                            if (isAdmin) {
+                                this.showAdminPanel();
+                            } else {
+                                this.showError('❌ No tienes permisos de administrador');
+                                this.auth.logout();
+                            }
+                        });
                     } else if (event === 'SIGNED_OUT') {
                         this.showLoginScreen();
                     }
