@@ -57,12 +57,23 @@ export function calcularClasificacion(matches, fijos = []) {
             return;
         }
 
+        // NUEVO SISTEMA: Calcular encajados totales por equipo
+        const encajadosBlue = blueLineup.reduce((sum, m) => {
+            const encajados = m.keeper !== undefined ? m.keeper : (m.portero || 0);
+            return sum + encajados;
+        }, 0);
+
+        const encajadosRed = redLineup.reduce((sum, m) => {
+            const encajados = m.keeper !== undefined ? m.keeper : (m.portero || 0);
+            return sum + encajados;
+        }, 0);
+
         // Procesar lineup azul
         blueLineup.forEach(m => {
             if (!jugadores[m.name]) {
                 jugadores[m.name] = crearJugadorVacio();
             }
-            procesarJugador(jugadores[m.name], m, puntosBlue, resultadoBlue);
+            procesarJugador(jugadores[m.name], m, puntosBlue, resultadoBlue, encajadosBlue);
         });
 
         // Procesar lineup rojo
@@ -70,7 +81,7 @@ export function calcularClasificacion(matches, fijos = []) {
             if (!jugadores[m.name]) {
                 jugadores[m.name] = crearJugadorVacio();
             }
-            procesarJugador(jugadores[m.name], m, puntosRed, resultadoRed);
+            procesarJugador(jugadores[m.name], m, puntosRed, resultadoRed, encajadosRed);
         });
     });
 
@@ -117,8 +128,9 @@ function crearJugadorVacio() {
  * @param {Object} member - Datos del miembro del partido
  * @param {number} puntosVictoria - Puntos por victoria/empate
  * @param {string} resultado - 'G', 'E' o 'P'
+ * @param {number} encajadosEquipo - Total de goles encajados por todo el equipo en este partido
  */
-function procesarJugador(jugador, member, puntosVictoria, resultado) {
+function procesarJugador(jugador, member, puntosVictoria, resultado, encajadosEquipo) {
     // Puntos por victoria/empate
     jugador.puntos += puntosVictoria;
     
@@ -132,10 +144,15 @@ function procesarJugador(jugador, member, puntosVictoria, resultado) {
     jugador.puntos += asistencias * 0.25;
     jugador.asistencias += asistencias;
     
-    // Encajados (soportar ambos formatos: keeper y portero)
-    const encajados = member.keeper !== undefined ? member.keeper : (member.portero || 0);
-    jugador.puntos += encajados * -0.25;
-    jugador.encajados += encajados;
+    // NUEVO SISTEMA DE ENCAJADOS: 
+    // Los encajados del equipo se distribuyen entre todos los jugadores
+    // Cada jugador pierde -0.10 por cada gol encajado por el equipo
+    jugador.puntos += encajadosEquipo * -0.10;
+    
+    // Los encajados individuales se siguen registrando para estadísticas
+    // pero solo para el jugador que estuvo de portero
+    const encajadosIndividuales = member.keeper !== undefined ? member.keeper : (member.portero || 0);
+    jugador.encajados += encajadosIndividuales;
     
     // Contar partidos
     if (resultado === 'G') jugador.ganados++;
