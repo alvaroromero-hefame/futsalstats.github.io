@@ -123,7 +123,7 @@ export function renderLeyendaClasificacion() {
                 <li>Empate: +1 punto a cada jugador de ambos equipos</li>
                 <li>Gol marcado: +0.25 puntos por cada gol</li>
                 <li>Asistencia: +0.25 puntos por cada asistencia</li>
-                <li>Gol encajado: -0.25 puntos por cada gol encajado</li>
+                <li>Gol encajado: -0.10 puntos a cada jugador del equipo por cada gol encajado</li>
                 <li>MVP: +1 punto adicional por cada vez que ha sido MVP</li>
                 <li>⭐ Jugador fijo</li>
                 <li>⚽ Próximo seleccionador</li>
