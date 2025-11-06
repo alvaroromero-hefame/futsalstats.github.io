@@ -32,6 +32,7 @@
 		margin-left: 0 !important;
 		padding: 15px !important;
 		padding-top: 100px !important; /* Espacio para el botón flotante */
+		padding-bottom: 80px !important; /* Espacio para el footer */
 		width: 100% !important;
 		box-sizing: border-box !important;
 	}
@@ -327,5 +328,26 @@
 	.sidebar {
 		position: relative;
 		width: 220px;
+	}
+}
+
+/* Footer responsive */
+@media screen and (max-width: 768px) {
+	.app-footer {
+		left: 0 !important; /* Footer a ancho completo en móvil */
+		padding: 12px 15px;
+	}
+
+	.app-footer p {
+		font-size: 0.75em;
+	}
+
+	.app-footer .separator {
+		display: none; /* Ocultar separador en móvil */
+	}
+
+	.app-footer #app-version {
+		display: block;
+		margin-top: 3px;
 	}
 }
