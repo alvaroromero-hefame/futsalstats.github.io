@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Iconos PWA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Generador de Iconos PWA - Futsal Stats</h1>
+    <p>Balón con la bandera de Murcia (rojo con 7 castillos dorados)</p>
+    <p>Haz clic derecho en cada icono y selecciona "Guardar imagen como..." con el nombre indicado.</p>
+    
+    <div id="icons-container"></div>
+    
+    <button onclick="downloadAll()">Generar Todos los Iconos</button>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        function createIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Fondo degradado azul/morado
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const ballRadius = size * 0.38;
+            
+            // Sombra del balón
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = size * 0.02;
+            ctx.shadowOffsetX = size * 0.01;
+            ctx.shadowOffsetY = size * 0.01;
+            
+            // Balón blanco base
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, ballRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Resetear sombra
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Dibujar la bandera de Murcia en el centro del balón
+            const flagRadius = ballRadius * 0.65;
+            const flagX = centerX;
+            const flagY = centerY;
+            
+            // Clip circular para que la bandera se vea dentro del balón
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(flagX, flagY, flagRadius, 0, Math.PI * 2);
+            ctx.clip();
+            
+            // Fondo rojo de la bandera de Murcia
+            ctx.fillStyle = '#C8102E'; // Rojo oficial de Murcia
+            ctx.fillRect(flagX - flagRadius, flagY - flagRadius, flagRadius * 2, flagRadius * 2);
+            
+            // Dibujar los 7 castillos dorados (simplificados)
+            const castleColor = '#FFD700'; // Dorado
+            const castleSize = flagRadius * 0.18;
+            
+            // Función para dibujar un castillo simplificado
+            function drawCastle(x, y, s) {
+                ctx.fillStyle = castleColor;
+                
+                // Torre principal (rectángulo)
+                ctx.fillRect(x - s/2, y - s/2, s, s * 0.8);
+                
+                // Almenas (3 rectángulos pequeños arriba)
+                const alm = s / 4;
+                ctx.fillRect(x - s/2, y - s/2, alm, alm);
+                ctx.fillRect(x - alm/2, y - s/2, alm, alm);
+                ctx.fillRect(x + s/2 - alm, y - s/2, alm, alm);
+                
+                // Puerta (rectángulo oscuro)
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(x - s/4, y, s/2, s/3);
+            }
+            
+            // Posiciones de los 7 castillos en formación tradicional
+            // 4 castillos arriba, 3 abajo
+            const spacing = flagRadius * 0.45;
+            const topY = flagY - spacing * 0.8;
+            const bottomY = flagY + spacing * 0.6;
+            
+            // Fila superior (4 castillos)
+            drawCastle(flagX - spacing * 1.2, topY, castleSize);
+            drawCastle(flagX - spacing * 0.4, topY, castleSize);
+            drawCastle(flagX + spacing * 0.4, topY, castleSize);
+            drawCastle(flagX + spacing * 1.2, topY, castleSize);
+            
+            // Fila inferior (3 castillos)
+            drawCastle(flagX - spacing * 0.8, bottomY, castleSize);
+            drawCastle(flagX, bottomY, castleSize);
+            drawCastle(flagX + spacing * 0.8, bottomY, castleSize);
+            
+            ctx.restore();
+            
+            // Borde del círculo de la bandera
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = size * 0.015;
+            ctx.beginPath();
+            ctx.arc(flagX, flagY, flagRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Costuras del balón (líneas que simulan un balón de fútbol)
+            ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)';
+            ctx.lineWidth = size * 0.008;
+            
+            // Líneas curvas alrededor
+            for (let i = 0; i < 5; i++) {
+                const angle = (Math.PI * 2 * i) / 5;
+                const x1 = centerX + Math.cos(angle) * flagRadius;
+                const y1 = centerY + Math.sin(angle) * flagRadius;
+                const x2 = centerX + Math.cos(angle) * ballRadius * 0.95;
+                const y2 = centerY + Math.sin(angle) * ballRadius * 0.95;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.quadraticCurveTo(
+                    centerX + Math.cos(angle + 0.2) * ballRadius * 0.8,
+                    centerY + Math.sin(angle + 0.2) * ballRadius * 0.8,
+                    x2,
+                    y2
+                );
+                ctx.stroke();
+            }
+            
+            // Brillo del balón (para dar efecto 3D)
+            const shineGradient = ctx.createRadialGradient(
+                centerX - ballRadius * 0.3, 
+                centerY - ballRadius * 0.3, 
+                0,
+                centerX - ballRadius * 0.3, 
+                centerY - ballRadius * 0.3, 
+                ballRadius * 0.6
+            );
+            shineGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            shineGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
+            ctx.fillStyle = shineGradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, ballRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            return canvas;
+        }
+        
+        function displayIcons() {
+            const container = document.getElementById('icons-container');
+            
+            sizes.forEach(size => {
+                const div = document.createElement('div');
+                div.className = 'icon-preview';
+                
+                const canvas = createIcon(size);
+                div.appendChild(canvas);
+                
+                const label = document.createElement('p');
+                label.textContent = `${size}x${size}px`;
+                div.appendChild(label);
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = 'Descargar';
+                downloadBtn.onclick = () => downloadIcon(canvas, size);
+                div.appendChild(downloadBtn);
+                
+                container.appendChild(div);
+            });
+        }
+        
+        function downloadIcon(canvas, size) {
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function downloadAll() {
+            sizes.forEach((size, index) => {
+                setTimeout(() => {
+                    const canvas = createIcon(size);
+                    downloadIcon(canvas, size);
+                }, index * 200); // Delay para no saturar
+            });
+        }
+        
+        // Generar iconos al cargar
+        displayIcons();
+    </script>
+</body>
+</html>
