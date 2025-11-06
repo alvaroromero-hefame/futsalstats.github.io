@@ -7,6 +7,13 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ---
 
+## [3.2.1] - 2024-11-06
+
+### 🔧 Corregido
+- **Cálculo de MVPs en Comparativa**: El conteo de MVPs estaba incorrecto porque buscaba `player.mvp === true` cuando el MVP se almacena como `match.mvp = "Nombre del Jugador"` (string). Ahora compara correctamente con `match.mvp === playerName`.
+
+---
+
 ## [3.2.0] - 2024-11-06
 
 ### 🎯 Añadido

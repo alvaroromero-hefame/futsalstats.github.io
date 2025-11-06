@@ -20,7 +20,7 @@ export const config = {
     // Configuración de la aplicación
     app: {
         defaultDay: 'martes',
-        version: '3.2.0' // v3.2.0 - Comparativa de jugadores con radar charts
+        version: '3.2.1' // v3.2.1 - Fix cálculo MVPs en Comparativa
     }
 };
 
