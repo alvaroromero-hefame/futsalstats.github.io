@@ -158,7 +158,11 @@ export class ComparativaView {
                 totalGoals += (player.goal || player.goles || 0);
                 totalAssists += (player.assist || player.asistencias || 0);
                 totalKeeper += (player.keeper || player.portero || 0);
-                if (player.mvp === true || player.isMvp === true) mvpCount++;
+                
+                // MVP se almacena como string con el nombre del jugador
+                if (match.mvp && match.mvp === playerName) {
+                    mvpCount++;
+                }
             }
         });
 
