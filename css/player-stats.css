@@ -160,4 +160,134 @@
     .stat-value {
         font-size: 28px;
     }
+
+    .advanced-stats-grid {
+        grid-template-columns: 1fr;
+    }
 }
+
+/* ============================================
+   Advanced Stats Section
+   ============================================ */
+
+.advanced-stats-section {
+    margin-top: 30px;
+    padding: 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.advanced-stats-section h3 {
+    color: white;
+    font-size: 24px;
+    margin: 0 0 25px 0;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.advanced-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+.stat-card.advanced-stat {
+    background: white;
+    border: none;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-card.advanced-stat:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card.advanced-stat h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+    font-weight: 600;
+}
+
+.advanced-stat-value {
+    text-align: center;
+    font-size: 18px;
+    color: #555;
+    line-height: 1.6;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.advanced-stat-value strong {
+    color: #667eea;
+    font-size: 20px;
+}
+
+.advanced-stat-value .streak-emoji {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.advanced-stat-value .partner-name {
+    font-weight: bold;
+    color: #667eea;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.advanced-stat-value .partner-details {
+    font-size: 14px;
+    color: #777;
+}
+
+.advanced-stat-value .mvp-percentage {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.advanced-stat-value .mvp-percentage.high {
+    color: #10b981;
+}
+
+.advanced-stat-value .mvp-percentage.medium {
+    color: #f59e0b;
+}
+
+.advanced-stat-value .mvp-percentage.low {
+    color: #ef4444;
+}
+
+.advanced-stat-value .mvp-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.stat-card.team-blue {
+    border-left: 4px solid #3b82f6;
+}
+
+.stat-card.team-red {
+    border-left: 4px solid #ef4444;
+}
+
+.advanced-stat-value .team-stat-line {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 5px 0;
+    font-size: 14px;
+}
+
+.advanced-stat-value .team-stat-line strong {
+    font-size: 16px;
+}
+

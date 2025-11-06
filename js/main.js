@@ -9,6 +9,7 @@ import { HistoricoView } from './ui/historico.js';
 import { EstadisticasView } from './ui/estadisticas.js';
 import { SimuladorView } from './ui/simulador.js';
 import { AnalisisIAView } from './ui/analisisIA.js';
+import { initAdvancedStats } from './utils/advancedStats.js';
 import { config } from './config.js';
 
 /**
@@ -45,6 +46,9 @@ class FutsalApp {
 
         // Mostrar fuente de datos en la UI
         this.showDataSourceInfo();
+        
+        // Inicializar módulo de estadísticas avanzadas
+        initAdvancedStats(this.dataManager);
         
         // Inicializar componentes UI
         this.sidebarManager = new SidebarManager();

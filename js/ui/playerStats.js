@@ -2,6 +2,8 @@
  * PlayerStatsModal - Modal con estadísticas detalladas del jugador
  */
 
+import { globalAdvancedStats } from '../utils/advancedStats.js';
+
 export class PlayerStatsModal {
     constructor(dataManager) {
         this.dataManager = dataManager;
@@ -9,12 +11,13 @@ export class PlayerStatsModal {
         this.chart1 = null;
         this.chart2 = null;
         this.chart3 = null;
+        this.radarChart = null;
     }
 
     /**
      * Muestra el modal con las estadísticas del jugador
      */
-    show(playerName) {
+    async show(playerName) {
         const data = this.dataManager.getCurrentData();
         console.log('📊 Abriendo stats para:', playerName);
         console.log('📦 Datos disponibles:', data);
@@ -25,7 +28,20 @@ export class PlayerStatsModal {
         }
 
         const stats = this.calculatePlayerStats(playerName, data.matches);
-        console.log('📈 Estadísticas calculadas:', stats);
+        
+        // Obtener estadísticas avanzadas usando la instancia global
+        let advancedStats = null;
+        if (globalAdvancedStats) {
+            try {
+                console.log('🔍 Intentando obtener estadísticas avanzadas para:', playerName);
+                advancedStats = await globalAdvancedStats.getPlayerAdvancedStats(playerName);
+                console.log('📈 Estadísticas avanzadas obtenidas:', advancedStats);
+            } catch (error) {
+                console.error('❌ Error calculando estadísticas avanzadas:', error);
+            }
+        } else {
+            console.warn('⚠️ globalAdvancedStats no está inicializado');
+        }
         
         // Crear modal si no existe
         if (!this.modal) {
@@ -33,14 +49,14 @@ export class PlayerStatsModal {
         }
 
         // Actualizar contenido
-        this.updateModalContent(playerName, stats);
+        this.updateModalContent(playerName, stats, advancedStats);
         
         // Mostrar modal
         this.modal.style.display = 'flex';
         
         // Crear gráficos después de que el modal sea visible
         setTimeout(() => {
-            this.createCharts(stats);
+            this.createCharts(stats, advancedStats);
         }, 100);
     }
 
@@ -89,6 +105,43 @@ export class PlayerStatsModal {
                         <div class="stat-box">
                             <span class="stat-value" id="stat-win-rate">0%</span>
                             <span class="stat-label">% Victorias</span>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas Avanzadas -->
+                    <div class="advanced-stats-section full-width">
+                        <h3>🎯 Estadísticas Avanzadas</h3>
+                        
+                        <div class="advanced-stats-grid">
+                            <!-- Racha Actual -->
+                            <div class="stat-card advanced-stat">
+                                <h4>🔥 Racha Actual</h4>
+                                <div id="stat-streak" class="advanced-stat-value">-</div>
+                            </div>
+
+                            <!-- Mejor Compañero -->
+                            <div class="stat-card advanced-stat">
+                                <h4>🤝 Mejor Compañero</h4>
+                                <div id="stat-best-partner" class="advanced-stat-value">-</div>
+                            </div>
+
+                            <!-- Probabilidad MVP -->
+                            <div class="stat-card advanced-stat">
+                                <h4>⭐ Probabilidad MVP</h4>
+                                <div id="stat-mvp-probability" class="advanced-stat-value">-</div>
+                            </div>
+
+                            <!-- Rendimiento Equipo Azul -->
+                            <div class="stat-card advanced-stat team-blue">
+                                <h4>🔵 Equipo Azul</h4>
+                                <div id="stat-team-blue" class="advanced-stat-value">-</div>
+                            </div>
+
+                            <!-- Rendimiento Equipo Rojo -->
+                            <div class="stat-card advanced-stat team-red">
+                                <h4>🔴 Equipo Rojo</h4>
+                                <div id="stat-team-red" class="advanced-stat-value">-</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -214,13 +267,72 @@ export class PlayerStatsModal {
     /**
      * Actualiza el contenido del modal
      */
-    updateModalContent(playerName, stats) {
+    updateModalContent(playerName, stats, advancedStats = null) {
         document.getElementById('player-stats-title').textContent = `Estadísticas de ${playerName}`;
         document.getElementById('stat-total-matches').textContent = stats.totals.matches;
         document.getElementById('stat-total-goals').textContent = stats.totals.goals;
         document.getElementById('stat-total-assists').textContent = stats.totals.assists;
         document.getElementById('stat-total-keeper').textContent = stats.totals.keeper;
         document.getElementById('stat-win-rate').textContent = `${stats.totals.winRate}%`;
+        
+        // Actualizar estadísticas avanzadas si están disponibles
+        if (advancedStats) {
+            // Racha actual
+            const streakEl = document.getElementById('stat-streak');
+            if (streakEl) {
+                streakEl.innerHTML = `${advancedStats.streak.emoji} ${advancedStats.streak.label}`;
+            }
+            
+            // Mejor compañero
+            const partnerEl = document.getElementById('stat-best-partner');
+            if (partnerEl && advancedStats.bestPartner.name !== 'N/A') {
+                partnerEl.innerHTML = `
+                    <strong>${advancedStats.bestPartner.name}</strong><br>
+                    <small>${advancedStats.bestPartner.winRate}% WR (${advancedStats.bestPartner.wins}/${advancedStats.bestPartner.matches} partidos)</small>
+                `;
+            } else if (partnerEl) {
+                partnerEl.innerHTML = '<small>Faltan datos (mín. 3 partidos juntos)</small>';
+            }
+            
+            // Rendimiento por equipo
+            const teamBlueEl = document.getElementById('stat-team-blue');
+            const teamRedEl = document.getElementById('stat-team-red');
+            if (teamBlueEl && teamRedEl) {
+                const blue = advancedStats.teamPerformance.blue;
+                const red = advancedStats.teamPerformance.red;
+                
+                teamBlueEl.innerHTML = `
+                    <div class="team-stat-header">🔵 Equipo Azul</div>
+                    <div class="team-stat-content">
+                        <span>Partidos: <strong>${blue.matches}</strong></span>
+                        <span>WR: <strong>${blue.winRate}%</strong></span>
+                        <span>Goles/Partido: <strong>${blue.goalsPerMatch}</strong></span>
+                    </div>
+                `;
+                
+                teamRedEl.innerHTML = `
+                    <div class="team-stat-header">🔴 Equipo Rojo</div>
+                    <div class="team-stat-content">
+                        <span>Partidos: <strong>${red.matches}</strong></span>
+                        <span>WR: <strong>${red.winRate}%</strong></span>
+                        <span>Goles/Partido: <strong>${red.goalsPerMatch}</strong></span>
+                    </div>
+                `;
+            }
+            
+            // MVP Probability
+            const mvpProbEl = document.getElementById('stat-mvp-probability');
+            if (mvpProbEl) {
+                const prob = advancedStats.mvpProbability;
+                const color = prob >= 70 ? '#10b981' : prob >= 40 ? '#f59e0b' : '#ef4444';
+                mvpProbEl.innerHTML = `
+                    <div style="font-size: 32px; font-weight: bold; color: ${color}">
+                        ${prob}%
+                    </div>
+                    <small>Probabilidad de ser MVP</small>
+                `;
+            }
+        }
     }
 
     /**
