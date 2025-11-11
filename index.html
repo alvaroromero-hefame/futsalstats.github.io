@@ -66,7 +66,11 @@
 	<div id="mobile-backdrop" class="mobile-backdrop"></div>
 	
 	<div id="main-content" class="main-content">
-		<!-- El contenido se cargará dinámicamente aquí -->
+		<!-- Loading inicial -->
+		<div id="initial-loading" class="initial-loading">
+			<div class="loading-spinner"></div>
+			<p>Cargando datos...</p>
+		</div>
 	</div>
 	
 	<!-- Footer con versión -->
@@ -76,6 +80,8 @@
 			<span id="app-version">v3.2.1</span>
 			<span class="separator">•</span>
 			<span>Estadísticas avanzadas con IA</span>
+			<span class="separator">•</span>
+			<span id="data-source-badge" class="data-source-badge">🔄 Conectando...</span>
 		</p>
 	</footer>
 	

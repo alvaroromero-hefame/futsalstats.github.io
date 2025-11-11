@@ -336,18 +336,22 @@
 	.app-footer {
 		left: 0 !important; /* Footer a ancho completo en móvil */
 		padding: 12px 15px;
+		font-size: 0.75em;
 	}
 
 	.app-footer p {
 		font-size: 0.75em;
+		line-height: 1.6;
 	}
 
 	.app-footer .separator {
-		display: none; /* Ocultar separador en móvil */
+		margin: 0 5px;
 	}
 
-	.app-footer #app-version {
-		display: block;
-		margin-top: 3px;
+	.app-footer #app-version,
+	.app-footer .data-source-badge {
+		display: inline-block;
+		margin: 2px;
+		font-size: 0.9em;
 	}
 }

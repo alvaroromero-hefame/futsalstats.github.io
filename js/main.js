@@ -40,12 +40,18 @@ class FutsalApp {
         // Cargar datos (intentará Supabase primero, luego JSON)
         const dataLoaded = await this.dataManager.loadData();
         
+        // Ocultar loading inicial
+        const loadingEl = document.getElementById('initial-loading');
+        if (loadingEl) {
+            loadingEl.style.display = 'none';
+        }
+        
         if (!dataLoaded) {
             this.showError('No se pudieron cargar los datos. Verifica tu conexión.');
             return;
         }
 
-        // Mostrar fuente de datos en la UI
+        // Mostrar fuente de datos en la UI (ahora en el footer)
         this.showDataSourceInfo();
         
         // Inicializar módulo de estadísticas avanzadas
@@ -125,26 +131,12 @@ class FutsalApp {
      * Muestra información sobre la fuente de datos en uso
      */
     showDataSourceInfo() {
-        const badge = document.createElement('div');
-        badge.id = 'data-source-badge';
-        badge.style.cssText = `
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        `;
+        const badge = document.getElementById('data-source-badge');
+        if (!badge) return;
 
         // Solo Supabase disponible ahora
         badge.textContent = '🟢 Supabase';
-        badge.style.backgroundColor = '#10b981';
-        badge.style.color = 'white';
-
-        document.body.appendChild(badge);
+        badge.classList.add('connected');
     }
 
     /**
@@ -211,6 +203,14 @@ class FutsalApp {
      * @param {string} message - Mensaje de error a mostrar
      */
     showError(message) {
+        // Actualizar badge de conexión
+        const badge = document.getElementById('data-source-badge');
+        if (badge) {
+            badge.textContent = '🔴 Error';
+            badge.classList.remove('connected');
+            badge.classList.add('error');
+        }
+        
         this.mainContent.innerHTML = `
             <div style="padding: 20px; text-align: center;">
                 <h2 style="color: #ef4444;">❌ Error</h2>
