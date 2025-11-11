@@ -13,6 +13,7 @@
 		left: 0 !important;
 		top: 0 !important;
 		height: 100vh !important;
+		padding-top: 80px !important; /* Espacio para el botón de menú */
 	}
 	
 	.sidebar.mobile-open {
@@ -55,6 +56,7 @@
 		top: 25px;
 		left: 25px;
 		transition: all 0.3s ease;
+		z-index: 3000 !important; /* Por encima del sidebar */
 	}
 	
 	.toggle-btn:hover, .toggle-btn:active {
@@ -166,6 +168,12 @@
 	.lineup-team li {
 		padding: 10px 0;
 		font-size: 1.1em;
+	}
+	
+	/* Menú móvil - ajustar el margen superior para que no se oculte detrás del botón */
+	.menu {
+		margin-top: 20px !important;
+		padding-top: 0 !important;
 	}
 	
 	/* Mobile menu improvements */
