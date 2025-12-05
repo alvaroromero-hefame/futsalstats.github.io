@@ -30,17 +30,26 @@ class FutsalApp {
      */
     async init() {
         console.log('🚀 Iniciando FutsalStats...');
+        console.log('📍 Entorno:', window.location.hostname);
+        console.log('📍 URL completa:', window.location.href);
+        console.log('📦 Configuración Supabase URL:', config.supabase.url);
+        console.log('📦 Configuración Supabase Key (primeros 20 chars):', config.supabase.anonKey?.substring(0, 20) + '...');
 
         // Intentar inicializar Supabase
+        console.log('⏳ Intentando conectar a Supabase...');
         const supabaseConnected = await this.initSupabase();
+        console.log('✓ initSupabase completado. Conectado:', supabaseConnected);
         
         // Inicializar DataManager con o sin Supabase
         this.dataManager = new DataManager(this.supabase);
         
         // Cargar datos (intentará Supabase primero, luego JSON)
+        console.log('⏳ Cargando datos...');
         const dataLoaded = await this.dataManager.loadData();
+        console.log('✓ loadData completado. Datos cargados:', dataLoaded);
         
         // Ocultar loading inicial
+        console.log('⏳ Ocultando pantalla de carga...');
         const loadingEl = document.getElementById('initial-loading');
         if (loadingEl) {
             loadingEl.style.display = 'none';
@@ -83,23 +92,35 @@ class FutsalApp {
      */
     async initSupabase() {
         try {
+            console.log('🔍 Iniciando initSupabase...');
+            
             // Validar configuración
             if (!config.supabase.url || !config.supabase.anonKey) {
                 console.warn('⚠️ Supabase no configurado. Usando datos locales (JSON)');
+                console.warn('⚠️ URL:', config.supabase.url);
+                console.warn('⚠️ Key:', config.supabase.anonKey ? 'existe' : 'no existe');
                 return false;
             }
 
+            console.log('⏳ Cargando cliente de Supabase desde CDN...');
             // Cargar el cliente de Supabase desde CDN
             const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+            console.log('✓ Cliente de Supabase cargado');
             
             // Crear cliente
+            console.log('⏳ Creando cliente de Supabase...');
             this.supabase = createClient(config.supabase.url, config.supabase.anonKey);
+            console.log('✓ Cliente de Supabase creado');
             
             // Verificar conexión haciendo una query simple
+            console.log('⏳ Verificando conexión con query de prueba...');
             const { data, error } = await this.supabase
                 .from('matches')
                 .select('id', { count: 'exact', head: true })
                 .limit(1);
+
+            console.log('✓ Query completada. Error:', error ? error.message : 'ninguno');
+            console.log('✓ Data:', data);
 
             if (error) {
                 // Si el error es "tabla no encontrada", la conexión funciona pero faltan tablas
@@ -121,6 +142,9 @@ class FutsalApp {
 
         } catch (error) {
             console.error('❌ Error conectando a Supabase:', error.message);
+            console.error('❌ Error completo:', error);
+            console.error('❌ Stack:', error.stack);
+            console.error('❌ Tipo de error:', error.name);
             console.log('📝 Continuando con datos locales (JSON)');
             this.supabase = null;
             return false;
