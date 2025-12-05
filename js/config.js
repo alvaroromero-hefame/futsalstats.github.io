@@ -14,7 +14,7 @@ export const config = {
         // 2. Selecciona tu proyecto
         // 3. Settings → API → Copia "anon public key"
         // 4. Pégala aquí (es segura, está diseñada para usarse en frontend)
-        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xcWJldXdleXhhdHN4anNlcG5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NzE0ODEsImV4cCI6MjA3NzM0NzQ4MX0.ZWrWEX9_55wIeew8p4Ar0zojHUMf7_2mtsuNI4aws_Y'
+        anonKey: 'sb_publishable_lo3mmXzOCwyfYg2NnMBS3Q_v2eCoVpO'
     },
     
     // Configuración de la aplicación
