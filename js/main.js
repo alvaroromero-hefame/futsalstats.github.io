@@ -1,7 +1,7 @@
 /**
  * Main - Punto de entrada principal de la aplicación Futsal Stats
  */
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// Ya no necesitamos importar el SDK de Supabase - usamos REST directo
 import { DataManager } from './dataManager.js';
 import { SidebarManager } from './ui/sidebar.js';
 import { ClasificacionView } from './ui/clasificacion.js';
@@ -102,15 +102,130 @@ class FutsalApp {
                 return false;
             }
 
-            console.log('⏳ Cargando cliente de Supabase desde CDN...');
-            // Cargar el cliente de Supabase desde CDN
-            const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-            console.log('✓ Cliente de Supabase cargado');
+            console.log('⏳ Creando cliente REST para Supabase...');
             
-            // Crear cliente
-            console.log('⏳ Creando cliente de Supabase...');
-            this.supabase = createClient(config.supabase.url, config.supabase.anonKey);
-            console.log('✓ Cliente de Supabase creado');
+            // Crear un cliente REST simple sin dependencias del SDK
+            this.supabase = {
+                from: (table) => {
+                    return {
+                        select: (columns = '*', options = {}) => {
+                            let query = {
+                                table,
+                                columns,
+                                filters: [],
+                                order: null,
+                                limit: null,
+                                single: false,
+                                maybeSingle: false
+                            };
+                            
+                            const builder = {
+                                eq: (column, value) => {
+                                    query.filters.push({ column, operator: 'eq', value });
+                                    return builder;
+                                },
+                                order: (column, opts = {}) => {
+                                    query.order = { column, ascending: opts.ascending !== false };
+                                    return builder;
+                                },
+                                limit: (count) => {
+                                    query.limit = count;
+                                    return builder;
+                                },
+                                single: () => {
+                                    query.single = true;
+                                    return builder;
+                                },
+                                maybeSingle: () => {
+                                    query.maybeSingle = true;
+                                    return builder;
+                                },
+                                then: async (resolve, reject) => {
+                                    try {
+                                        // Construir URL
+                                        let url = `${config.supabase.url}/rest/v1/${table}`;
+                                        let params = new URLSearchParams();
+                                        
+                                        if (columns !== '*') {
+                                            params.append('select', columns);
+                                        }
+                                        
+                                        // Agregar filtros
+                                        query.filters.forEach(f => {
+                                            params.append(f.column, `${f.operator}.${f.value}`);
+                                        });
+                                        
+                                        // Agregar orden
+                                        if (query.order) {
+                                            params.append('order', `${query.order.column}.${query.order.ascending ? 'asc' : 'desc'}`);
+                                        }
+                                        
+                                        // Agregar límite
+                                        if (query.limit) {
+                                            params.append('limit', query.limit);
+                                        }
+                                        
+                                        if (params.toString()) {
+                                            url += '?' + params.toString();
+                                        }
+                                        
+                                        // Hacer request
+                                        const headers = {
+                                            'apikey': config.supabase.anonKey,
+                                            'Authorization': `Bearer ${config.supabase.anonKey}`,
+                                            'Content-Type': 'application/json',
+                                            'Prefer': query.single ? 'return=representation,count=exact' : 'return=representation'
+                                        };
+                                        
+                                        if (options.count) {
+                                            headers['Prefer'] += ',count=exact';
+                                        }
+                                        
+                                        if (options.head) {
+                                            headers['Prefer'] = 'count=exact';
+                                        }
+                                        
+                                        const response = await fetch(url, {
+                                            method: options.head ? 'HEAD' : 'GET',
+                                            headers
+                                        });
+                                        
+                                        if (!response.ok) {
+                                            const errorText = await response.text();
+                                            const error = {
+                                                message: errorText || response.statusText,
+                                                code: response.status.toString(),
+                                                details: errorText
+                                            };
+                                            resolve({ data: null, error });
+                                            return;
+                                        }
+                                        
+                                        let data = null;
+                                        if (!options.head) {
+                                            data = await response.json();
+                                            
+                                            if (query.single || query.maybeSingle) {
+                                                if (Array.isArray(data)) {
+                                                    data = data.length > 0 ? data[0] : null;
+                                                }
+                                            }
+                                        }
+                                        
+                                        resolve({ data, error: null });
+                                    } catch (error) {
+                                        reject(error);
+                                    }
+                                }
+                            };
+                            
+                            return builder;
+                        }
+                    };
+                }
+            };
+            
+            console.log('✓ Cliente REST creado');
             
             // Verificar conexión haciendo una query simple
             console.log('⏳ Verificando conexión con query de prueba...');
@@ -126,7 +241,8 @@ class FutsalApp {
                 // Si el error es "tabla no encontrada", la conexión funciona pero faltan tablas
                 if (error.message.includes('does not exist') || 
                     error.message.includes('Could not find') ||
-                    error.code === 'PGRST116') {
+                    error.code === 'PGRST116' ||
+                    error.code === '404') {
                     console.log('✅ Conexión a Supabase establecida correctamente');
                     console.warn('⚠️ Las tablas aún no existen. Ejecuta el script supabase-init.sql');
                     console.warn('📝 Ve a: SQL Editor > New Query > Pega el contenido > Run');
