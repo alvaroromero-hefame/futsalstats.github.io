@@ -22,7 +22,7 @@
     <!-- Security Headers -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://esm.sh https://unpkg.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https:;
@@ -72,7 +72,8 @@
     </div>
 
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        // Usar versión específica estable del SDK de Supabase para admin
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
         import { config } from './js/config.js';
         import { AuthManager } from './js/auth/authManager.js';
         import { AdminPanel } from './js/admin/panel.js';

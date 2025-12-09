@@ -2,7 +2,7 @@
  * AuthManager - Gestión de autenticación con Supabase
  */
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 import { config } from '../config.js';
 import { loginRateLimiter } from '../security/rateLimiter.js';
 import { AuditLogger } from '../utils/logger.js';
