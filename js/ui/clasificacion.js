@@ -51,6 +51,7 @@ export class ClasificacionView {
                         <th>Posición</th>
                         <th>Jugador</th>
                         <th>Puntos</th>
+                        <th>Pts/Partido</th>
                         <th>Goles</th>
                         <th>Asistencias</th>
                         <th>Encajados</th>
@@ -99,12 +100,15 @@ export class ClasificacionView {
             const empatados = SecurityUtils.sanitizeNumber(j.empatados, 0);
             const perdidos = SecurityUtils.sanitizeNumber(j.perdidos, 0);
             const mvps = SecurityUtils.sanitizeNumber(j.mvps || 0, 0);
+            const partidos = ganados + empatados + perdidos;
+            const puntosPerPartido = partidos > 0 ? (SecurityUtils.sanitizeNumber(j.puntos, 0) / partidos).toFixed(2) : '0.00';
             
             html += `
                 <tr class="${clase}" data-player="${SecurityUtils.sanitizeAttribute(j.nombre)}" style="cursor: pointer;">
                     <td data-label="Posición">${idx + 1}</td>
                     <td data-label="Jugador">${nombreSanitizado} ${icono} ${fijoIcon} ${selectorIcon}</td>
                     <td data-label="Puntos">${puntos}</td>
+                    <td data-label="Pts/Partido">${puntosPerPartido}</td>
                     <td data-label="Goles">${goles}</td>
                     <td data-label="Asistencias">${asistencias}</td>
                     <td data-label="Encajados">${encajados}</td>
