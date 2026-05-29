@@ -223,6 +223,26 @@
 			padding: 8px 0;
 		}
 
+		/* ── Suplente ── */
+		.suplente-section {
+			margin-top: 14px;
+			padding-top: 12px;
+			border-top: 1px dashed rgba(255,255,255,.1);
+		}
+		.suplente-label {
+			font-size: .66rem;
+			font-weight: 800;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 8px;
+		}
+		.podium-row.suplente-row .player-name { color: var(--muted); font-weight: 500; }
+		.podium-row.suplente-row .player-stat {
+			background: rgba(255,255,255,.06);
+			color: var(--muted);
+		}
+
 		/* ── Footer ── */
 		.page-footer {
 			text-align: center;
@@ -292,6 +312,17 @@ async function loadMatches(day) {
 		.order('match_date', { ascending: true });
 	if (error) throw error;
 	return data || [];
+}
+
+// ── Load fixed players (titulares) for a day ─────────────────
+async function loadFijos(day) {
+	const { data, error } = await supabase
+		.from('player_availability')
+		.select('players(name)')
+		.eq('day', day)
+		.eq('is_fixed', true);
+	if (error) throw error;
+	return new Set((data || []).map(r => r.players?.name).filter(Boolean));
 }
 
 // ── Build player stats from raw matches ─────────────────────
@@ -381,6 +412,31 @@ function renderPodium(players, statFn, statLabel) {
 		</div>`).join('');
 }
 
+// ── Render titulares top3 + mejor suplente ───────────────────
+function renderBlock(stats, fijos, { filterFn = () => true, sortFn, statFn, statLabel, asc = false }) {
+	const sorted = (arr) => [...arr].sort((a, b) => asc ? sortFn(a) - sortFn(b) : sortFn(b) - sortFn(a));
+
+	const titulares = sorted(stats.filter(p => fijos.has(p.nombre) && filterFn(p))).slice(0, 3);
+	const suplentes = sorted(stats.filter(p => !fijos.has(p.nombre) && filterFn(p)));
+	const bestSup   = suplentes[0] || null;
+
+	let html = renderPodium(titulares, statFn, statLabel);
+
+	if (bestSup) {
+		html += `
+			<div class="suplente-section">
+				<div class="suplente-label">✨ Mejor suplente</div>
+				<div class="podium-row suplente-row">
+					<span class="medal">🌟</span>
+					<span class="player-name">${escHtml(bestSup.nombre)}</span>
+					<span class="player-stat">${statFn(bestSup)} ${statLabel}</span>
+				</div>
+			</div>`;
+	}
+
+	return html;
+}
+
 function escHtml(str) {
 	return String(str)
 		.replace(/&/g, '&amp;')
@@ -419,9 +475,11 @@ function renderCategory({ icon, title, subtitle, martesHtml, juevesHtml }) {
 // ── Main ──────────────────────────────────────────────────────
 async function main() {
 	try {
-		const [matchesMartes, matchesJueves] = await Promise.all([
+		const [matchesMartes, matchesJueves, fijosMartes, fijosJueves] = await Promise.all([
 			loadMatches('martes'),
-			loadMatches('jueves')
+			loadMatches('jueves'),
+			loadFijos('martes'),
+			loadFijos('jueves')
 		]);
 
 		const statsM = buildStats(matchesMartes);
@@ -432,66 +490,67 @@ async function main() {
 				icon: '⭐',
 				title: 'Líderes',
 				subtitle: 'Jugadores con más puntos totales',
-				fn: (stats) => renderPodium(
-					top3(stats, p => p.puntos),
-					p => p.puntos.toFixed(1),
-					'pts'
-				)
+				fn: (stats, fijos) => renderBlock(stats, fijos, {
+					sortFn: p => p.puntos,
+					statFn: p => p.puntos.toFixed(1),
+					statLabel: 'pts'
+				})
 			},
 			{
 				icon: '🏅',
 				title: 'Top MVPs',
 				subtitle: 'Jugadores más valiosos del partido',
-				fn: (stats) => renderPodium(
-					top3(stats.filter(p => p.mvps > 0), p => p.mvps),
-					p => p.mvps,
-					'MVPs'
-				)
+				fn: (stats, fijos) => renderBlock(stats, fijos, {
+					filterFn: p => p.mvps > 0,
+					sortFn: p => p.mvps,
+					statFn: p => p.mvps,
+					statLabel: 'MVPs'
+				})
 			},
 			{
 				icon: '⚽',
 				title: 'Top Goleadores',
 				subtitle: 'Jugadores con más goles',
-				fn: (stats) => renderPodium(
-					top3(stats.filter(p => p.goles > 0), p => p.goles),
-					p => p.goles,
-					'goles'
-				)
+				fn: (stats, fijos) => renderBlock(stats, fijos, {
+					filterFn: p => p.goles > 0,
+					sortFn: p => p.goles,
+					statFn: p => p.goles,
+					statLabel: 'goles'
+				})
 			},
 			{
 				icon: '🎯',
 				title: 'Top Asistentes',
 				subtitle: 'Jugadores con más asistencias',
-				fn: (stats) => renderPodium(
-					top3(stats.filter(p => p.asistencias > 0), p => p.asistencias),
-					p => p.asistencias,
-					'asist.'
-				)
+				fn: (stats, fijos) => renderBlock(stats, fijos, {
+					filterFn: p => p.asistencias > 0,
+					sortFn: p => p.asistencias,
+					statFn: p => p.asistencias,
+					statLabel: 'asist.'
+				})
 			},
 			{
 				icon: '🧤',
 				title: 'Top Porteros',
 				subtitle: `Menor ratio goles encajados/partido (mín. ${MIN_GAMES_PORTERO} partidos como portero)`,
-				fn: (stats) => {
-				// Solo jugadores que hayan jugado de portero (encajados > 0) y partidos suficientes
-				const porteros = stats.filter(p => p.encajados > 0 && p.partidos >= MIN_GAMES_PORTERO);
-					const top = top3(porteros, p => p.ratioEncajados, true /* ascendente */);
-					return renderPodium(
-						top,
-						p => p.ratioEncajados.toFixed(2),
-						'enc/ptdo'
-					);
-				}
+				fn: (stats, fijos) => renderBlock(stats, fijos, {
+					filterFn: p => p.encajados > 0 && p.partidos >= MIN_GAMES_PORTERO,
+					sortFn: p => p.ratioEncajados,
+					statFn: p => p.ratioEncajados.toFixed(2),
+					statLabel: 'enc/ptdo',
+					asc: true
+				})
 			},
 			{
 				icon: '🏃',
 				title: 'Top Jugados',
 				subtitle: 'Jugadores que más partidos han disputado',
-				fn: (stats) => renderPodium(
-					top3(stats.filter(p => p.partidos > 0), p => p.partidos),
-					p => p.partidos,
-					'partidos'
-				)
+				fn: (stats, fijos) => renderBlock(stats, fijos, {
+					filterFn: p => p.partidos > 0,
+					sortFn: p => p.partidos,
+					statFn: p => p.partidos,
+					statLabel: 'partidos'
+				})
 			}
 		];
 
@@ -499,8 +558,8 @@ async function main() {
 			icon: cat.icon,
 			title: cat.title,
 			subtitle: cat.subtitle,
-			martesHtml: cat.fn(statsM),
-			juevesHtml: cat.fn(statsJ)
+			martesHtml: cat.fn(statsM, fijosMartes),
+			juevesHtml: cat.fn(statsJ, fijosJueves)
 		})).join('');
 
 		document.getElementById('app-root').innerHTML = `
