@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<!-- PWA Meta Tags -->
+	<meta name="description" content="Gestión y estadísticas de partidos de fútbol sala">
+	<meta name="theme-color" content="#667eea">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="Futsal Stats">
+	<link rel="manifest" href="/manifest.json">
+	
+	<!-- Apple Touch Icons -->
+	<link rel="apple-touch-icon" href="/icons/icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+	
+	<!-- Favicon -->
+	<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
+	
+	<!-- Security Headers -->
+	<meta http-equiv="Content-Security-Policy" content="
+		default-src 'self';
+		script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://esm.sh https://unpkg.com;
+		style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+		font-src 'self' https://fonts.gstatic.com;
+		img-src 'self' data: https:;
+		connect-src 'self' https://cdn.jsdelivr.net https://nqqbeuweyxatsxjsepnj.supabase.co https://*.supabase.co;
+		base-uri 'self';
+		form-action 'self';
+	">
+	<meta http-equiv="X-Content-Type-Options" content="nosniff">
+	<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">"
+	
+	<title>Futsal Stats</title>
+	<!-- CSS modularizado -->
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/sidebar.css">
+	<link rel="stylesheet" href="css/tables.css">
+	<link rel="stylesheet" href="css/mobile.css">
+	<link rel="stylesheet" href="css/player-stats.css">
+	<link rel="stylesheet" href="css/simulador.css">
+	<link rel="stylesheet" href="css/analisisIA.css">
+	<link rel="stylesheet" href="css/comparativa.css">
+	
+	<!-- Chart.js -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+	<!-- Toggle button outside sidebar so it's always visible -->
+	<button id="toggleBtn" class="toggle-btn">☰</button>
+	
+	<div id="sidebar" class="sidebar">
+		<ul class="menu">
+			<li><a href="#" id="menu-clasificacion">🏆 Clasificación</a></li>
+			<li><a href="#" id="menu-historico">📅 Histórico</a></li>
+			<li><a href="#" id="menu-estadisticas">📊 Estadísticas</a></li>
+			<li><a href="#" id="menu-comparativa">🔍 Comparativa</a></li>
+			<li><a href="#" id="menu-simulador">🎮 Simulador</a></li>
+			<li><a href="#" id="menu-analisis-ia">🤖 Análisis IA</a></li>
+		</ul>
+	</div>
+	
+	<div id="mobile-backdrop" class="mobile-backdrop"></div>
+	
+	<div id="main-content" class="main-content">
+		<!-- Loading inicial -->
+		<div id="initial-loading" class="initial-loading">
+			<div class="loading-spinner"></div>
+			<p>Cargando datos...</p>
+		</div>
+	</div>
+	
+	<!-- Footer con versión -->
+	<footer id="app-footer" class="app-footer">
+		<p>
+			⚽ <strong>Futsal Stats</strong> 
+			<span id="app-version">v3.2.1</span>
+			<span class="separator">•</span>
+			<span>Estadísticas avanzadas con IA</span>
+			<span class="separator">•</span>
+			<span id="data-source-badge" class="data-source-badge">🔄 Conectando...</span>
+		</p>
+	</footer>
+	
+	<!-- JavaScript modularizado con ES6 modules -->
+	<script type="module" src="js/main.js"></script>
+	
+	<!-- PWA Service Worker Registration -->
+	<script>
+		// Registrar Service Worker para PWA
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', () => {
+				navigator.serviceWorker.register('/sw.js')
+					.then(registration => {
+						console.log('✅ Service Worker registrado:', registration.scope);
+						
+						// Detectar actualizaciones del SW
+						registration.addEventListener('updatefound', () => {
+							const newWorker = registration.installing;
+							newWorker.addEventListener('statechange', () => {
+								if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+									// Hay una nueva versión disponible
+									if (confirm('Hay una actualización disponible. ¿Recargar la página?')) {
+										newWorker.postMessage({ type: 'SKIP_WAITING' });
+										window.location.reload();
+									}
+								}
+							});
+						});
+					})
+					.catch(error => {
+						console.error('❌ Error al registrar Service Worker:', error);
+					});
+				
+				// Detectar cuando el SW toma control
+				navigator.serviceWorker.addEventListener('controllerchange', () => {
+					console.log('🔄 Service Worker actualizado, recargando...');
+					window.location.reload();
+				});
+			});
+		}
+		
+		// Detectar instalación de PWA
+		let deferredPrompt;
+		window.addEventListener('beforeinstallprompt', (e) => {
+			// Prevenir el mini-infobar de Chrome
+			e.preventDefault();
+			deferredPrompt = e;
+			
+			// Mostrar botón de instalación personalizado (opcional)
+			console.log('💡 PWA puede ser instalada');
+			showInstallPromotion();
+		});
+		
+		// Función para mostrar promoción de instalación
+		function showInstallPromotion() {
+			// Crear banner de instalación solo una vez
+			if (localStorage.getItem('pwa-install-dismissed')) {
+				return;
+			}
+			
+			const banner = document.createElement('div');
+			banner.id = 'install-banner';
+			banner.style.cssText = `
+				position: fixed;
+				bottom: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				padding: 15px 25px;
+				border-radius: 12px;
+				box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+				z-index: 10000;
+				display: flex;
+				align-items: center;
+				gap: 15px;
+				animation: slideUp 0.3s ease-out;
+				max-width: 90%;
+			`;
+			
+			banner.innerHTML = `
+				<span>📱 Instala Futsal Stats en tu dispositivo</span>
+				<button id="install-button" style="
+					background: white;
+					color: #667eea;
+					border: none;
+					padding: 8px 16px;
+					border-radius: 6px;
+					font-weight: bold;
+					cursor: pointer;
+				">Instalar</button>
+				<button id="dismiss-button" style="
+					background: transparent;
+					color: white;
+					border: 1px solid white;
+					padding: 8px 16px;
+					border-radius: 6px;
+					cursor: pointer;
+				">Ahora no</button>
+			`;
+			
+			document.body.appendChild(banner);
+			
+			// Evento de instalación
+			document.getElementById('install-button').addEventListener('click', async () => {
+				if (deferredPrompt) {
+					deferredPrompt.prompt();
+					const { outcome } = await deferredPrompt.userChoice;
+					console.log(`User response to install prompt: ${outcome}`);
+					deferredPrompt = null;
+				}
+				banner.remove();
+			});
+			
+			// Evento de dismissal
+			document.getElementById('dismiss-button').addEventListener('click', () => {
+				localStorage.setItem('pwa-install-dismissed', 'true');
+				banner.remove();
+			});
+		}
+		
+		// Detectar cuando la app se instala
+		window.addEventListener('appinstalled', () => {
+			console.log('✅ PWA instalada correctamente');
+			deferredPrompt = null;
+		});
+		
+		// Animación CSS para el banner
+		const style = document.createElement('style');
+		style.textContent = `
+			@keyframes slideUp {
+				from {
+					transform: translateX(-50%) translateY(100px);
+					opacity: 0;
+				}
+				to {
+					transform: translateX(-50%) translateY(0);
+					opacity: 1;
+				}
+			}
+		`;
+		document.head.appendChild(style);
+	</script>
+</body>
+</html>

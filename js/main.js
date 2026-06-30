@@ -244,7 +244,7 @@ class FutsalApp {
                     error.code === 'PGRST116' ||
                     error.code === '404') {
                     console.log('✅ Conexión a Supabase establecida correctamente');
-                    console.warn('⚠️ Las tablas aún no existen. Ejecuta el script supabase-init.sql');
+                    console.warn('⚠️ Las tablas aún no existen. Ejecuta el script sql/supabase-init.sql');
                     console.warn('📝 Ve a: SQL Editor > New Query > Pega el contenido > Run');
                     return true; // Conexión OK, solo faltan tablas
                 }
