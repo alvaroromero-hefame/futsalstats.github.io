@@ -811,6 +811,12 @@
     color: #4b5563;
 }
 
+.player-badge.availability-badge {
+    padding: 2px 7px;
+    font-size: 11px;
+    flex: 0 0 auto;
+}
+
 /* Maestro de jugadores */
 .players-management-header {
     display: flex;

@@ -706,10 +706,50 @@ export class AdminPanel {
                 .order('name');
             if (error) throw error;
             this.allPlayers = data || [];
+            await this.loadMasterAvailabilityBadges();
             this.renderMasterList();
         } catch (error) {
             console.error('Error cargando maestro de jugadores:', error);
             this.showNotification('Error cargando maestro', 'error');
+        }
+    }
+
+    /**
+     * Para cada jugador del maestro, calcula si es fijo/eventual en martes y/o
+     * jueves dentro de la temporada activa de cada día (o "sin temporada" si
+     * ningún día tiene una activa). Alimenta this.masterAvailability como
+     * { [playerId]: { martes: true|false|undefined, jueves: true|false|undefined } }
+     */
+    async loadMasterAvailabilityBadges() {
+        this.masterAvailability = {};
+        try {
+            const { data: seasons, error: seasonsError } = await this.supabase
+                .from('seasons')
+                .select('id, day')
+                .eq('is_active', true);
+            if (seasonsError) throw seasonsError;
+
+            const activeSeasonByDay = { martes: null, jueves: null };
+            (seasons || []).forEach(s => { activeSeasonByDay[s.day] = s.id; });
+
+            for (const day of ['martes', 'jueves']) {
+                let query = this.supabase
+                    .from('player_availability')
+                    .select('player_id, is_fixed')
+                    .eq('day', day);
+                query = activeSeasonByDay[day]
+                    ? query.eq('season_id', activeSeasonByDay[day])
+                    : query.is('season_id', null);
+
+                const { data, error } = await query;
+                if (error) throw error;
+                (data || []).forEach(row => {
+                    if (!this.masterAvailability[row.player_id]) this.masterAvailability[row.player_id] = {};
+                    this.masterAvailability[row.player_id][day] = row.is_fixed;
+                });
+            }
+        } catch (error) {
+            console.warn('⚠️ No se pudo calcular fijo/eventual del maestro:', error.message);
         }
     }
 
@@ -719,11 +759,19 @@ export class AdminPanel {
         list.innerHTML = this.allPlayers.map(p => {
             const noteAttr = p.notes ? ` title="${p.notes.replace(/"/g, '&quot;')}"` : '';
             const noteText = p.notes ? `<span class="player-note">${p.notes}</span>` : '';
+            const avail = this.masterAvailability?.[p.id] || {};
+            const dayBadges = [
+                avail.martes !== undefined ? { fixed: avail.martes, code: 'M' } : null,
+                avail.jueves !== undefined ? { fixed: avail.jueves, code: 'J' } : null
+            ].filter(Boolean).map(({ fixed, code }) =>
+                `<span class="player-badge availability-badge ${fixed ? 'fixed' : 'eventual'}" title="${fixed ? 'Fijo' : 'Eventual'} de ${code === 'M' ? 'martes' : 'jueves'}">${fixed ? 'F' : 'E'}${code}</span>`
+            ).join('');
             return `
             <div class="player-item ${p.notes ? 'has-note' : ''}"${noteAttr}>
                 <span class="player-avatar">${p.emoji || '👤'}</span>
                 <span class="player-name-wrap">
                     <span class="player-name">${p.name}</span>
+                    ${dayBadges}
                     ${noteText}
                 </span>
                 <div class="player-item-actions">
