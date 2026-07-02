@@ -25,9 +25,12 @@ export class SimuladorView {
         // Calcular estadísticas de todos los jugadores
         this.calculateAllPlayersStats(data);
 
+        const season = this.dataManager.getCurrentSeason(this.dataManager.getCurrentDay());
+        const seasonBadge = season ? `<span class="season-badge">${season.name}</span>` : '';
+
         let html = `
             <div class="simulador-container">
-                <h1>⚽ Simulador de Partidos</h1>
+                <h1>⚽ Simulador de Partidos ${seasonBadge}</h1>
                 <p class="simulador-description">
                     Selecciona 5 jugadores para cada equipo y ve las estadísticas del partido simulado
                 </p>

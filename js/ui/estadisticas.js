@@ -30,10 +30,13 @@ export class EstadisticasView {
             return;
         }
 
+        const season = this.dataManager.getCurrentSeason(currentDay);
+        const seasonBadge = season ? `<span class="season-badge">${season.name}</span>` : '';
+
         // Crear el HTML de la vista
         let html = `
             <div class="estadisticas-container">
-                <h1>Estadísticas de la Temporada</h1>
+                <h1>Estadísticas de la Temporada ${seasonBadge}</h1>
                 ${renderDaySelector(currentDay, '-stats')}
         `;
 
@@ -90,11 +93,12 @@ export class EstadisticasView {
      */
     loadStats(data) {
         // Calcular estadísticas
+        const playersById = this.dataManager.getPlayersById();
         const totalGoles = calcularTotalGoles(data);
         const victorias = calcularVictorias(data);
-        const topGoleadores = calcularTopGoleadores(data);
-        const topEncajados = calcularTopEncajados(data);
-        const topAsistencias = calcularTopAsistencias(data);
+        const topGoleadores = calcularTopGoleadores(data, playersById);
+        const topEncajados = calcularTopEncajados(data, playersById);
+        const topAsistencias = calcularTopAsistencias(data, playersById);
 
         // Renderizar estadísticas
         const totalGolesEl = document.getElementById('total-goles');
@@ -125,7 +129,7 @@ export class EstadisticasView {
         // Contador de no fijos solo para jueves
         const currentDay = this.dataManager.getCurrentDay();
         if (currentDay === 'jueves') {
-            const contadorNoFijos = calcularContadorNoFijos(data);
+            const contadorNoFijos = calcularContadorNoFijos(data, playersById);
             const contadorElement = document.getElementById('contador-no-fijos');
             if (contadorElement) {
                 contadorElement.textContent = contadorNoFijos + '€';

@@ -81,6 +81,16 @@
 			margin-bottom: 20px;
 			letter-spacing: .3em;
 		}
+		.season-select-wrap { margin-top: 22px; }
+		.season-select-wrap select {
+			background: var(--card2);
+			color: var(--text);
+			border: 1px solid rgba(255,255,255,.15);
+			border-radius: 99px;
+			padding: 8px 18px;
+			font-size: .85rem;
+			font-weight: 600;
+		}
 
 		/* ── Loading / Error states ── */
 		.state-msg {
@@ -278,6 +288,9 @@
 	<div class="hero-badge">Temporada 2025 · 2026</div>
 	<h1>LA TEMPORADA<br>HA ACABADO</h1>
 	<p>Estos son los mejores jugadores de la temporada. ¡Hasta la próxima!</p>
+	<div class="season-select-wrap">
+		<select id="season-select"></select>
+	</div>
 </div>
 
 <!-- CONTENT -->
@@ -303,24 +316,37 @@ const MIN_GAMES_PORTERO = 3; // mínimo partidos para aparecer en top porteros
 // ── Supabase client ──────────────────────────────────────────
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── Load matches for a day ───────────────────────────────────
-async function loadMatches(day) {
+// ── Load all seasons (both days) ──────────────────────────────
+async function loadSeasons() {
 	const { data, error } = await supabase
-		.from('matches')
+		.from('seasons')
 		.select('*')
-		.eq('day', day)
-		.order('match_date', { ascending: true });
+		.order('start_date', { ascending: false });
 	if (error) throw error;
 	return data || [];
 }
 
-// ── Load fixed players (titulares) for a day ─────────────────
-async function loadFijos(day) {
-	const { data, error } = await supabase
+// ── Load matches for a day, opcionalmente filtrados por temporada ──
+async function loadMatches(day, seasonId) {
+	let query = supabase
+		.from('matches')
+		.select('*')
+		.eq('day', day);
+	if (seasonId) query = query.eq('season_id', seasonId);
+	const { data, error } = await query.order('match_date', { ascending: true });
+	if (error) throw error;
+	return data || [];
+}
+
+// ── Load fixed players (titulares) for a day, opcionalmente por temporada ──
+async function loadFijos(day, seasonId) {
+	let query = supabase
 		.from('player_availability')
 		.select('players(name)')
 		.eq('day', day)
 		.eq('is_fixed', true);
+	if (seasonId) query = query.eq('season_id', seasonId);
+	const { data, error } = await query;
 	if (error) throw error;
 	return new Set((data || []).map(r => r.players?.name).filter(Boolean));
 }
@@ -472,14 +498,40 @@ function renderCategory({ icon, title, subtitle, martesHtml, juevesHtml }) {
 		</div>`;
 }
 
+// ── Selector de temporada (una temporada = mismo nombre en martes y jueves) ──
+let allSeasons = [];
+
+async function populateSeasonSelect(selectedName) {
+	allSeasons = await loadSeasons();
+	const names = [...new Set(allSeasons.map(s => s.name))];
+
+	const select = document.getElementById('season-select');
+	select.innerHTML = `<option value="">Todas las temporadas</option>` +
+		names.map(name => `<option value="${escHtml(name)}" ${name === selectedName ? 'selected' : ''}>${escHtml(name)}</option>`).join('');
+}
+
+function seasonIdFor(day, seasonName) {
+	if (!seasonName) return null;
+	return allSeasons.find(s => s.day === day && s.name === seasonName)?.id || null;
+}
+
 // ── Main ──────────────────────────────────────────────────────
-async function main() {
+async function main(seasonName = null) {
 	try {
+		if (allSeasons.length === 0) {
+			const active = (await loadSeasons()).find(s => s.is_active);
+			await populateSeasonSelect(seasonName ?? active?.name ?? null);
+			seasonName = document.getElementById('season-select').value || null;
+		}
+
+		const seasonIdMartes = seasonIdFor('martes', seasonName);
+		const seasonIdJueves = seasonIdFor('jueves', seasonName);
+
 		const [matchesMartes, matchesJueves, fijosMartes, fijosJueves] = await Promise.all([
-			loadMatches('martes'),
-			loadMatches('jueves'),
-			loadFijos('martes'),
-			loadFijos('jueves')
+			loadMatches('martes', seasonIdMartes),
+			loadMatches('jueves', seasonIdJueves),
+			loadFijos('martes', seasonIdMartes),
+			loadFijos('jueves', seasonIdJueves)
 		]);
 
 		const statsM = buildStats(matchesMartes);
@@ -575,6 +627,10 @@ async function main() {
 			</div>`;
 	}
 }
+
+document.getElementById('season-select').addEventListener('change', (e) => {
+	main(e.target.value || null);
+});
 
 main();
 </script>

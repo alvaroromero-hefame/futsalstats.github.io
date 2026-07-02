@@ -8,7 +8,8 @@
 	background: #222e3c;
 	color: #fff;
 	transition: width 0.3s;
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: auto;
 	z-index: 1000;
 }
 
@@ -60,6 +61,36 @@
 
 .menu a:hover {
 	background: #1a2230;
+}
+
+/* Selector global de temporada */
+.season-selector-wrap {
+	margin: 20px 20px 0;
+	padding-bottom: 16px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.season-selector-wrap label {
+	display: block;
+	font-size: 0.75em;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #aab4c0;
+	margin-bottom: 6px;
+}
+
+.season-selector-wrap select {
+	width: 100%;
+	padding: 8px 10px;
+	border-radius: 6px;
+	border: 1px solid #3a4a5c;
+	background: #1a2230;
+	color: #fff;
+	font-size: 0.95em;
+}
+
+.sidebar.collapsed .season-selector-wrap {
+	display: none;
 }
 
 /* Backdrop para móvil */

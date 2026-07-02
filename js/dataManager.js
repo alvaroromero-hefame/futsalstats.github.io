@@ -13,6 +13,86 @@ export class DataManager {
         this.futsalDataMartes = null;
         this.futsalDataJueves = null;
         this.currentDay = 'martes';
+        this.seasons = { martes: [], jueves: [] };
+        this.currentSeason = { martes: null, jueves: null };
+        this.playersById = {};
+    }
+
+    /**
+     * Carga el maestro de jugadores (id -> {name, emoji, ...}) para resolver
+     * el nombre actual de un jugador aunque los partidos antiguos guarden
+     * el nombre como texto suelto en blue_lineup/red_lineup/mvp
+     */
+    async loadPlayersMap() {
+        try {
+            const { data, error } = await this.supabase
+                .from('players')
+                .select('id, name, emoji, avatar_url, notes');
+            if (error) throw error;
+
+            this.playersById = {};
+            (data || []).forEach(p => { this.playersById[p.id] = p; });
+        } catch (error) {
+            console.warn('⚠️ [loadPlayersMap] No se pudo cargar el maestro de jugadores:', error.message);
+            this.playersById = {};
+        }
+    }
+
+    /**
+     * Obtiene el mapa de jugadores del maestro (id -> jugador)
+     */
+    getPlayersById() {
+        return this.playersById;
+    }
+
+    /**
+     * Carga las temporadas de un día y preselecciona la activa si no hay ninguna elegida
+     */
+    async loadSeasons(day) {
+        try {
+            const { data, error } = await this.supabase
+                .from('seasons')
+                .select('*')
+                .eq('day', day)
+                .order('start_date', { ascending: false });
+
+            if (error) throw error;
+
+            this.seasons[day] = data || [];
+
+            if (this.currentSeason[day] === null) {
+                const active = this.seasons[day].find(s => s.is_active);
+                if (active) this.currentSeason[day] = active.id;
+            }
+        } catch (error) {
+            console.warn(`⚠️ [loadSeasons] No se pudieron cargar temporadas de ${day} (¿falta aplicar sql/supabase-seasons.sql?):`, error.message);
+            this.seasons[day] = [];
+        }
+    }
+
+    /**
+     * Cambia la temporada activa de un día y recarga solo ese día
+     */
+    async setCurrentSeason(day, seasonId) {
+        this.currentSeason[day] = seasonId || null;
+        const dayData = await this.loadDayFromSupabase(day);
+        if (day === 'martes') this.futsalDataMartes = dayData;
+        else this.futsalDataJueves = dayData;
+        return dayData;
+    }
+
+    /**
+     * Obtiene la temporada actualmente seleccionada de un día (o null = todas)
+     */
+    getCurrentSeason(day) {
+        return this.seasons[day]?.find(s => s.id === this.currentSeason[day]) || null;
+    }
+
+    /**
+     * Obtiene las temporadas disponibles de un día
+     */
+    getSeasons(day) {
+        return this.seasons[day] || [];
     }
 
     /**
@@ -20,8 +100,10 @@ export class DataManager {
      */
     async loadData() {
         console.log('📥 [DataManager] Cargando datos desde Supabase...');
-        
+
         try {
+            await Promise.all([this.loadSeasons('martes'), this.loadSeasons('jueves'), this.loadPlayersMap()]);
+
             // Cargar datos de martes
             console.log('⏳ [DataManager] Cargando datos de martes...');
             const martesData = await this.loadDayFromSupabase('martes');
@@ -69,13 +151,17 @@ export class DataManager {
         }
 
         try {
+            const seasonId = this.currentSeason[day];
+
             console.log(`⏳ [loadDayFromSupabase] Consultando player_availability para ${day}...`);
             // Cargar jugadores fijos desde player_availability con JOIN a tabla players
-            const { data: availability, error: availError } = await this.supabase
+            let availabilityQuery = this.supabase
                 .from('player_availability')
                 .select('player_id, is_fixed, players(name)')
                 .eq('day', day)
                 .eq('is_fixed', true);
+            if (seasonId) availabilityQuery = availabilityQuery.eq('season_id', seasonId);
+            const { data: availability, error: availError } = await availabilityQuery;
 
             if (availError) {
                 console.error(`❌ [loadDayFromSupabase] Error en player_availability:`, availError);
@@ -95,10 +181,12 @@ export class DataManager {
 
             // Cargar partidos
             console.log(`⏳ [loadDayFromSupabase] Consultando matches para ${day}...`);
-            const { data: matches, error: matchesError } = await this.supabase
+            let matchesQuery = this.supabase
                 .from('matches')
                 .select('*')
-                .eq('day', day)
+                .eq('day', day);
+            if (seasonId) matchesQuery = matchesQuery.eq('season_id', seasonId);
+            const { data: matches, error: matchesError } = await matchesQuery
                 .order('match_date', { ascending: false });
 
             if (matchesError) {

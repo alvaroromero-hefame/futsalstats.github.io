@@ -22,6 +22,22 @@ export class AdminPanel {
             dateTo: null
         };
         this.editingMatchId = null;
+        this.currentSection = null; // 'partidos' | 'jugadores' | 'seguridad' | 'configuracion' | null (home)
+
+        // Temporadas
+        this.adminSeasons = []; // temporadas del currentDay
+        this.currentAdminSeasonId = null; // temporada elegida en el tablero de disponibilidad
+        this.configSeasons = []; // temporadas de ambos días, gestionadas desde Configuración
+        this.seasonModalDay = 'martes'; // día para el que "Nueva Temporada" va a crear
+
+        // Maestro de jugadores
+        this.allPlayers = [];
+        this.editingPlayerId = null;
+        this.mergingPlayerId = null; // jugador que se va a fusionar (y eliminar) en confirmMerge()
+
+        // Disponibilidad (fijos/eventuales) del currentDay + currentAdminSeasonId
+        this.fixedPlayers = [];
+        this.eventualPlayers = [];
     }
 
     /**
@@ -31,14 +47,11 @@ export class AdminPanel {
         this.container = container;
         this.container.innerHTML = this.getTemplate();
         this.attachEventListeners();
-        
-        // Cargar datos iniciales después de renderizar
-        await this.loadPlayers();
-        await this.loadRecentMatches();
+        this.showHome();
     }
 
     /**
-     * Template HTML del panel
+     * Template HTML del panel: cabecera + menú de 4 accesos + hueco para la sección activa
      */
     getTemplate() {
         return `
@@ -56,174 +69,28 @@ export class AdminPanel {
                 </div>
 
                 <div class="admin-content">
-                    <!-- Selector de día -->
-                    <div class="day-selector">
-                        <button class="btn-day active" data-day="martes">Martes</button>
-                        <button class="btn-day" data-day="jueves">Jueves</button>
-                    </div>
-
-                    <!-- Formulario para nuevo partido -->
-                    <div class="admin-section">
-                        <h2>⚽ Añadir Nuevo Partido</h2>
-                        <form id="match-form" class="match-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="match-date">Fecha del Partido</label>
-                                    <input type="date" id="match-date" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="match-mvp">MVP</label>
-                                    <select id="match-mvp">
-                                        <option value="">Sin MVP</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="teams-container">
-                                <!-- Equipo Azul -->
-                                <div class="team-section team-blue">
-                                    <h3>🔵 Equipo Azul</h3>
-                                    <div class="form-group">
-                                        <label for="blue-result">Goles del Equipo</label>
-                                        <input type="number" id="blue-result" min="0" required>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label>Jugadores Fijos</label>
-                                        <div id="blue-players-fixed" class="players-list-detailed">
-                                            <!-- Se llenará dinámicamente -->
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>Jugadores Extras</label>
-                                        <div id="blue-players-extras" class="players-extras">
-                                            <!-- Se añadirán dinámicamente -->
-                                        </div>
-                                        <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('blue')">
-                                            ➕ Añadir Extra
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Equipo Rojo -->
-                                <div class="team-section team-red">
-                                    <h3>🔴 Equipo Rojo</h3>
-                                    <div class="form-group">
-                                        <label for="red-result">Goles del Equipo</label>
-                                        <input type="number" id="red-result" min="0" required>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label>Jugadores Fijos</label>
-                                        <div id="red-players-fixed" class="players-list-detailed">
-                                            <!-- Se llenará dinámicamente -->
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label>Jugadores Extras</label>
-                                        <div id="red-players-extras" class="players-extras">
-                                            <!-- Se añadirán dinámicamente -->
-                                        </div>
-                                        <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('red')">
-                                            ➕ Añadir Extra
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    💾 Guardar Partido
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="adminPanel.cancelEdit()" style="display:none;" id="btn-cancel-edit">
-                                    ❌ Cancelar Edición
-                                </button>
-                                <button type="reset" class="btn btn-secondary">
-                                    🔄 Limpiar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Lista de partidos recientes -->
-                    <div class="admin-section">
-                        <h2>📋 Partidos Recientes</h2>
-                        
-                        <!-- Filtros -->
-                        <div class="matches-filters">
-                            <div class="filter-group">
-                                <label for="filter-date-from">Desde:</label>
-                                <input type="date" id="filter-date-from" class="filter-input">
-                            </div>
-                            <div class="filter-group">
-                                <label for="filter-date-to">Hasta:</label>
-                                <input type="date" id="filter-date-to" class="filter-input">
-                            </div>
-                            <button class="btn btn-primary" onclick="adminPanel.applyMatchFilters()">
-                                🔍 Filtrar
-                            </button>
-                            <button class="btn btn-secondary" onclick="adminPanel.clearMatchFilters()">
-                                🔄 Limpiar
-                            </button>
-                        </div>
-                        
-                        <div id="recent-matches" class="recent-matches">
-                            <p class="loading">Cargando partidos...</p>
-                        </div>
-                    </div>
-
-                    <!-- Gestión de jugadores -->
-                    <div class="admin-section">
-                        <h2>👥 Gestión de Jugadores</h2>
-                        <div class="players-management">
-                            <form id="player-form" class="inline-form">
-                                <input type="text" id="player-name" placeholder="Nombre del jugador" required>
-                                <select id="player-day">
-                                    <option value="martes">Martes</option>
-                                    <option value="jueves">Jueves</option>
-                                    <option value="ambos">Ambos</option>
-                                </select>
-                                <label>
-                                    <input type="checkbox" id="player-fixed" checked>
-                                    Fijo
-                                </label>
-                                <button type="submit" class="btn btn-primary">
-                                    ➕ Añadir Jugador
-                                </button>
-                            </form>
-                            <div id="players-list" class="players-list">
-                                <!-- Se llenará dinámicamente -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Configuración -->
-                    <div class="admin-section">
-                        <h2>⚙️ Configuración</h2>
-                        <form id="settings-form" class="settings-form">
-                            <div class="form-group">
-                                <label for="next-selector">Próximo Seleccionador</label>
-                                <select id="next-selector">
-                                    <option value="">Seleccionar...</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">
-                                💾 Guardar Configuración
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Panel de Seguridad -->
-                    <div class="admin-section">
-                        <h2>🛡️ Panel de Seguridad</h2>
-                        <button id="toggle-security-dashboard" class="btn btn-primary">
-                            📊 Ver Dashboard de Seguridad
+                    <div id="admin-home" class="admin-home">
+                        <button type="button" class="admin-nav-card" data-section="partidos">
+                            <span class="admin-nav-icon">⚽</span>
+                            <span>Partidos</span>
                         </button>
-                        <div id="security-dashboard-container" style="display: none; margin-top: 20px;">
-                            <!-- Se cargará dinámicamente -->
-                        </div>
+                        <button type="button" class="admin-nav-card" data-section="jugadores">
+                            <span class="admin-nav-icon">👥</span>
+                            <span>Jugadores</span>
+                        </button>
+                        <button type="button" class="admin-nav-card" data-section="seguridad">
+                            <span class="admin-nav-icon">🛡️</span>
+                            <span>Seguridad</span>
+                        </button>
+                        <button type="button" class="admin-nav-card" data-section="configuracion">
+                            <span class="admin-nav-icon">⚙️</span>
+                            <span>Configuración</span>
+                        </button>
+                    </div>
+
+                    <div id="admin-section-wrap" style="display: none;">
+                        <button type="button" id="admin-back" class="btn btn-secondary btn-back">← Volver</button>
+                        <div id="admin-section"></div>
                     </div>
                 </div>
 
@@ -238,202 +105,1100 @@ export class AdminPanel {
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal de temporada -->
+                <div id="season-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3>Nueva Temporada</h3>
+                        <div class="form-group">
+                            <label for="season-name">Nombre</label>
+                            <input type="text" id="season-name" placeholder="2025-26">
+                        </div>
+                        <div class="form-group">
+                            <label for="season-start">Fecha de inicio</label>
+                            <input type="date" id="season-start">
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-secondary" onclick="adminPanel.closeSeasonModal()">Cancelar</button>
+                            <button class="btn btn-primary" onclick="adminPanel.saveSeason()">Crear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal del maestro de jugadores -->
+                <div id="player-master-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3 id="player-master-modal-title">Nuevo Jugador</h3>
+                        <div class="form-group">
+                            <label for="pm-name">Nombre</label>
+                            <input type="text" id="pm-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-emoji">Emoji</label>
+                            <input type="text" id="pm-emoji" maxlength="2" placeholder="👤">
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-avatar">URL de avatar</label>
+                            <input type="text" id="pm-avatar" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="pm-notes">Notas</label>
+                            <textarea id="pm-notes" rows="3"></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-secondary" onclick="adminPanel.closePlayerModal()">Cancelar</button>
+                            <button class="btn btn-primary" onclick="adminPanel.savePlayerMaster()">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de fusión de jugadores duplicados -->
+                <div id="merge-player-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3>Fusionar jugador duplicado</h3>
+                        <p id="merge-player-desc"></p>
+                        <div class="form-group">
+                            <label for="merge-target-input">Nombre duplicado a fusionar</label>
+                            <input type="text" id="merge-target-input" list="merge-target-datalist" placeholder="Escribe o elige un nombre...">
+                            <datalist id="merge-target-datalist"></datalist>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-secondary" onclick="adminPanel.closeMergeModal()">Cancelar</button>
+                            <button class="btn btn-danger" onclick="adminPanel.confirmMerge()">Fusionar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal selector de disponibilidad ("+ Añadir") -->
+                <div id="availability-picker-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3>Añadir jugador a esta temporada/día</h3>
+                        <div id="availability-picker-list" class="players-list"></div>
+                        <div class="modal-actions">
+                            <button class="btn btn-secondary" onclick="adminPanel.closeAvailabilityPicker()">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     }
 
     /**
-     * Adjunta event listeners
+     * Sección "Partidos": alta de partidos + partidos recientes
+     */
+    getPartidosTemplate() {
+        return `
+            <div class="day-selector">
+                <button class="btn-day ${this.currentDay === 'martes' ? 'active' : ''}" data-day="martes">Martes</button>
+                <button class="btn-day ${this.currentDay === 'jueves' ? 'active' : ''}" data-day="jueves">Jueves</button>
+            </div>
+
+            <div class="admin-section">
+                <h2>⚽ Añadir Nuevo Partido</h2>
+                <form id="match-form" class="match-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="match-date">Fecha del Partido</label>
+                            <input type="date" id="match-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="match-mvp">MVP</label>
+                            <select id="match-mvp">
+                                <option value="">Sin MVP</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="teams-container">
+                        <!-- Equipo Azul -->
+                        <div class="team-section team-blue">
+                            <h3>🔵 Equipo Azul</h3>
+                            <div class="form-group">
+                                <label for="blue-result">Goles del Equipo</label>
+                                <input type="number" id="blue-result" min="0" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Jugadores Fijos</label>
+                                <div id="blue-players-fixed" class="players-list-detailed">
+                                    <!-- Se llenará dinámicamente -->
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Jugadores Extras</label>
+                                <div id="blue-players-extras" class="players-extras">
+                                    <!-- Se añadirán dinámicamente -->
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('blue')">
+                                    ➕ Añadir Extra
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Equipo Rojo -->
+                        <div class="team-section team-red">
+                            <h3>🔴 Equipo Rojo</h3>
+                            <div class="form-group">
+                                <label for="red-result">Goles del Equipo</label>
+                                <input type="number" id="red-result" min="0" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Jugadores Fijos</label>
+                                <div id="red-players-fixed" class="players-list-detailed">
+                                    <!-- Se llenará dinámicamente -->
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Jugadores Extras</label>
+                                <div id="red-players-extras" class="players-extras">
+                                    <!-- Se añadirán dinámicamente -->
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('red')">
+                                    ➕ Añadir Extra
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            💾 Guardar Partido
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="adminPanel.cancelEdit()" style="display:none;" id="btn-cancel-edit">
+                            ❌ Cancelar Edición
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            🔄 Limpiar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="admin-section">
+                <h2>📋 Partidos Recientes</h2>
+
+                <div class="matches-filters">
+                    <div class="filter-group">
+                        <label for="filter-date-from">Desde:</label>
+                        <input type="date" id="filter-date-from" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-date-to">Hasta:</label>
+                        <input type="date" id="filter-date-to" class="filter-input">
+                    </div>
+                    <button class="btn btn-primary" onclick="adminPanel.applyMatchFilters()">
+                        🔍 Filtrar
+                    </button>
+                    <button class="btn btn-secondary" onclick="adminPanel.clearMatchFilters()">
+                        🔄 Limpiar
+                    </button>
+                </div>
+
+                <div id="recent-matches" class="recent-matches">
+                    <p class="loading">Cargando partidos...</p>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Sección "Jugadores": maestro + disponibilidad (fijos/eventuales). La gestión de
+     * temporadas (crear/activar) vive en Configuración.
+     */
+    getJugadoresTemplate() {
+        return `
+            <div class="day-selector">
+                <button class="btn-day ${this.currentDay === 'martes' ? 'active' : ''}" data-day="martes">Martes</button>
+                <button class="btn-day ${this.currentDay === 'jueves' ? 'active' : ''}" data-day="jueves">Jueves</button>
+            </div>
+
+            <div class="admin-section">
+                <div class="players-management-header">
+                    <h2>👥 Maestro de Jugadores</h2>
+                    <div class="players-management-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.linkHistoricalPlayers()" title="Vincula por nombre los partidos antiguos con el maestro, para que un cambio de nombre se refleje solo en toda la app">
+                            🔗 Vincular histórico
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="adminPanel.openPlayerModal()">
+                            ➕ Nuevo Jugador
+                        </button>
+                    </div>
+                </div>
+                <div id="players-list" class="players-list">
+                    <p class="loading">Cargando jugadores...</p>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2>📋 Disponibilidad (Fijos / Eventuales)</h2>
+                <div class="availability-controls">
+                    <label for="availability-season-select">Temporada</label>
+                    <select id="availability-season-select"></select>
+                </div>
+                <div class="availability-board">
+                    <div class="availability-column">
+                        <h4>Fijos</h4>
+                        <div id="availability-fixed" class="chips-row"></div>
+                    </div>
+                    <div class="availability-column">
+                        <h4>Eventuales/Suplentes</h4>
+                        <div id="availability-eventual" class="chips-row"></div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.openAvailabilityPicker()">
+                            ➕ Añadir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Sección "Seguridad": dashboard de seguridad
+     */
+    getSeguridadTemplate() {
+        return `
+            <div class="admin-section">
+                <h2>🛡️ Panel de Seguridad</h2>
+                <div id="security-dashboard-container"></div>
+            </div>
+        `;
+    }
+
+    /**
+     * Sección "Configuración": temporadas + próximo seleccionador, en dos columnas (Martes/Jueves)
+     */
+    getConfiguracionTemplate() {
+        const dayColumn = (day, label) => `
+            <div class="config-column">
+                <h3>📅 ${label}</h3>
+
+                <div class="config-subsection">
+                    <h4>Temporadas</h4>
+                    <div id="config-seasons-list-${day}" class="players-list">
+                        <p class="loading">Cargando temporadas...</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.openSeasonModal('${day}')">
+                        ➕ Nueva Temporada
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="config-season-select-${day}">Ver fijos de la temporada</label>
+                    <select id="config-season-select-${day}"></select>
+                </div>
+
+                <div class="form-group">
+                    <label for="next-selector-${day}">Próximo Seleccionador</label>
+                    <select id="next-selector-${day}">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+            </div>
+        `;
+
+        return `
+            <div class="admin-section">
+                <h2>⚙️ Configuración</h2>
+                <form id="config-form">
+                    <div class="config-columns">
+                        ${dayColumn('martes', 'Martes')}
+                        ${dayColumn('jueves', 'Jueves')}
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        💾 Guardar Configuración
+                    </button>
+                </form>
+            </div>
+        `;
+    }
+
+    /**
+     * Adjunta los event listeners de la cabecera y el menú principal (una sola vez)
      */
     attachEventListeners() {
-        // Selector de día
-        document.querySelectorAll('.btn-day').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.btn-day').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.currentDay = e.target.dataset.day;
-                this.loadPlayers();
-                this.loadRecentMatches();
-            });
+        document.querySelectorAll('.admin-nav-card').forEach(btn => {
+            btn.addEventListener('click', () => this.showSection(btn.dataset.section));
         });
 
-        // Formulario de partido
-        const matchForm = document.getElementById('match-form');
-        this.csrf.addTokenToForm(matchForm); // Agregar token CSRF
-        this.honeypot.addToForm(matchForm); // Agregar honeypot anti-bot
-        matchForm.addEventListener('submit', (e) => this.handleMatchSubmit(e));
+        document.getElementById('admin-back').addEventListener('click', () => this.showHome());
 
-        // Formulario de jugador
-        const playerForm = document.getElementById('player-form');
-        this.csrf.addTokenToForm(playerForm); // Agregar token CSRF
-        this.honeypot.addToForm(playerForm); // Agregar honeypot
-        playerForm.addEventListener('submit', (e) => this.handlePlayerSubmit(e));
-
-        // Formulario de configuración
-        const settingsForm = document.getElementById('settings-form');
-        this.csrf.addTokenToForm(settingsForm); // Agregar token CSRF
-        this.honeypot.addToForm(settingsForm); // Agregar honeypot
-        settingsForm.addEventListener('submit', (e) => this.handleSettingsSubmit(e));
-
-        // Logout
         document.getElementById('admin-logout').addEventListener('click', () => {
             if (confirm('¿Seguro que quieres cerrar sesión?')) {
                 window.location.href = 'admin.html?logout=true';
             }
         });
 
-        // Ayuda
         document.getElementById('admin-help').addEventListener('click', () => {
             this.showHelpModal();
-        });
-
-        // Toggle Security Dashboard
-        document.getElementById('toggle-security-dashboard')?.addEventListener('click', async () => {
-            await this.toggleSecurityDashboard();
         });
     }
 
     /**
-     * Carga la lista de jugadores
-     * Compatible con estructura antigua (players) y nueva (player_availability)
+     * Vuelve al menú principal de 4 accesos
      */
-    async loadPlayers() {
-        try {
-            console.log(`🔍 Cargando jugadores para: ${this.currentDay}`);
-            
-            // Intentar primero con la nueva estructura (player_availability)
-            let fixedPlayers, eventualPlayers;
-            let usingNewStructure = false;
-            
-            try {
-                // Verificar si la tabla player_availability tiene datos
-                const { data: availCheck, error: checkErr } = await this.supabase
-                    .from('player_availability')
-                    .select('id')
-                    .limit(1);
+    showHome() {
+        if (this.currentSection === 'seguridad') {
+            this.securityDashboard.stopAutoRefresh();
+        }
+        this.currentSection = null;
+        document.getElementById('admin-home').style.display = 'grid';
+        document.getElementById('admin-section-wrap').style.display = 'none';
+        document.getElementById('admin-section').innerHTML = '';
+    }
 
-                console.log('🔍 Verificación player_availability:', { 
-                    error: checkErr, 
-                    hasData: availCheck && availCheck.length > 0,
-                    data: availCheck 
+    /**
+     * Navega a una de las 4 secciones y carga sus datos
+     */
+    async showSection(section) {
+        if (this.currentSection === 'seguridad' && section !== 'seguridad') {
+            this.securityDashboard.stopAutoRefresh();
+        }
+
+        this.currentSection = section;
+        document.getElementById('admin-home').style.display = 'none';
+        document.getElementById('admin-section-wrap').style.display = 'block';
+
+        const el = document.getElementById('admin-section');
+
+        switch (section) {
+            case 'partidos':
+                el.innerHTML = this.getPartidosTemplate();
+                this.attachPartidosListeners();
+                await this.loadSeasonsAdmin();
+                await this.loadAvailabilityBoard();
+                await this.loadRecentMatches();
+                break;
+            case 'jugadores':
+                el.innerHTML = this.getJugadoresTemplate();
+                this.attachJugadoresListeners();
+                await this.loadSeasonsAdmin();
+                await this.loadAllPlayers();
+                await this.loadAvailabilityBoard();
+                break;
+            case 'seguridad':
+                el.innerHTML = this.getSeguridadTemplate();
+                await this.securityDashboard.render('security-dashboard-container');
+                break;
+            case 'configuracion':
+                el.innerHTML = this.getConfiguracionTemplate();
+                this.attachConfiguracionListeners();
+                await this.loadNextSelectors();
+                break;
+            default:
+                console.error('❌ Sección de admin desconocida:', section);
+        }
+    }
+
+    /**
+     * Listeners propios de la sección Partidos (se reatan cada vez que se entra)
+     */
+    attachPartidosListeners() {
+        document.querySelectorAll('.btn-day').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.btn-day').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentDay = e.target.dataset.day;
+                this.currentAdminSeasonId = null; // se recalcula a la temporada activa del nuevo día
+                this.loadSeasonsAdmin();
+                this.loadAvailabilityBoard();
+                this.loadRecentMatches();
+            });
+        });
+
+        const matchForm = document.getElementById('match-form');
+        this.csrf.addTokenToForm(matchForm);
+        this.honeypot.addToForm(matchForm);
+        matchForm.addEventListener('submit', (e) => this.handleMatchSubmit(e));
+    }
+
+    /**
+     * Listeners propios de la sección Jugadores (se reatan cada vez que se entra)
+     */
+    attachJugadoresListeners() {
+        document.querySelectorAll('.btn-day').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.btn-day').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentDay = e.target.dataset.day;
+                this.currentAdminSeasonId = null; // se recalcula a la temporada activa del nuevo día
+                this.loadSeasonsAdmin();
+                this.loadAllPlayers();
+                this.loadAvailabilityBoard();
+            });
+        });
+
+        document.getElementById('availability-season-select')?.addEventListener('change', (e) => {
+            this.currentAdminSeasonId = e.target.value || null;
+            this.loadAvailabilityBoard();
+        });
+    }
+
+    /**
+     * Listeners propios de la sección Configuración (se reatan cada vez que se entra)
+     */
+    attachConfiguracionListeners() {
+        const form = document.getElementById('config-form');
+        this.csrf.addTokenToForm(form);
+        this.honeypot.addToForm(form);
+        form.addEventListener('submit', (e) => this.handleConfigSubmit(e));
+
+        ['martes', 'jueves'].forEach(day => {
+            document.getElementById(`config-season-select-${day}`)?.addEventListener('change', () => {
+                this.refreshNextSelectorOptions();
+            });
+        });
+    }
+
+    /**
+     * Devuelve un filtro de season_id (temporada seleccionada o "sin temporada")
+     * aplicable a queries sobre player_availability
+     */
+    seasonFilter(query) {
+        return this.currentAdminSeasonId
+            ? query.eq('season_id', this.currentAdminSeasonId)
+            : query.is('season_id', null);
+    }
+
+    // ── Temporadas ──────────────────────────────────────────────
+
+    /**
+     * Carga las temporadas del día actual y preselecciona la activa
+     */
+    async loadSeasonsAdmin() {
+        try {
+            const { data, error } = await this.supabase
+                .from('seasons')
+                .select('*')
+                .eq('day', this.currentDay)
+                .order('start_date', { ascending: false });
+            if (error) throw error;
+            this.adminSeasons = data || [];
+        } catch (error) {
+            console.warn('⚠️ No se pudieron cargar temporadas (¿falta aplicar sql/supabase-seasons.sql?):', error.message);
+            this.adminSeasons = [];
+        }
+
+        if (!this.adminSeasons.some(s => s.id === this.currentAdminSeasonId)) {
+            const active = this.adminSeasons.find(s => s.is_active);
+            this.currentAdminSeasonId = active ? active.id : (this.adminSeasons[0]?.id || null);
+        }
+
+        this.renderAvailabilitySeasonSelect();
+    }
+
+    // ── Gestión de temporadas (vive en Configuración) ────────────
+
+    /**
+     * Carga todas las temporadas (ambos días) para las dos columnas de Configuración
+     */
+    async loadConfigSeasons() {
+        try {
+            const { data, error } = await this.supabase
+                .from('seasons')
+                .select('*')
+                .order('start_date', { ascending: false });
+            if (error) throw error;
+            this.configSeasons = data || [];
+        } catch (error) {
+            console.warn('⚠️ No se pudieron cargar temporadas (¿falta aplicar sql/supabase-seasons.sql?):', error.message);
+            this.configSeasons = [];
+        }
+    }
+
+    renderConfigSeasonsList(day) {
+        const el = document.getElementById(`config-seasons-list-${day}`);
+        if (!el) return;
+        const seasons = this.configSeasons.filter(s => s.day === day);
+        el.innerHTML = seasons.map(s => `
+            <div class="player-item">
+                <span class="player-name">${s.name}</span>
+                <span class="player-badge day">desde ${s.start_date}</span>
+                ${s.is_active
+                    ? '<span class="player-badge fixed">Activa</span>'
+                    : `<button class="btn btn-secondary btn-sm" onclick="adminPanel.activateSeason('${s.id}', '${day}')">Activar</button>`}
+            </div>
+        `).join('') || '<p class="no-data">Sin temporadas para este día</p>';
+    }
+
+    renderConfigSeasonSelect(day) {
+        const select = document.getElementById(`config-season-select-${day}`);
+        if (!select) return;
+        const seasons = this.configSeasons.filter(s => s.day === day);
+        const activeId = seasons.find(s => s.is_active)?.id || seasons[0]?.id || '';
+        select.innerHTML = seasons.map(s =>
+            `<option value="${s.id}" ${s.id === activeId ? 'selected' : ''}>${s.is_active ? '★ ' : ''}${s.name}</option>`
+        ).join('') || '<option value="">Sin temporadas</option>';
+    }
+
+    /**
+     * Recarga la lista/selector de temporadas de una columna tras crear/activar una
+     */
+    async refreshConfigSeasonsColumn(day) {
+        await this.loadConfigSeasons();
+        this.renderConfigSeasonsList(day);
+        this.renderConfigSeasonSelect(day);
+        await this.refreshNextSelectorOptions();
+    }
+
+    openSeasonModal(day) {
+        this.seasonModalDay = day;
+        const year = new Date().getFullYear();
+        document.getElementById('season-name').value = `${year}-${String(year + 1).slice(2)}`;
+        document.getElementById('season-start').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('season-modal').style.display = 'flex';
+    }
+
+    closeSeasonModal() {
+        document.getElementById('season-modal').style.display = 'none';
+    }
+
+    async saveSeason() {
+        const name = document.getElementById('season-name').value.trim();
+        const startDate = document.getElementById('season-start').value;
+
+        if (!name || !startDate) {
+            this.showNotification('Nombre y fecha de inicio son obligatorios', 'error');
+            return;
+        }
+
+        try {
+            const { error } = await this.supabase
+                .from('seasons')
+                .insert({ name, day: this.seasonModalDay, start_date: startDate });
+            if (error) throw error;
+
+            this.closeSeasonModal();
+            this.showNotification('✅ Temporada creada', 'success');
+            await this.refreshConfigSeasonsColumn(this.seasonModalDay);
+        } catch (error) {
+            console.error('Error creando temporada:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
+        }
+    }
+
+    async activateSeason(id, day) {
+        try {
+            await this.supabase.from('seasons').update({ is_active: false }).eq('day', day);
+            const { error } = await this.supabase.from('seasons').update({ is_active: true }).eq('id', id);
+            if (error) throw error;
+
+            this.showNotification('✅ Temporada activada', 'success');
+            await this.refreshConfigSeasonsColumn(day);
+        } catch (error) {
+            console.error('Error activando temporada:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
+        }
+    }
+
+    // ── Maestro de jugadores ────────────────────────────────────
+
+    /**
+     * Carga el maestro completo de jugadores (sin filtro de día/temporada)
+     */
+    async loadAllPlayers() {
+        try {
+            const { data, error } = await this.supabase
+                .from('players')
+                .select('id, name, emoji, avatar_url, notes')
+                .order('name');
+            if (error) throw error;
+            this.allPlayers = data || [];
+            this.renderMasterList();
+        } catch (error) {
+            console.error('Error cargando maestro de jugadores:', error);
+            this.showNotification('Error cargando maestro', 'error');
+        }
+    }
+
+    renderMasterList() {
+        const list = document.getElementById('players-list');
+        if (!list) return;
+        list.innerHTML = this.allPlayers.map(p => {
+            const noteAttr = p.notes ? ` title="${p.notes.replace(/"/g, '&quot;')}"` : '';
+            const noteText = p.notes ? `<span class="player-note">${p.notes}</span>` : '';
+            return `
+            <div class="player-item ${p.notes ? 'has-note' : ''}"${noteAttr}>
+                <span class="player-avatar">${p.emoji || '👤'}</span>
+                <span class="player-name-wrap">
+                    <span class="player-name">${p.name}</span>
+                    ${noteText}
+                </span>
+                <div class="player-item-actions">
+                    <button class="btn-icon" onclick="adminPanel.openMergeModal('${p.id}')" title="Fusionar un nombre duplicado en este jugador">🔀</button>
+                    <button class="btn-icon btn-edit" onclick="adminPanel.openPlayerModal('${p.id}')">✏️</button>
+                    <button class="btn-icon btn-delete" onclick="adminPanel.deletePlayer('${p.id}', '${p.name}')">🗑️</button>
+                </div>
+            </div>
+        `;
+        }).join('') || '<p class="no-data">Sin jugadores</p>';
+    }
+
+    /**
+     * Abre el modal para fusionar un nombre duplicado (del maestro o solo del histórico
+     * de partidos) dentro del jugador elegido, que es el que se queda
+     */
+    async openMergeModal(id) {
+        this.mergingPlayerId = id;
+        const player = this.allPlayers.find(p => p.id === id);
+        if (!player) return;
+
+        const orphanNames = await this.getOrphanMatchNames();
+        const masterNames = this.allPlayers.filter(p => p.id !== id).map(p => p.name);
+        const suggestions = [...new Set([...masterNames, ...orphanNames])].sort((a, b) => a.localeCompare(b));
+
+        document.getElementById('merge-player-desc').textContent =
+            `Escribe o elige el nombre duplicado que quieres fusionar en "${player.name}". Se reescribirá su historial de partidos; si además es un jugador del maestro, se trasladará su disponibilidad y se eliminará.`;
+        document.getElementById('merge-target-input').value = '';
+        document.getElementById('merge-target-datalist').innerHTML =
+            suggestions.map(name => `<option value="${name}"></option>`).join('');
+
+        document.getElementById('merge-player-modal').style.display = 'flex';
+    }
+
+    closeMergeModal() {
+        document.getElementById('merge-player-modal').style.display = 'none';
+        this.mergingPlayerId = null;
+    }
+
+    /**
+     * Nombres que aparecen en el histórico de partidos (lineups/mvp) pero no tienen
+     * fila en el maestro de jugadores (p.ej. jugadores antiguos ya eliminados de players)
+     */
+    async getOrphanMatchNames() {
+        try {
+            const { data, error } = await this.supabase
+                .from('matches')
+                .select('mvp, blue_lineup, red_lineup');
+            if (error) throw error;
+
+            const names = new Set();
+            (data || []).forEach(m => {
+                (m.blue_lineup || []).forEach(p => p.name && names.add(p.name));
+                (m.red_lineup || []).forEach(p => p.name && names.add(p.name));
+                if (m.mvp) names.add(m.mvp);
+            });
+
+            const masterNames = new Set(this.allPlayers.map(p => p.name));
+            return [...names].filter(name => !masterNames.has(name));
+        } catch (error) {
+            console.warn('No se pudieron cargar nombres históricos:', error.message);
+            return [];
+        }
+    }
+
+    /**
+     * Vincula por nombre los partidos antiguos con el maestro de jugadores: añade
+     * player_id a cada entrada de blue_lineup/red_lineup y mvp_player_id al partido
+     * cuando el nombre guardado coincide exactamente con un jugador del maestro.
+     * A partir de ahí, renombrar a ese jugador en el maestro se refleja solo en toda
+     * la app, sin tener que tocar los partidos (ver Fusionar para nombres que no coincidan).
+     */
+    async linkHistoricalPlayers() {
+        try {
+            const nameToId = {};
+            this.allPlayers.forEach(p => { nameToId[p.name] = p.id; });
+
+            const { data: matches, error } = await this.supabase
+                .from('matches')
+                .select('id, mvp, mvp_player_id, blue_lineup, red_lineup');
+            if (error) throw error;
+
+            const unresolved = new Set();
+            let linkedMatches = 0;
+            let linkedEntries = 0;
+
+            for (const match of matches || []) {
+                let changed = false;
+
+                const linkLineup = (lineup) => (lineup || []).map(p => {
+                    if (p.player_id) return p;
+                    const id = nameToId[p.name];
+                    if (!id) {
+                        if (p.name) unresolved.add(p.name);
+                        return p;
+                    }
+                    changed = true;
+                    linkedEntries++;
+                    return { ...p, player_id: id };
                 });
 
-                // Si la tabla existe y tiene al menos un registro, usar nueva estructura
-                if (!checkErr && availCheck && availCheck.length > 0) {
-                    console.log('✓ Tabla player_availability tiene datos, usando nueva estructura');
-                    
-                    // Nueva estructura con JOIN a player_availability
-                    const { data: fixedData, error: fixedErr } = await this.supabase
-                        .from('players')
-                        .select(`
-                            id,
-                            name,
-                            player_availability!inner(day, is_fixed)
-                        `)
-                        .eq('player_availability.day', this.currentDay)
-                        .eq('player_availability.is_fixed', true)
-                        .order('name');
+                const newBlue = linkLineup(match.blue_lineup);
+                const newRed = linkLineup(match.red_lineup);
 
-                    const { data: eventualData, error: eventualErr } = await this.supabase
-                        .from('players')
-                        .select(`
-                            id,
-                            name,
-                            player_availability!inner(day, is_fixed)
-                        `)
-                        .eq('player_availability.day', this.currentDay)
-                        .eq('player_availability.is_fixed', false)
-                        .order('name');
-
-                    if (fixedErr) throw fixedErr;
-                    if (eventualErr) throw eventualErr;
-
-                    // Transformar datos de nueva estructura
-                    fixedPlayers = fixedData.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        day: this.currentDay,
-                        is_fixed: true
-                    }));
-
-                    eventualPlayers = eventualData.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        day: this.currentDay,
-                        is_fixed: false
-                    }));
-
-                    usingNewStructure = true;
-                    console.log('✓ Usando nueva estructura player_availability');
-                } else {
-                    throw new Error('Tabla player_availability vacía o no existe');
+                let mvpPlayerId = match.mvp_player_id;
+                if (!mvpPlayerId && match.mvp) {
+                    const id = nameToId[match.mvp];
+                    if (id) {
+                        mvpPlayerId = id;
+                        changed = true;
+                    } else {
+                        unresolved.add(match.mvp);
+                    }
                 }
 
-            } catch (newStructureError) {
-                // Fallback: Usar estructura antigua
-                console.log('→ Usando estructura antigua (players.day/is_fixed)');
+                if (!changed) continue;
 
-                // Primero, verificar si hay jugadores en la tabla
-                const { data: allPlayers, error: checkError } = await this.supabase
-                    .from('players')
-                    .select('*')
-                    .limit(5);
-
-                console.log('📊 Primeros 5 jugadores en BBDD:', allPlayers);
-
-                const { data: fixedData, error: fixedError } = await this.supabase
-                    .from('players')
-                    .select('*')
-                    .or(`day.eq.${this.currentDay},day.eq.ambos`)
-                    .eq('is_fixed', true)
-                    .order('name');
-
-                if (fixedError) {
-                    console.error('❌ Error cargando jugadores fijos:', fixedError);
-                    throw fixedError;
-                }
-
-                console.log(`📋 Query fijos para "${this.currentDay}":`, fixedData);
-
-                const { data: eventualData, error: eventualError } = await this.supabase
-                    .from('players')
-                    .select('*')
-                    .or(`day.eq.${this.currentDay},day.eq.ambos`)
-                    .eq('is_fixed', false)
-                    .order('name');
-
-                if (eventualError) {
-                    console.error('❌ Error cargando jugadores eventuales:', eventualError);
-                    throw eventualError;
-                }
-
-                console.log(`📋 Query eventuales para "${this.currentDay}":`, eventualData);
-
-                fixedPlayers = fixedData || [];
-                eventualPlayers = eventualData || [];
+                const { error: updateError } = await this.supabase
+                    .from('matches')
+                    .update({ blue_lineup: newBlue, red_lineup: newRed, mvp_player_id: mvpPlayerId })
+                    .eq('id', match.id);
+                if (updateError) throw updateError;
+                linkedMatches++;
             }
 
-            console.log(`✅ Jugadores cargados - Fijos: ${fixedPlayers.length}, Eventuales: ${eventualPlayers.length}`);
+            let message = `✅ ${linkedMatches} partido(s) actualizados (${linkedEntries} jugadores vinculados)`;
+            if (unresolved.size > 0) {
+                console.warn('Nombres sin vincular (sin fila exacta en el maestro):', [...unresolved]);
+                message += `. ${unresolved.size} nombre(s) sin vincular (revisa la consola, o usa 🔀 Fusionar)`;
+            }
+            this.showNotification(message, unresolved.size > 0 ? 'info' : 'success');
 
-            // Guardar en memoria para uso posterior
-            this.fixedPlayers = fixedPlayers;
-            this.eventualPlayers = eventualPlayers;
-            
-            // Actualizar selecciones de jugadores en el formulario
-            this.updatePlayerSelections(fixedPlayers, eventualPlayers);
-            
-            // Actualizar MVP select
-            this.updateMVPSelect([...fixedPlayers, ...eventualPlayers]);
-            
-            // Actualizar próximo seleccionador
-            this.updateNextSelectorSelect(fixedPlayers);
-            
-            // Actualizar lista de jugadores
-            this.updatePlayersList([...fixedPlayers, ...eventualPlayers]);
-
+            if (this.dataManager) {
+                await this.dataManager.reload();
+            }
         } catch (error) {
-            console.error('Error cargando jugadores:', error);
-            this.showNotification('Error cargando jugadores', 'error');
+            console.error('Error vinculando histórico:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Fusiona el nombre duplicado escrito en el input dentro del jugador elegido
+     * (this.mergingPlayerId): renombra su historial en matches/settings y, si el
+     * nombre duplicado corresponde a otro jugador del maestro, traslada su
+     * disponibilidad y lo elimina.
+     */
+    async confirmMerge() {
+        const duplicateName = document.getElementById('merge-target-input').value.trim();
+        if (!duplicateName) {
+            this.showNotification('Escribe el nombre duplicado a fusionar', 'error');
+            return;
+        }
+
+        const target = this.allPlayers.find(p => p.id === this.mergingPlayerId);
+        if (!target) return;
+
+        if (duplicateName === target.name) {
+            this.showNotification('Ese es el mismo nombre', 'error');
+            return;
+        }
+
+        const duplicatePlayer = this.allPlayers.find(p => p.name === duplicateName);
+
+        if (!confirm(`¿Fusionar "${duplicateName}" en "${target.name}"? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        try {
+            await this.renamePlayerEverywhere(duplicateName, target.name);
+
+            if (duplicatePlayer) {
+                await this.reassignAvailability(duplicatePlayer.id, target.id);
+                const { error } = await this.supabase.from('players').delete().eq('id', duplicatePlayer.id);
+                if (error) throw error;
+            }
+
+            this.closeMergeModal();
+            this.showNotification(`✅ "${duplicateName}" fusionado en "${target.name}"`, 'success');
+            await this.loadAllPlayers();
+            await this.loadAvailabilityBoard();
+
+            if (this.dataManager) {
+                await this.dataManager.reload();
+            }
+        } catch (error) {
+            console.error('Error fusionando jugadores:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Traslada la disponibilidad (fijo/eventual, por día y temporada) de un jugador a otro.
+     * Si el destino ya tiene disponibilidad en ese día/temporada, se descarta la del origen.
+     */
+    async reassignAvailability(sourceId, targetId) {
+        const { data: sourceRows, error } = await this.supabase
+            .from('player_availability')
+            .select('*')
+            .eq('player_id', sourceId);
+        if (error) throw error;
+
+        for (const row of sourceRows || []) {
+            let existingQuery = this.supabase
+                .from('player_availability')
+                .select('id')
+                .eq('player_id', targetId)
+                .eq('day', row.day);
+            existingQuery = row.season_id
+                ? existingQuery.eq('season_id', row.season_id)
+                : existingQuery.is('season_id', null);
+
+            const { data: existing } = await existingQuery.maybeSingle();
+
+            if (existing) {
+                await this.supabase.from('player_availability').delete().eq('id', row.id);
+            } else {
+                await this.supabase.from('player_availability').update({ player_id: targetId }).eq('id', row.id);
+            }
+        }
+    }
+
+    openPlayerModal(id = null) {
+        this.editingPlayerId = id;
+        const player = id ? this.allPlayers.find(p => p.id === id) : null;
+
+        document.getElementById('player-master-modal-title').textContent = player ? 'Editar Jugador' : 'Nuevo Jugador';
+        document.getElementById('pm-name').value = player?.name || '';
+        document.getElementById('pm-emoji').value = player?.emoji || '';
+        document.getElementById('pm-avatar').value = player?.avatar_url || '';
+        document.getElementById('pm-notes').value = player?.notes || '';
+        document.getElementById('player-master-modal').style.display = 'flex';
+    }
+
+    closePlayerModal() {
+        document.getElementById('player-master-modal').style.display = 'none';
+        this.editingPlayerId = null;
+    }
+
+    async savePlayerMaster() {
+        const name = document.getElementById('pm-name').value.trim();
+        if (!name) {
+            this.showNotification('El nombre es obligatorio', 'error');
+            return;
+        }
+
+        const payload = {
+            name,
+            emoji: document.getElementById('pm-emoji').value.trim() || null,
+            avatar_url: document.getElementById('pm-avatar').value.trim() || null,
+            notes: document.getElementById('pm-notes').value.trim() || null
+        };
+
+        const previousPlayer = this.editingPlayerId
+            ? this.allPlayers.find(p => p.id === this.editingPlayerId)
+            : null;
+        const oldName = previousPlayer?.name;
+
+        try {
+            const { error } = this.editingPlayerId
+                ? await this.supabase.from('players').update(payload).eq('id', this.editingPlayerId)
+                : await this.supabase.from('players').insert(payload);
+            if (error) throw error;
+
+            // blue_lineup/red_lineup/mvp/next_selector guardan el nombre como texto plano
+            // (no una referencia al maestro), así que un cambio de nombre hay que propagarlo a mano.
+            if (oldName && oldName !== name) {
+                await this.renamePlayerEverywhere(oldName, name);
+            }
+
+            this.closePlayerModal();
+            this.showNotification('✅ Jugador guardado', 'success');
+            await this.loadAllPlayers();
+
+            if (this.dataManager) {
+                await this.dataManager.reload();
+            }
+        } catch (error) {
+            console.error('Error guardando jugador:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Propaga un cambio de nombre a los partidos históricos y a settings.
+     * blue_lineup/red_lineup/mvp/next_selector guardan el nombre del jugador como
+     * texto plano (no como referencia al maestro), así que hay que reescribirlos.
+     */
+    async renamePlayerEverywhere(oldName, newName) {
+        try {
+            const { data: matches, error } = await this.supabase
+                .from('matches')
+                .select('id, mvp, blue_lineup, red_lineup');
+            if (error) throw error;
+
+            const renameInLineup = (lineup) => (lineup || []).map(p =>
+                p.name === oldName ? { ...p, name: newName } : p
+            );
+
+            let updatedCount = 0;
+            for (const match of matches || []) {
+                const blueChanged = (match.blue_lineup || []).some(p => p.name === oldName);
+                const redChanged = (match.red_lineup || []).some(p => p.name === oldName);
+                const mvpChanged = match.mvp === oldName;
+                if (!blueChanged && !redChanged && !mvpChanged) continue;
+
+                const { error: updateError } = await this.supabase
+                    .from('matches')
+                    .update({
+                        blue_lineup: blueChanged ? renameInLineup(match.blue_lineup) : match.blue_lineup,
+                        red_lineup: redChanged ? renameInLineup(match.red_lineup) : match.red_lineup,
+                        mvp: mvpChanged ? newName : match.mvp
+                    })
+                    .eq('id', match.id);
+                if (updateError) throw updateError;
+                updatedCount++;
+            }
+
+            const { error: settingsError } = await this.supabase
+                .from('settings')
+                .update({ next_selector: newName })
+                .eq('next_selector', oldName);
+            if (settingsError) throw settingsError;
+
+            if (updatedCount > 0) {
+                this.showNotification(`🔁 Nombre actualizado en ${updatedCount} partido(s) históricos`, 'info');
+            }
+        } catch (error) {
+            console.error('Error propagando cambio de nombre:', error);
+            this.showNotification('⚠️ Jugador renombrado, pero hubo un error actualizando partidos antiguos: ' + error.message, 'error');
+        }
+    }
+
+    // ── Disponibilidad por temporada (fijos/eventuales) ─────────
+
+    /**
+     * Carga la disponibilidad del día + temporada seleccionados y alimenta
+     * tanto el tablero de chips como los selects del formulario de partido
+     */
+    async loadAvailabilityBoard() {
+        try {
+            let query = this.supabase
+                .from('player_availability')
+                .select('player_id, is_fixed, players(id, name, emoji)')
+                .eq('day', this.currentDay);
+            query = this.seasonFilter(query);
+
+            const { data, error } = await query;
+            if (error) throw error;
+
+            const rows = (data || []).filter(r => r.players);
+            this.fixedPlayers = rows.filter(r => r.is_fixed)
+                .map(r => ({ id: r.players.id, name: r.players.name, day: this.currentDay, is_fixed: true }));
+            this.eventualPlayers = rows.filter(r => !r.is_fixed)
+                .map(r => ({ id: r.players.id, name: r.players.name, day: this.currentDay, is_fixed: false }));
+
+            // El formulario de partido (sección Partidos) consume estas mismas listas, si está montado
+            this.updatePlayerSelections(this.fixedPlayers, this.eventualPlayers);
+            this.updateMVPSelect([...this.fixedPlayers, ...this.eventualPlayers]);
+
+            this.renderAvailabilityBoard();
+        } catch (error) {
+            console.error('Error cargando disponibilidad:', error);
+            this.showNotification('Error cargando disponibilidad', 'error');
+        }
+    }
+
+    renderAvailabilitySeasonSelect() {
+        const select = document.getElementById('availability-season-select');
+        if (!select) return;
+        select.innerHTML = this.adminSeasons.map(s =>
+            `<option value="${s.id}" ${s.id === this.currentAdminSeasonId ? 'selected' : ''}>${s.is_active ? '★ ' : ''}${s.name}</option>`
+        ).join('') || '<option value="">Sin temporadas</option>';
+    }
+
+    renderAvailabilityBoard() {
+        const fixedEl = document.getElementById('availability-fixed');
+        const eventualEl = document.getElementById('availability-eventual');
+        if (!fixedEl || !eventualEl) return;
+
+        const chip = (p) => `
+            <span class="player-chip" onclick="adminPanel.toggleAvailability('${p.id}', ${p.is_fixed})">
+                ${p.name}
+                <button type="button" class="btn-icon btn-delete" onclick="event.stopPropagation(); adminPanel.removeAvailability('${p.id}')">✕</button>
+            </span>`;
+
+        fixedEl.innerHTML = this.fixedPlayers.map(chip).join('') || '<p class="no-data">Sin fijos</p>';
+        eventualEl.innerHTML = this.eventualPlayers.map(chip).join('') || '<p class="no-data">Sin eventuales</p>';
+    }
+
+    /**
+     * Alterna fijo/eventual de un jugador ya presente en el tablero
+     */
+    async toggleAvailability(playerId, currentIsFixed) {
+        try {
+            const { error } = await this.supabase
+                .from('player_availability')
+                .upsert({
+                    player_id: playerId,
+                    day: this.currentDay,
+                    season_id: this.currentAdminSeasonId,
+                    is_fixed: !currentIsFixed
+                }, { onConflict: this.currentAdminSeasonId ? 'player_id,day,season_id' : 'player_id,day' });
+            if (error) throw error;
+
+            await this.loadAvailabilityBoard();
+        } catch (error) {
+            console.error('Error actualizando disponibilidad:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
+        }
+    }
+
+    openAvailabilityPicker() {
+        const assignedIds = new Set([...this.fixedPlayers, ...this.eventualPlayers].map(p => p.id));
+        const available = this.allPlayers.filter(p => !assignedIds.has(p.id));
+
+        const list = document.getElementById('availability-picker-list');
+        list.innerHTML = available.map(p => `
+            <div class="player-item">
+                <span class="player-avatar">${p.emoji || '👤'}</span>
+                <span class="player-name">${p.name}</span>
+                <div class="player-item-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="adminPanel.addToAvailability('${p.id}', true)">Fijo</button>
+                    <button class="btn btn-secondary btn-sm" onclick="adminPanel.addToAvailability('${p.id}', false)">Eventual</button>
+                </div>
+            </div>
+        `).join('') || '<p class="no-data">Todos los jugadores del maestro ya están asignados</p>';
+
+        document.getElementById('availability-picker-modal').style.display = 'flex';
+    }
+
+    closeAvailabilityPicker() {
+        document.getElementById('availability-picker-modal').style.display = 'none';
+    }
+
+    /**
+     * Añade un jugador del maestro a esta temporada/día como eventual
+     */
+    async addToAvailability(playerId, isFixed) {
+        try {
+            const { error } = await this.supabase
+                .from('player_availability')
+                .upsert({
+                    player_id: playerId,
+                    day: this.currentDay,
+                    season_id: this.currentAdminSeasonId,
+                    is_fixed: isFixed
+                }, { onConflict: this.currentAdminSeasonId ? 'player_id,day,season_id' : 'player_id,day' });
+            if (error) throw error;
+
+            this.closeAvailabilityPicker();
+            this.showNotification(`✅ Jugador añadido como ${isFixed ? 'fijo' : 'eventual'}`, 'success');
+            await this.loadAvailabilityBoard();
+        } catch (error) {
+            console.error('Error añadiendo disponibilidad:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
+        }
+    }
+
+    async removeAvailability(playerId) {
+        try {
+            let query = this.supabase
+                .from('player_availability')
+                .delete()
+                .eq('player_id', playerId)
+                .eq('day', this.currentDay);
+            query = this.seasonFilter(query);
+
+            const { error } = await query;
+            if (error) throw error;
+
+            await this.loadAvailabilityBoard();
+        } catch (error) {
+            console.error('Error quitando disponibilidad:', error);
+            this.showNotification('❌ Error: ' + error.message, 'error');
         }
     }
 
@@ -444,8 +1209,8 @@ export class AdminPanel {
         const blueFixedContainer = document.getElementById('blue-players-fixed');
         const redFixedContainer = document.getElementById('red-players-fixed');
 
+        // No están montados si no estamos en la sección Partidos; no hay nada que hacer
         if (!blueFixedContainer || !redFixedContainer) {
-            console.error('❌ Contenedores de jugadores no encontrados en el DOM');
             return;
         }
 
@@ -455,7 +1220,7 @@ export class AdminPanel {
         const createFixedPlayerHTML = (p, team) => `
             <div class="player-stat-row" data-player-name="${p.name}">
                 <label class="player-checkbox">
-                    <input type="checkbox" name="${team}-player-fixed" value="${p.name}" 
+                    <input type="checkbox" name="${team}-player-fixed" value="${p.name}" data-player-id="${p.id}"
                            onchange="adminPanel.togglePlayerStats(this, '${team}')">
                     <span>${p.name}</span>
                 </label>
@@ -636,46 +1401,13 @@ export class AdminPanel {
     }
 
     /**
-     * Actualiza el select de MVP
+     * Actualiza el select de MVP (solo existe si estamos en la sección Partidos)
      */
     updateMVPSelect(players) {
         const mvpSelect = document.getElementById('match-mvp');
-        mvpSelect.innerHTML = '<option value="">Sin MVP</option>' + 
-            players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    }
-
-    /**
-     * Actualiza el select de próximo seleccionador
-     */
-    updateNextSelectorSelect(players) {
-        // Filtrar solo jugadores fijos y ordenar alfabéticamente
-        const fixedPlayers = players.filter(p => p.is_fixed).sort((a, b) => a.name.localeCompare(b.name));
-        
-        const selectorSelect = document.getElementById('next-selector');
-        selectorSelect.innerHTML = '<option value="">Seleccionar...</option>' + 
-            fixedPlayers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-        
-        // Cargar valor actual
-        this.loadCurrentSettings();
-    }
-
-    /**
-     * Actualiza la lista de jugadores
-     */
-    updatePlayersList(players) {
-        const listContainer = document.getElementById('players-list');
-        listContainer.innerHTML = players.map(p => `
-            <div class="player-item">
-                <span class="player-name">${p.name}</span>
-                <span class="player-badge ${p.is_fixed ? 'fixed' : 'eventual'}">
-                    ${p.is_fixed ? 'Fijo' : 'Eventual'}
-                </span>
-                <span class="player-badge day">${p.day}</span>
-                <button class="btn-icon btn-delete" onclick="adminPanel.deletePlayer('${p.id}', '${p.name}')">
-                    🗑️
-                </button>
-            </div>
-        `).join('');
+        if (!mvpSelect) return;
+        mvpSelect.innerHTML = '<option value="">Sin MVP</option>' +
+            players.map(p => `<option value="${p.name}" data-id="${p.id}">${p.name}</option>`).join('');
     }
 
     /**
@@ -711,7 +1443,9 @@ export class AdminPanel {
             
             // Recoger datos del formulario
             const matchDate = document.getElementById('match-date').value;
-            const mvp = document.getElementById('match-mvp').value || null;
+            const mvpSelect = document.getElementById('match-mvp');
+            const mvp = mvpSelect.value || null;
+            const mvpPlayerId = mvpSelect.selectedOptions[0]?.dataset.id || null;
             const blueResult = parseInt(document.getElementById('blue-result').value);
             const redResult = parseInt(document.getElementById('red-result').value);
 
@@ -750,7 +1484,9 @@ export class AdminPanel {
             const matchData = {
                 match_date: matchDate,
                 day: this.currentDay,
+                season_id: this.currentAdminSeasonId,
                 mvp: mvp,
+                mvp_player_id: mvpPlayerId,
                 result: result,
                 blue_result: blueResult,
                 red_result: redResult,
@@ -859,13 +1595,14 @@ export class AdminPanel {
             if (checkbox.checked) {
                 const playerName = checkbox.value;
                 const stats = row.querySelector('.player-stats');
-                
+
                 const goles = parseInt(stats.querySelector('[data-stat="goles"]').value) || 0;
                 const asistencias = parseInt(stats.querySelector('[data-stat="asistencias"]').value) || 0;
                 const portero = parseInt(stats.querySelector('[data-stat="portero"]').value) || 0;
 
                 const player = {
                     name: playerName,
+                    player_id: checkbox.dataset.playerId || null,
                     goles: goles,
                     asistencias: asistencias,
                     portero: portero
@@ -895,6 +1632,7 @@ export class AdminPanel {
             
             let playerName = '';
             let isNewPlayer = false;
+            let resolvedPlayerId = null;
 
             // Determinar el nombre del jugador
             if (select.value === '__new__') {
@@ -925,11 +1663,7 @@ export class AdminPanel {
                     if (!playerId) {
                         const { data: newPlayer, error: playerError } = await this.supabase
                             .from('players')
-                            .insert({ 
-                                name: playerName,
-                                day: this.currentDay,
-                                is_fixed: false
-                            })
+                            .insert({ name: playerName })
                             .select()
                             .single();
 
@@ -944,35 +1678,37 @@ export class AdminPanel {
                         console.log(`ℹ️ Jugador "${playerName}" ya existe en players (ID: ${playerId})`);
                     }
 
-                    // Añadir a player_availability si no está para este día
+                    resolvedPlayerId = playerId;
+
+                    // Añadir a player_availability (de esta temporada/día) si no está ya
                     if (playerId) {
-                        try {
-                            const { data: availCheck, error: availCheckError } = await this.supabase
+                        const { data: availCheck, error: availCheckError } = await this.seasonFilter(
+                            this.supabase
                                 .from('player_availability')
                                 .select('*')
                                 .eq('player_id', playerId)
                                 .eq('day', this.currentDay)
-                                .maybeSingle();
+                        ).maybeSingle();
 
-                            if (!availCheck) {
-                                const { error: availError } = await this.supabase
-                                    .from('player_availability')
-                                    .insert({
-                                        player_id: playerId,
-                                        day: this.currentDay,
-                                        is_fixed: false
-                                    });
+                        if (availCheckError) {
+                            console.warn('Error verificando disponibilidad:', availCheckError);
+                        } else if (!availCheck) {
+                            const { error: availError } = await this.supabase
+                                .from('player_availability')
+                                .insert({
+                                    player_id: playerId,
+                                    day: this.currentDay,
+                                    season_id: this.currentAdminSeasonId,
+                                    is_fixed: false
+                                });
 
-                                if (availError && !availError.message.includes('does not exist')) {
-                                    console.warn('Error creando disponibilidad:', availError);
-                                } else if (!availError) {
-                                    console.log(`✅ Jugador "${playerName}" añadido como eventual del ${this.currentDay}`);
-                                }
+                            if (availError) {
+                                console.warn('Error creando disponibilidad:', availError);
                             } else {
-                                console.log(`ℹ️ Jugador "${playerName}" ya está en disponibilidad del ${this.currentDay}`);
+                                console.log(`✅ Jugador "${playerName}" añadido como eventual del ${this.currentDay}`);
                             }
-                        } catch (availErr) {
-                            console.log('→ Tabla player_availability no existe (usando estructura antigua)');
+                        } else {
+                            console.log(`ℹ️ Jugador "${playerName}" ya está en disponibilidad del ${this.currentDay}`);
                         }
                     }
                 } catch (err) {
@@ -992,15 +1728,18 @@ export class AdminPanel {
                         .single();
 
                     if (player && !playerError) {
-                        // Verificar si ya existe en player_availability para este día
-                        const { data: existing, error: checkError } = await this.supabase
-                            .from('player_availability')
-                            .select('*')
-                            .eq('player_id', player.id)
-                            .eq('day', this.currentDay)
-                            .maybeSingle();
+                        resolvedPlayerId = player.id;
 
-                        if (checkError && !checkError.message.includes('does not exist')) {
+                        // Verificar si ya existe en player_availability para esta temporada/día
+                        const { data: existing, error: checkError } = await this.seasonFilter(
+                            this.supabase
+                                .from('player_availability')
+                                .select('*')
+                                .eq('player_id', player.id)
+                                .eq('day', this.currentDay)
+                        ).maybeSingle();
+
+                        if (checkError) {
                             console.warn('Error verificando disponibilidad:', checkError);
                         }
 
@@ -1011,6 +1750,7 @@ export class AdminPanel {
                                 .insert({
                                     player_id: player.id,
                                     day: this.currentDay,
+                                    season_id: this.currentAdminSeasonId,
                                     is_fixed: false
                                 });
 
@@ -1020,8 +1760,7 @@ export class AdminPanel {
                         }
                     }
                 } catch (err) {
-                    // Ignorar errores (puede ser estructura antigua sin player_availability)
-                    console.log('→ No se pudo actualizar player_availability (posiblemente estructura antigua)');
+                    console.warn('Error gestionando disponibilidad del jugador eventual:', err);
                 }
             } else {
                 continue; // Saltar si no hay selección
@@ -1035,6 +1774,7 @@ export class AdminPanel {
 
             extras.push({
                 name: playerName,
+                player_id: resolvedPlayerId,
                 goles: goles,
                 asistencias: asistencias,
                 portero: portero
@@ -1045,92 +1785,97 @@ export class AdminPanel {
     }
 
     /**
-     * Maneja el envío del formulario de jugador
+     * Carga las temporadas y los selects de próximo seleccionador de las dos columnas de Configuración
      */
-    async handlePlayerSubmit(e) {
-        e.preventDefault();
+    async loadNextSelectors() {
+        await this.loadConfigSeasons();
+        this.renderConfigSeasonsList('martes');
+        this.renderConfigSeasonsList('jueves');
+        this.renderConfigSeasonSelect('martes');
+        this.renderConfigSeasonSelect('jueves');
+        await this.refreshNextSelectorOptions();
+    }
 
+    /**
+     * Recarga los selects de próximo seleccionador con solo los FIJOS de la temporada
+     * elegida en el selector de cada columna (config-season-select-martes/jueves)
+     */
+    async refreshNextSelectorOptions() {
+        for (const day of ['martes', 'jueves']) {
+            const seasonId = document.getElementById(`config-season-select-${day}`)?.value || null;
+            const fixedNames = await this.getFixedPlayerNamesForDay(day, seasonId);
+            const select = document.getElementById(`next-selector-${day}`);
+            if (!select) continue;
+
+            select.innerHTML = '<option value="">Seleccionar...</option>' +
+                [...fixedNames].sort((a, b) => a.localeCompare(b))
+                    .map(name => `<option value="${name}">${name}</option>`).join('');
+        }
+
+        // Reaplicar el valor guardado en BBDD ahora que las opciones son las de esta temporada
+        await this.loadSavedNextSelectors();
+    }
+
+    /**
+     * Nombres de jugadores fijos de un día para una temporada concreta (por id)
+     */
+    async getFixedPlayerNamesForDay(day, seasonId) {
         try {
-            const name = document.getElementById('player-name').value.trim();
-            const day = document.getElementById('player-day').value;
-            const isFixed = document.getElementById('player-fixed').checked;
+            let query = this.supabase
+                .from('player_availability')
+                .select('is_fixed, players(name)')
+                .eq('day', day)
+                .eq('is_fixed', true);
+            query = seasonId ? query.eq('season_id', seasonId) : query.is('season_id', null);
 
-            // Verificar si el jugador ya existe
-            const { data: existingPlayer, error: checkError } = await this.supabase
-                .from('players')
-                .select('id')
-                .eq('name', name)
-                .maybeSingle();
+            const { data, error } = await query;
+            if (error) throw error;
 
-            if (checkError) throw checkError;
-
-            let playerId;
-
-            // Si el jugador no existe, crearlo
-            if (!existingPlayer) {
-                const { data: newPlayer, error: insertError } = await this.supabase
-                    .from('players')
-                    .insert({
-                        name: name,
-                        day: day,
-                        is_fixed: isFixed
-                    })
-                    .select()
-                    .single();
-
-                if (insertError) throw insertError;
-                playerId = newPlayer.id;
-            } else {
-                playerId = existingPlayer.id;
-                console.log(`ℹ️ Jugador "${name}" ya existe, actualizando disponibilidad`);
-            }
-
-            // Añadir/actualizar en player_availability
-            try {
-                const { error: availError } = await this.supabase
-                    .from('player_availability')
-                    .upsert({
-                        player_id: playerId,
-                        day: day,
-                        is_fixed: isFixed
-                    }, {
-                        onConflict: 'player_id,day'
-                    });
-
-                if (availError && !availError.message.includes('does not exist')) {
-                    console.warn('Error en player_availability:', availError);
-                }
-            } catch (availErr) {
-                console.log('→ Tabla player_availability no disponible (estructura antigua)');
-            }
-
-            this.showNotification('✅ Jugador añadido/actualizado correctamente', 'success');
-            document.getElementById('player-form').reset();
-            this.loadPlayers();
-
+            return (data || []).filter(r => r.players).map(r => r.players.name);
         } catch (error) {
-            console.error('Error añadiendo jugador:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            console.warn(`No se pudieron cargar los fijos de ${day}:`, error.message);
+            return [];
         }
     }
 
     /**
-     * Maneja el envío del formulario de configuración
+     * Carga el próximo seleccionador ya guardado en settings para cada día
      */
-    async handleSettingsSubmit(e) {
+    async loadSavedNextSelectors() {
+        try {
+            const { data, error } = await this.supabase
+                .from('settings')
+                .select('*')
+                .in('day', ['martes', 'jueves']);
+            if (error) throw error;
+
+            (data || []).forEach(row => {
+                const select = document.getElementById(`next-selector-${row.day}`);
+                if (select && [...select.options].some(o => o.value === row.next_selector)) {
+                    select.value = row.next_selector || '';
+                }
+            });
+        } catch (error) {
+            console.error('Error cargando configuración guardada:', error);
+        }
+    }
+
+    /**
+     * Maneja el envío del formulario de configuración (ambos días a la vez)
+     */
+    async handleConfigSubmit(e) {
         e.preventDefault();
 
         try {
-            const nextSelector = document.getElementById('next-selector').value;
+            const martes = document.getElementById('next-selector-martes').value;
+            const jueves = document.getElementById('next-selector-jueves').value;
 
             const { error } = await this.supabase
                 .from('settings')
-                .upsert({
-                    day: this.currentDay,
-                    next_selector: nextSelector
-                }, {
-                    onConflict: 'day'
-                });
+                .upsert([
+                    { day: 'martes', next_selector: martes },
+                    { day: 'jueves', next_selector: jueves }
+                ], { onConflict: 'day' });
 
             if (error) throw error;
 
@@ -1139,27 +1884,6 @@ export class AdminPanel {
         } catch (error) {
             console.error('Error guardando configuración:', error);
             this.showNotification('❌ Error: ' + error.message, 'error');
-        }
-    }
-
-    /**
-     * Carga la configuración actual
-     */
-    async loadCurrentSettings() {
-        try {
-            const { data, error } = await this.supabase
-                .from('settings')
-                .select('*')
-                .eq('day', this.currentDay)
-                .maybeSingle();
-
-            if (error) throw error;
-
-            if (data) {
-                document.getElementById('next-selector').value = data.next_selector || '';
-            }
-        } catch (error) {
-            console.error('Error cargando configuración:', error);
         }
     }
 
@@ -1297,14 +2021,16 @@ export class AdminPanel {
 
             if (error) throw error;
 
-            // Cambiar currentDay al día del partido
+            // Cambiar currentDay/temporada a los del partido
             this.currentDay = match.day;
+            this.currentAdminSeasonId = match.season_id || null;
             document.querySelectorAll('.btn-day').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.day === match.day);
             });
 
-            // Cargar jugadores del día correspondiente
-            await this.loadPlayers();
+            // Cargar temporadas/disponibilidad del día+temporada del partido
+            await this.loadSeasonsAdmin();
+            await this.loadAvailabilityBoard();
 
             // Esperar a que el DOM se actualice
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -1323,35 +2049,8 @@ export class AdminPanel {
                 mvpSelect.value = match.mvp;
             }
 
-            // Obtener lista de jugadores fijos para identificar extras
-            // Usar la misma lógica que loadPlayers()
-            let fixedPlayerNames = [];
-            
-            // Intentar primero con la nueva estructura
-            try {
-                const { data: fixedPlayersData } = await this.supabase
-                    .from('player_availability')
-                    .select('player_id, players(name)')
-                    .eq('day', match.day)
-                    .eq('is_fixed', true);
-                
-                if (fixedPlayersData && fixedPlayersData.length > 0) {
-                    fixedPlayerNames = fixedPlayersData.map(p => p.players.name);
-                    console.log('👥 Jugadores fijos del día (nueva estructura):', fixedPlayerNames);
-                } else {
-                    throw new Error('No data in player_availability');
-                }
-            } catch (error) {
-                // Fallback a estructura antigua
-                console.log('→ Usando estructura antigua para identificar fijos');
-                const { data: fixedData } = await this.supabase
-                    .from('players')
-                    .select('name')
-                    .or(`day.eq.${match.day},day.eq.ambos`)
-                    .eq('is_fixed', true);
-                
-                fixedPlayerNames = fixedData ? fixedData.map(p => p.name) : [];
-            }
+            // Jugadores fijos de esta temporada/día (ya cargados por loadAvailabilityBoard)
+            const fixedPlayerNames = this.fixedPlayers.map(p => p.name);
 
             // Marcar jugadores del equipo azul
             match.blue_lineup.forEach(player => {
@@ -1502,12 +2201,14 @@ export class AdminPanel {
     }
 
     /**
-     * Elimina un jugador
+     * Elimina un jugador del maestro (y de toda su disponibilidad, todas las temporadas/días)
      */
     async deletePlayer(id, name) {
-        if (!confirm(`¿Eliminar al jugador ${name}?`)) return;
+        if (!confirm(`¿Eliminar al jugador ${name}? Se eliminará de todas las temporadas y días.`)) return;
 
         try {
+            await this.supabase.from('player_availability').delete().eq('player_id', id);
+
             const { error } = await this.supabase
                 .from('players')
                 .delete()
@@ -1516,7 +2217,8 @@ export class AdminPanel {
             if (error) throw error;
 
             this.showNotification('✅ Jugador eliminado', 'success');
-            this.loadPlayers();
+            await this.loadAllPlayers();
+            await this.loadAvailabilityBoard();
 
         } catch (error) {
             console.error('Error eliminando jugador:', error);
@@ -1559,8 +2261,9 @@ export class AdminPanel {
                     <h2>📖 Guía de Uso - Panel de Administración</h2>
                     
                     <div class="help-section">
-                        <h3>🔄 Selector de Día</h3>
-                        <p>Usa los botones <strong>Martes</strong> y <strong>Jueves</strong> en la parte superior para cambiar entre los días de la semana. Todos los datos (partidos, jugadores) se filtrarán según el día seleccionado.</p>
+                        <h3>🧭 Navegación</h3>
+                        <p>El menú principal tiene 4 accesos: <strong>Partidos</strong>, <strong>Jugadores</strong>, <strong>Seguridad</strong> y <strong>Configuración</strong>. Usa "← Volver" para regresar al menú.</p>
+                        <p>Dentro de Partidos y Jugadores, los botones <strong>Martes</strong>/<strong>Jueves</strong> filtran todos los datos de esa sección según el día seleccionado.</p>
                     </div>
 
                     <div class="help-section">
@@ -1594,29 +2297,15 @@ export class AdminPanel {
                     </div>
 
                     <div class="help-section">
-                        <h3>👥 Gestión de Jugadores</h3>
-                        <p>Usa esta sección para añadir nuevos jugadores a la base de datos:</p>
-                        <ul>
-                            <li><strong>Nombre:</strong> Nombre del jugador</li>
-                            <li><strong>Día:</strong> Martes o Jueves</li>
-                            <li><strong>Jugador Fijo:</strong> Marca si es jugador fijo o eventual</li>
-                        </ul>
-                        <p><strong>Nota:</strong> Los jugadores eventuales también se crean automáticamente al añadirlos en un partido con "+ Nuevo jugador..."</p>
+                        <h3>👥 Maestro de Jugadores y Disponibilidad</h3>
+                        <p><strong>Maestro de Jugadores:</strong> catálogo único de jugadores (nombre, emoji, avatar, notas), independiente del día. "➕ Nuevo Jugador" crea uno; ✏️ lo edita.</p>
+                        <p><strong>Disponibilidad:</strong> elige temporada y usa los chips para marcar quién es fijo o eventual ese día/temporada. Clic en el chip alterna fijo/eventual; ✕ lo quita; "➕ Añadir" incorpora a alguien del maestro.</p>
+                        <p><strong>Nota:</strong> Los jugadores eventuales también se añaden automáticamente a la disponibilidad al crearlos desde un partido con "+ Nuevo jugador..."</p>
                     </div>
 
                     <div class="help-section">
                         <h3>⚙️ Configuración</h3>
-                        <p>Selecciona el <strong>Próximo Seleccionador</strong> que aparecerá en la clasificación con el icono ⚽</p>
-                    </div>
-
-                    <div class="help-section">
-                        <h3>📋 Lista de Jugadores</h3>
-                        <p>Muestra todos los jugadores del día seleccionado con sus iconos:</p>
-                        <ul>
-                            <li><strong>⭐</strong> = Jugador fijo</li>
-                            <li><strong>Sin icono</strong> = Jugador eventual</li>
-                        </ul>
-                        <p>Puedes eliminar jugadores haciendo clic en el botón <strong>❌</strong></p>
+                        <p>Dos columnas independientes, una por día. En cada una: gestiona sus <strong>Temporadas</strong> (crear/activar), elige de cuál quieres ver los fijos, y selecciona el <strong>Próximo Seleccionador</strong> (aparecerá con el icono ⚽ en la clasificación de ese día).</p>
                     </div>
 
                     <div class="help-section">
@@ -1650,32 +2339,6 @@ export class AdminPanel {
         }
 
         modal.style.display = 'flex';
-    }
-
-    /**
-     * Toggle del Dashboard de Seguridad
-     */
-    async toggleSecurityDashboard() {
-        const container = document.getElementById('security-dashboard-container');
-        const button = document.getElementById('toggle-security-dashboard');
-        
-        if (!container) return;
-
-        if (container.style.display === 'none') {
-            // Mostrar dashboard
-            button.textContent = '🔼 Ocultar Dashboard';
-            container.style.display = 'block';
-            
-            // Renderizar dashboard (solo la primera vez o refrescar)
-            await this.securityDashboard.render('security-dashboard-container');
-        } else {
-            // Ocultar dashboard
-            button.textContent = '📊 Ver Dashboard de Seguridad';
-            container.style.display = 'none';
-            
-            // Detener auto-refresh si está activo
-            this.securityDashboard.stopAutoRefresh();
-        }
     }
 }
 

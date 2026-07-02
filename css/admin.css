@@ -198,6 +198,52 @@
     gap: 20px;
 }
 
+/* Menú principal del admin (4 accesos) */
+.admin-home {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+}
+
+.admin-nav-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px 20px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.admin-nav-card:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.admin-nav-icon {
+    font-size: 40px;
+}
+
+.btn-back {
+    margin-bottom: 20px;
+}
+
+#admin-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 /* Day Selector */
 .day-selector {
     display: flex;
@@ -712,6 +758,31 @@
     border-radius: 8px;
 }
 
+.player-item.has-note {
+    background: #e5e7eb;
+}
+
+.player-name-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.player-name-wrap .player-name {
+    flex: 0 0 auto;
+}
+
+.player-note {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 0.85em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .player-name {
     flex: 1;
     font-weight: 500;
@@ -740,12 +811,130 @@
     color: #4b5563;
 }
 
+/* Maestro de jugadores */
+.players-management-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.players-management-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.player-avatar {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.player-item-actions {
+    display: flex;
+    gap: 6px;
+}
+
+#player-master-modal textarea {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+/* Tablero de disponibilidad (fijos/eventuales) */
+.availability-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.availability-board {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.availability-column {
+    flex: 1;
+    min-width: 220px;
+}
+
+.availability-column h4 {
+    margin-bottom: 8px;
+}
+
+.chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.player-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    background: #f0f0f0;
+    cursor: pointer;
+}
+
+.player-chip:hover {
+    background: #e5e7eb;
+}
+
 /* Settings Form */
 .settings-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
     max-width: 400px;
+}
+
+/* Configuración: dos columnas (Martes / Jueves) */
+#config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.config-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.config-column {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.config-column h3 {
+    margin: 0;
+    color: #333;
+}
+
+.config-subsection h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    .config-columns {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Modal */
@@ -759,6 +948,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
     z-index: 1000;
 }
 
@@ -768,6 +959,16 @@
     padding: 30px;
     max-width: 400px;
     width: 90%;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+#availability-picker-modal .modal-content {
+    max-width: 480px;
+}
+
+#availability-picker-list .player-item {
+    flex-wrap: wrap;
 }
 
 .modal-content h3 {

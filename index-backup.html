@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Resumen de Temporada · Futsal Stats</title>
+	<meta name="description" content="Los mejores jugadores de la temporada de fútbol sala">
+
+	<style>
+		:root {
+			--gold:   #FFD700;
+			--silver: #C0C0C0;
+			--bronze: #CD7F32;
+			--bg:     #0d0d1a;
+			--card:   #161628;
+			--card2:  #1e1e36;
+			--accent: #667eea;
+			--accent2:#764ba2;
+			--text:   #e8e8f0;
+			--muted:  #8888aa;
+			--martes: #4facfe;
+			--jueves: #f093fb;
+			--radius: 16px;
+		}
+
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+
+		body {
+			background: var(--bg);
+			color: var(--text);
+			font-family: 'Segoe UI', Arial, sans-serif;
+			min-height: 100vh;
+			overflow-x: hidden;
+		}
+
+		/* ── Hero ── */
+		.hero {
+			text-align: center;
+			padding: 70px 20px 50px;
+			background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d0d1a 100%);
+			position: relative;
+			overflow: hidden;
+		}
+		.hero::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(102,126,234,.25) 0%, transparent 70%);
+			pointer-events: none;
+		}
+		.hero-badge {
+			display: inline-block;
+			background: linear-gradient(90deg, var(--accent), var(--accent2));
+			color: #fff;
+			font-size: .78rem;
+			font-weight: 700;
+			letter-spacing: .12em;
+			text-transform: uppercase;
+			padding: 6px 18px;
+			border-radius: 99px;
+			margin-bottom: 22px;
+		}
+		.hero h1 {
+			font-size: clamp(2rem, 6vw, 3.6rem);
+			font-weight: 900;
+			line-height: 1.1;
+			background: linear-gradient(135deg, #fff 30%, var(--gold));
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 16px;
+		}
+		.hero p {
+			color: var(--muted);
+			font-size: 1.05rem;
+			max-width: 540px;
+			margin: 0 auto;
+		}
+		.trophy-row {
+			font-size: 3rem;
+			margin-bottom: 20px;
+			letter-spacing: .3em;
+		}
+
+		/* ── Loading / Error states ── */
+		.state-msg {
+			text-align: center;
+			padding: 60px 20px;
+			color: var(--muted);
+		}
+		.state-msg .spinner {
+			width: 48px; height: 48px;
+			border: 4px solid rgba(102,126,234,.2);
+			border-top-color: var(--accent);
+			border-radius: 50%;
+			animation: spin .9s linear infinite;
+			margin: 0 auto 20px;
+		}
+		@keyframes spin { to { transform: rotate(360deg); } }
+
+		/* ── Main grid ── */
+		.sections {
+			max-width: 1300px;
+			margin: 0 auto;
+			padding: 40px 20px 80px;
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+			gap: 32px;
+		}
+
+		/* ── Category card ── */
+		.cat-card {
+			background: var(--card);
+			border-radius: var(--radius);
+			overflow: hidden;
+			border: 1px solid rgba(255,255,255,.06);
+			transition: transform .2s, box-shadow .2s;
+		}
+		.cat-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 12px 40px rgba(0,0,0,.5);
+		}
+		.cat-header {
+			padding: 20px 24px 16px;
+			border-bottom: 1px solid rgba(255,255,255,.06);
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+		.cat-icon {
+			font-size: 1.8rem;
+			line-height: 1;
+		}
+		.cat-title {
+			font-size: 1.15rem;
+			font-weight: 700;
+			color: #fff;
+		}
+		.cat-subtitle {
+			font-size: .78rem;
+			color: var(--muted);
+			margin-top: 2px;
+		}
+
+		/* ── Two-column days inside card ── */
+		.days-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+		}
+		.day-col {
+			padding: 18px 20px 22px;
+		}
+		.day-col:first-child {
+			border-right: 1px solid rgba(255,255,255,.06);
+		}
+		.day-label {
+			font-size: .7rem;
+			font-weight: 800;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			margin-bottom: 14px;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+		.day-label.martes { color: var(--martes); }
+		.day-label.jueves { color: var(--jueves); }
+		.day-dot {
+			width: 8px; height: 8px;
+			border-radius: 50%;
+			flex-shrink: 0;
+		}
+		.day-label.martes .day-dot { background: var(--martes); }
+		.day-label.jueves .day-dot { background: var(--jueves); }
+
+		/* ── Podium rows ── */
+		.podium-row {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 9px 0;
+			border-bottom: 1px solid rgba(255,255,255,.04);
+			transition: background .15s;
+		}
+		.podium-row:last-child { border-bottom: none; }
+		.podium-row:hover { background: rgba(255,255,255,.03); border-radius: 8px; padding-left: 4px; }
+
+		.medal {
+			font-size: 1.4rem;
+			width: 30px;
+			text-align: center;
+			flex-shrink: 0;
+		}
+		.player-name {
+			flex: 1;
+			font-size: .93rem;
+			font-weight: 600;
+			color: #e0e0f5;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.player-stat {
+			font-size: .88rem;
+			font-weight: 700;
+			color: var(--accent);
+			white-space: nowrap;
+			background: rgba(102,126,234,.12);
+			padding: 3px 10px;
+			border-radius: 99px;
+		}
+		.podium-row.rank-1 .player-name { color: var(--gold); }
+		.podium-row.rank-2 .player-name { color: var(--silver); }
+		.podium-row.rank-3 .player-name { color: var(--bronze); }
+		.podium-row.rank-1 .player-stat { background: rgba(255,215,0,.15); color: var(--gold); }
+		.podium-row.rank-2 .player-stat { background: rgba(192,192,192,.12); color: var(--silver); }
+		.podium-row.rank-3 .player-stat { background: rgba(205,127,50,.15); color: var(--bronze); }
+
+		.no-data {
+			color: var(--muted);
+			font-size: .85rem;
+			font-style: italic;
+			padding: 8px 0;
+		}
+
+		/* ── Suplente ── */
+		.suplente-section {
+			margin-top: 14px;
+			padding-top: 12px;
+			border-top: 1px dashed rgba(255,255,255,.1);
+		}
+		.suplente-label {
+			font-size: .66rem;
+			font-weight: 800;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--muted);
+			margin-bottom: 8px;
+		}
+		.podium-row.suplente-row .player-name { color: var(--muted); font-weight: 500; }
+		.podium-row.suplente-row .player-stat {
+			background: rgba(255,255,255,.06);
+			color: var(--muted);
+		}
+
+		/* ── Footer ── */
+		.page-footer {
+			text-align: center;
+			padding: 30px 20px;
+			color: var(--muted);
+			font-size: .82rem;
+			border-top: 1px solid rgba(255,255,255,.05);
+		}
+
+		/* ── Responsive ── */
+		@media (max-width: 640px) {
+			.sections {
+				grid-template-columns: 1fr;
+				padding: 24px 12px 60px;
+				gap: 20px;
+			}
+			.days-grid {
+				grid-template-columns: 1fr;
+			}
+			.day-col:first-child {
+				border-right: none;
+				border-bottom: 1px solid rgba(255,255,255,.06);
+			}
+			.hero { padding: 50px 16px 36px; }
+		}
+	</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+	<div class="trophy-row">🏆🥇🏅</div>
+	<div class="hero-badge">Temporada 2025 · 2026</div>
+	<h1>LA TEMPORADA<br>HA ACABADO</h1>
+	<p>Estos son los mejores jugadores de la temporada. ¡Hasta la próxima!</p>
+</div>
+
+<!-- CONTENT -->
+<div id="app-root">
+	<div class="sections">
+        <div class="cat-card">
+            <div class="cat-header">
+                <span class="cat-icon">⭐</span>
+                <div>
+                    <div class="cat-title">Líderes</div>
+                    <div class="cat-subtitle">Jugadores con más puntos totales</div>
+                </div>
+            </div>
+            <div class="days-grid">
+                
+        <div class="day-col">
+            <div class="day-label martes">
+                <span class="day-dot"></span>📅 Martes
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Javi Alcaraz</span>
+            <span class="player-stat">60.0 pts</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Ricardo</span>
+            <span class="player-stat">53.5 pts</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Carlos Alcaraz</span>
+            <span class="player-stat">52.6 pts</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Miguel</span>
+                    <span class="player-stat">29.0 pts</span>
+                </div>
+            </div>
+        </div>
+                
+        <div class="day-col">
+            <div class="day-label jueves">
+                <span class="day-dot"></span>📅 Jueves
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Alejandro</span>
+            <span class="player-stat">57.4 pts</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Bienve</span>
+            <span class="player-stat">39.5 pts</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Paco</span>
+            <span class="player-stat">37.5 pts</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Juan</span>
+                    <span class="player-stat">36.8 pts</span>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+        <div class="cat-card">
+            <div class="cat-header">
+                <span class="cat-icon">🏅</span>
+                <div>
+                    <div class="cat-title">Top MVPs</div>
+                    <div class="cat-subtitle">Jugadores más valiosos del partido</div>
+                </div>
+            </div>
+            <div class="days-grid">
+                
+        <div class="day-col">
+            <div class="day-label martes">
+                <span class="day-dot"></span>📅 Martes
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Alejandro</span>
+            <span class="player-stat">5 MVPs</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Javi Alcaraz</span>
+            <span class="player-stat">4 MVPs</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Carlos Alcaraz</span>
+            <span class="player-stat">4 MVPs</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Miguel</span>
+                    <span class="player-stat">2 MVPs</span>
+                </div>
+            </div>
+        </div>
+                
+        <div class="day-col">
+            <div class="day-label jueves">
+                <span class="day-dot"></span>📅 Jueves
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Alex</span>
+            <span class="player-stat">4 MVPs</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Alejandro</span>
+            <span class="player-stat">4 MVPs</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Paco</span>
+            <span class="player-stat">4 MVPs</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Juan</span>
+                    <span class="player-stat">3 MVPs</span>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+        <div class="cat-card">
+            <div class="cat-header">
+                <span class="cat-icon">⚽</span>
+                <div>
+                    <div class="cat-title">Top Goleadores</div>
+                    <div class="cat-subtitle">Jugadores con más goles</div>
+                </div>
+            </div>
+            <div class="days-grid">
+                
+        <div class="day-col">
+            <div class="day-label martes">
+                <span class="day-dot"></span>📅 Martes
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Javi Alcaraz</span>
+            <span class="player-stat">74 goles</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Bienve</span>
+            <span class="player-stat">59 goles</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Fran</span>
+            <span class="player-stat">56 goles</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Ruben</span>
+                    <span class="player-stat">20 goles</span>
+                </div>
+            </div>
+        </div>
+                
+        <div class="day-col">
+            <div class="day-label jueves">
+                <span class="day-dot"></span>📅 Jueves
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Alejandro</span>
+            <span class="player-stat">43 goles</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Jose Antonio</span>
+            <span class="player-stat">40 goles</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Andres</span>
+            <span class="player-stat">34 goles</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Juan</span>
+                    <span class="player-stat">19 goles</span>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+        <div class="cat-card">
+            <div class="cat-header">
+                <span class="cat-icon">🎯</span>
+                <div>
+                    <div class="cat-title">Top Asistentes</div>
+                    <div class="cat-subtitle">Jugadores con más asistencias</div>
+                </div>
+            </div>
+            <div class="days-grid">
+                
+        <div class="day-col">
+            <div class="day-label martes">
+                <span class="day-dot"></span>📅 Martes
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Fran</span>
+            <span class="player-stat">53 asist.</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Javi Alcaraz</span>
+            <span class="player-stat">49 asist.</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Jaime</span>
+            <span class="player-stat">26 asist.</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Miguel</span>
+                    <span class="player-stat">19 asist.</span>
+                </div>
+            </div>
+        </div>
+                
+        <div class="day-col">
+            <div class="day-label jueves">
+                <span class="day-dot"></span>📅 Jueves
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Alejandro</span>
+            <span class="player-stat">37 asist.</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Andres</span>
+            <span class="player-stat">29 asist.</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Miguel</span>
+            <span class="player-stat">24 asist.</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Juan</span>
+                    <span class="player-stat">16 asist.</span>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+        <div class="cat-card">
+            <div class="cat-header">
+                <span class="cat-icon">🧤</span>
+                <div>
+                    <div class="cat-title">Top Porteros</div>
+                    <div class="cat-subtitle">Menor ratio goles encajados/partido (mín. 3 partidos como portero)</div>
+                </div>
+            </div>
+            <div class="days-grid">
+                
+        <div class="day-col">
+            <div class="day-label martes">
+                <span class="day-dot"></span>📅 Martes
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Alejandro</span>
+            <span class="player-stat">0.80 enc/ptdo</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Javi Alcaraz</span>
+            <span class="player-stat">1.13 enc/ptdo</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Jaime</span>
+            <span class="player-stat">1.14 enc/ptdo</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Juan</span>
+                    <span class="player-stat">1.00 enc/ptdo</span>
+                </div>
+            </div>
+        </div>
+                
+        <div class="day-col">
+            <div class="day-label jueves">
+                <span class="day-dot"></span>📅 Jueves
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Alvaro</span>
+            <span class="player-stat">0.71 enc/ptdo</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Alejandro</span>
+            <span class="player-stat">0.96 enc/ptdo</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Paco</span>
+            <span class="player-stat">1.00 enc/ptdo</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Jesus</span>
+                    <span class="player-stat">0.50 enc/ptdo</span>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+        <div class="cat-card">
+            <div class="cat-header">
+                <span class="cat-icon">🏃</span>
+                <div>
+                    <div class="cat-title">Top Jugados</div>
+                    <div class="cat-subtitle">Jugadores que más partidos han disputado</div>
+                </div>
+            </div>
+            <div class="days-grid">
+                
+        <div class="day-col">
+            <div class="day-label martes">
+                <span class="day-dot"></span>📅 Martes
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Ricardo</span>
+            <span class="player-stat">34 partidos</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Bienve</span>
+            <span class="player-stat">33 partidos</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Javi Alcaraz</span>
+            <span class="player-stat">30 partidos</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Miguel</span>
+                    <span class="player-stat">19 partidos</span>
+                </div>
+            </div>
+        </div>
+                
+        <div class="day-col">
+            <div class="day-label jueves">
+                <span class="day-dot"></span>📅 Jueves
+            </div>
+            
+        <div class="podium-row rank-1">
+            <span class="medal">🥇</span>
+            <span class="player-name">Jose Antonio</span>
+            <span class="player-stat">31 partidos</span>
+        </div>
+        <div class="podium-row rank-2">
+            <span class="medal">🥈</span>
+            <span class="player-name">Bienve</span>
+            <span class="player-stat">29 partidos</span>
+        </div>
+        <div class="podium-row rank-3">
+            <span class="medal">🥉</span>
+            <span class="player-name">Andres</span>
+            <span class="player-stat">28 partidos</span>
+        </div>
+            <div class="suplente-section">
+                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="podium-row suplente-row">
+                    <span class="medal">🌟</span>
+                    <span class="player-name">Juan</span>
+                    <span class="player-stat">13 partidos</span>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div></div>
+</div>
+
+<div class="page-footer" id="page-footer">
+	⚽ <strong>Futsal Stats</strong> · Resumen de Temporada
+</div>
+
+
+</body>
+</html>

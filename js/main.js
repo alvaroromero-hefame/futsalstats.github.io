@@ -47,6 +47,9 @@ class FutsalApp {
         console.log('⏳ Cargando datos...');
         const dataLoaded = await this.dataManager.loadData();
         console.log('✓ loadData completado. Datos cargados:', dataLoaded);
+
+        // Restaurar temporada elegida por el usuario en una sesión anterior
+        await this.restoreSeasonSelection();
         
         // Ocultar loading inicial
         console.log('⏳ Ocultando pantalla de carga...');
@@ -79,11 +82,79 @@ class FutsalApp {
         
         // Configurar navegación
         this.setupNavigation();
-        
+
+        // Configurar selector global de temporada
+        this.setupSeasonSelector();
+
         // Mostrar vista inicial
         this.showView('clasificacion');
-        
+
         console.log('✅ FutsalStats iniciado correctamente');
+    }
+
+    /**
+     * Restaura la temporada elegida por el usuario (persistida en localStorage) para cada día
+     */
+    async restoreSeasonSelection() {
+        for (const day of ['martes', 'jueves']) {
+            const saved = localStorage.getItem(`season_${day}`);
+            if (!saved || saved === this.dataManager.currentSeason[day]) continue;
+            const seasons = this.dataManager.getSeasons(day);
+            if (seasons.some(s => s.id === saved)) {
+                await this.dataManager.setCurrentSeason(day, saved);
+            }
+        }
+    }
+
+    /**
+     * Configura el selector global de temporada del sidebar
+     */
+    setupSeasonSelector() {
+        const select = document.getElementById('season-selector');
+        if (!select) return;
+
+        // Cuando una vista cambia de día, refrescar las opciones de temporada disponibles
+        const setCurrentDay = this.dataManager.setCurrentDay.bind(this.dataManager);
+        this.dataManager.setCurrentDay = (day) => {
+            setCurrentDay(day);
+            this.populateSeasonSelector();
+        };
+
+        select.addEventListener('change', async (e) => {
+            const day = this.dataManager.getCurrentDay();
+            const seasonId = e.target.value || null;
+            localStorage.setItem(`season_${day}`, seasonId || '');
+            await this.dataManager.setCurrentSeason(day, seasonId);
+            this.rerenderActiveView();
+        });
+
+        this.populateSeasonSelector();
+    }
+
+    /**
+     * Rellena el selector de temporada con las temporadas del día actual
+     */
+    populateSeasonSelector() {
+        const select = document.getElementById('season-selector');
+        if (!select) return;
+
+        const day = this.dataManager.getCurrentDay();
+        const seasons = this.dataManager.getSeasons(day);
+        const current = this.dataManager.getCurrentSeason(day);
+
+        select.innerHTML = seasons.map(s =>
+            `<option value="${s.id}" ${current && s.id === current.id ? 'selected' : ''}>${s.is_active ? '★ ' : ''}${s.name}</option>`
+        ).join('');
+    }
+
+    /**
+     * Vuelve a renderizar la vista actualmente activa (tras cambiar de temporada)
+     */
+    rerenderActiveView() {
+        const activeLink = document.querySelector('.menu a.active');
+        if (!activeLink) return;
+        const viewName = activeLink.id.replace('menu-', '');
+        this.views[viewName]?.render();
     }
 
     /**

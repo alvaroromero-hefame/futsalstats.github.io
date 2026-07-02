@@ -23,11 +23,13 @@ export class ClasificacionView {
             return;
         }
 
-        const clasificacion = calcularClasificacion(data.matches, data.fijos);
+        const clasificacion = calcularClasificacion(data.matches, data.fijos, this.dataManager.getPlayersById());
         const currentDay = this.dataManager.getCurrentDay();
-        
+        const season = this.dataManager.getCurrentSeason(currentDay);
+        const seasonBadge = season ? `<span class="season-badge">${season.name}</span>` : '';
+
         let html = renderDaySelector(currentDay, '-class');
-        html += '<h2>Clasificación Liga</h2>';
+        html += `<h2>Clasificación Liga ${seasonBadge}</h2>`;
         html += this.renderTabla(clasificacion, data);
         html += renderLeyendaClasificacion();
         

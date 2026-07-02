@@ -67,11 +67,13 @@ export class ComparativaView {
 
         // Obtener lista de jugadores únicos desde los partidos
         const players = this.getUniquePlayers(data.matches);
+        const season = this.dataManager.getCurrentSeason(this.dataManager.getCurrentDay());
+        const seasonBadge = season ? `<span class="season-badge">${season.name}</span>` : '';
 
         this.container.innerHTML = `
             <div class="comparativa-container">
                 <div class="comparativa-header">
-                    <h1>🔍 Comparativa de Jugadores</h1>
+                    <h1>🔍 Comparativa de Jugadores ${seasonBadge}</h1>
                     <p>Selecciona hasta 3 jugadores para comparar sus estadísticas</p>
                 </div>
 
