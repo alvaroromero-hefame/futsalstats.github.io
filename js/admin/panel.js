@@ -310,11 +310,6 @@ export class AdminPanel {
      */
     getJugadoresTemplate() {
         return `
-            <div class="day-selector">
-                <button class="btn-day ${this.currentDay === 'martes' ? 'active' : ''}" data-day="martes">Martes</button>
-                <button class="btn-day ${this.currentDay === 'jueves' ? 'active' : ''}" data-day="jueves">Jueves</button>
-            </div>
-
             <div class="admin-section">
                 <div class="players-management-header">
                     <h2>👥 Maestro de Jugadores</h2>
@@ -330,6 +325,11 @@ export class AdminPanel {
                 <div id="players-list" class="players-list">
                     <p class="loading">Cargando jugadores...</p>
                 </div>
+            </div>
+
+            <div class="day-selector">
+                <button class="btn-day ${this.currentDay === 'martes' ? 'active' : ''}" data-day="martes">Martes</button>
+                <button class="btn-day ${this.currentDay === 'jueves' ? 'active' : ''}" data-day="jueves">Jueves</button>
             </div>
 
             <div class="admin-section">
@@ -497,12 +497,12 @@ export class AdminPanel {
      */
     attachPartidosListeners() {
         document.querySelectorAll('.btn-day').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 document.querySelectorAll('.btn-day').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.currentDay = e.target.dataset.day;
                 this.currentAdminSeasonId = null; // se recalcula a la temporada activa del nuevo día
-                this.loadSeasonsAdmin();
+                await this.loadSeasonsAdmin();
                 this.loadAvailabilityBoard();
                 this.loadRecentMatches();
             });
@@ -519,12 +519,12 @@ export class AdminPanel {
      */
     attachJugadoresListeners() {
         document.querySelectorAll('.btn-day').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 document.querySelectorAll('.btn-day').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.currentDay = e.target.dataset.day;
                 this.currentAdminSeasonId = null; // se recalcula a la temporada activa del nuevo día
-                this.loadSeasonsAdmin();
+                await this.loadSeasonsAdmin();
                 this.loadAllPlayers();
                 this.loadAvailabilityBoard();
             });
