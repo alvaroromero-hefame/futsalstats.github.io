@@ -3,17 +3,14 @@
  */
 
 /**
- * Clave de agrupación de un jugador: su player_id si el partido ya está
- * vinculado al maestro, o su nombre literal si no (partidos aún sin vincular)
- */
-function claveDeJugador(m) {
-    return m.player_id || m.name;
-}
-
-/**
  * Nombre a mostrar de un jugador: el nombre ACTUAL del maestro si el partido
  * está vinculado por player_id (así un cambio de nombre se refleja solo,
- * sin tocar partidos históricos); si no, el nombre literal guardado en el partido
+ * sin tocar partidos históricos); si no, el nombre literal guardado en el partido.
+ * También se usa como clave de agrupación: dentro de un mismo partido, la entrada
+ * del lineup y la del MVP pueden vincularse al maestro por separado (ver
+ * linkHistoricalPlayers en admin/panel.js), así que agrupar por player_id crudo
+ * separaría a un mismo jugador en dos filas si solo una de las dos quedó vinculada.
+ * Agrupar por nombre resuelto evita ese caso.
  */
 function nombreDeJugador(m, playersById = {}) {
     if (m.player_id && playersById[m.player_id]) {
@@ -33,11 +30,9 @@ export function calcularClasificacion(matches, fijos = [], playersById = {}) {
     const jugadores = {};
 
     const ensure = (m) => {
-        const key = claveDeJugador(m);
+        const key = nombreDeJugador(m, playersById);
         if (!jugadores[key]) {
-            jugadores[key] = { nombre: nombreDeJugador(m, playersById), ...crearJugadorVacio() };
-        } else {
-            jugadores[key].nombre = nombreDeJugador(m, playersById);
+            jugadores[key] = { nombre: key, ...crearJugadorVacio() };
         }
         return jugadores[key];
     };
