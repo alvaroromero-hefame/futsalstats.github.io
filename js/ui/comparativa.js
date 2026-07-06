@@ -335,9 +335,9 @@ export class ComparativaView {
         }));
 
         const colors = [
-            { bg: 'rgba(102, 126, 234, 0.2)', border: 'rgba(102, 126, 234, 1)' },
-            { bg: 'rgba(239, 68, 68, 0.2)', border: 'rgba(239, 68, 68, 1)' },
-            { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 1)' }
+            { bg: 'rgba(4, 74, 128, 0.2)', border: 'rgba(4, 74, 128, 1)' },
+            { bg: 'rgba(220, 38, 38, 0.2)', border: 'rgba(220, 38, 38, 1)' },
+            { bg: 'rgba(37, 99, 235, 0.2)', border: 'rgba(37, 99, 235, 1)' }
         ];
 
         this.comparisonChart = new Chart(ctx, {

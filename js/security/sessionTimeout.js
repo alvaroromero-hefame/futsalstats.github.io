@@ -161,13 +161,14 @@ export class SessionTimeout {
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: #fff3cd;
-                border: 2px solid #ffc107;
-                border-radius: 8px;
+                background: var(--surface, #fff);
+                border: 2px solid var(--ambar, #e8a13c);
+                border-radius: 12px;
                 padding: 20px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                box-shadow: 0 8px 30px rgba(0,0,0,0.25);
                 z-index: 10000;
                 max-width: 300px;
+                color: var(--text, #000000);
                 animation: slideIn 0.3s ease-out;
             `;
             
@@ -182,18 +183,18 @@ export class SessionTimeout {
                     <span style="font-size: 24px; margin-right: 10px;">⏰</span>
                     <strong style="font-size: 16px;">Sesión por expirar</strong>
                 </div>
-                <p style="margin: 10px 0; color: #856404;">
+                <p style="margin: 10px 0; color: var(--muted, #5a6472);">
                     Tu sesión expirará en <strong>${minutes} minuto(s)</strong> por inactividad.
                 </p>
                 <button id="extend-session-btn" style="
                     width: 100%;
                     padding: 10px;
-                    background: #ffc107;
+                    background: var(--ambar, #e8a13c);
                     border: none;
-                    border-radius: 5px;
+                    border-radius: 8px;
                     cursor: pointer;
                     font-weight: bold;
-                    color: #000;
+                    color: #241a06;
                 ">
                     Mantener sesión activa
                 </button>
@@ -249,24 +250,25 @@ export class SessionTimeout {
         
         overlay.innerHTML = `
             <div style="
-                background: white;
+                background: var(--surface, #fff);
+                color: var(--text, #000000);
                 padding: 40px;
-                border-radius: 10px;
+                border-radius: 14px;
                 text-align: center;
                 max-width: 400px;
             ">
                 <div style="font-size: 60px; margin-bottom: 20px;">⏰</div>
-                <h2 style="margin: 0 0 15px 0; color: #333;">Sesión Expirada</h2>
-                <p style="color: #666; margin-bottom: 20px;">
-                    Tu sesión ha expirado por inactividad. 
+                <h2 style="margin: 0 0 15px 0;">Sesión Expirada</h2>
+                <p style="color: var(--muted, #5a6472); margin-bottom: 20px;">
+                    Tu sesión ha expirado por inactividad.
                     Serás redirigido al inicio de sesión.
                 </p>
                 <div style="
-                    background: #f0f0f0;
+                    background: var(--surface-2, #ebebeb);
                     padding: 10px;
-                    border-radius: 5px;
+                    border-radius: 8px;
                     font-size: 14px;
-                    color: #666;
+                    color: var(--muted, #5a6472);
                 ">
                     Redirigiendo en 2 segundos...
                 </div>

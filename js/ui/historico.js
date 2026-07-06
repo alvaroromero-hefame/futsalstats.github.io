@@ -38,7 +38,6 @@ export class HistoricoView {
                 <button id="filter-btn">Buscar</button>
             </div>
             <div id="historico-table"></div>
-            <div id="detalle-match"></div>
         `;
 
         this.renderTable(matches);
@@ -95,15 +94,33 @@ export class HistoricoView {
     }
 
     /**
-     * Muestra el detalle de un partido
+     * Muestra el detalle de un partido en un popup
      * @param {Object} match - Datos del partido
      */
     mostrarDetalle(match) {
-        const detalleDiv = document.getElementById('detalle-match');
         const data = this.dataManager.getCurrentData();
         const fijos = data ? data.fijos || [] : [];
-        
-        detalleDiv.innerHTML = renderDetallePartido(match, fijos);
+        const fecha = formatDate(match.match_date || match.matchDate);
+        const resultado = getResultado(match);
+        const mvp = match.mvp && match.mvp.trim() !== '-' ? SecurityUtils.sanitizeHTML(match.mvp) : 'Sin MVP';
+
+        // ponytail: reutiliza los estilos del modal de player-stats
+        const modal = document.createElement('div');
+        modal.className = 'player-stats-modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="player-stats-content">
+                <button class="player-stats-close" aria-label="Cerrar">&times;</button>
+                <h2>Partido del ${fecha}</h2>
+                <p style="text-align: center;"><strong>Resultado:</strong> ${resultado} &middot; <strong>MVP:</strong> ${mvp}</p>
+                ${renderDetallePartido(match, fijos)}
+            </div>
+        `;
+
+        const close = () => modal.remove();
+        modal.querySelector('.player-stats-close').onclick = close;
+        modal.onclick = (e) => { if (e.target === modal) close(); };
+        document.body.appendChild(modal);
     }
 
     /**
@@ -148,7 +165,6 @@ export class HistoricoView {
                 });
 
                 this.renderTable(filtered);
-                document.getElementById('detalle-match').innerHTML = '';
             };
         }
     }

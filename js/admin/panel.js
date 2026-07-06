@@ -2168,7 +2168,7 @@ export class AdminPanel {
             // Cambiar texto del botón y mostrar botón de cancelar
             const submitBtn = document.querySelector('#match-form button[type="submit"]');
             submitBtn.textContent = '💾 Actualizar Partido';
-            submitBtn.style.background = '#f59e0b';
+            submitBtn.style.background = 'var(--ambar)';
             
             const cancelBtn = document.getElementById('btn-cancel-edit');
             cancelBtn.style.display = 'inline-block';

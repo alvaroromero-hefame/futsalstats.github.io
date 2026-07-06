@@ -1,5 +1,6 @@
 /* ===================================
    SECURITY DASHBOARD STYLES
+   Usa los tokens de css/main.css
    ================================== */
 
 .security-dashboard {
@@ -14,13 +15,11 @@
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #e1e4e8;
+    border-bottom: 1px solid var(--border);
 }
 
 .dashboard-header h2 {
     margin: 0;
-    font-size: 28px;
-    color: #24292e;
 }
 
 .dashboard-controls {
@@ -34,7 +33,7 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #586069;
+    color: var(--muted);
     cursor: pointer;
 }
 
@@ -49,45 +48,29 @@
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    gap: 16px;
     margin-bottom: 30px;
 }
 
-.stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
+.security-dashboard .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 20px;
-    color: white;
+    color: var(--text);
     display: flex;
     align-items: center;
     gap: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: left;
 }
 
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-}
-
-.stat-card:nth-child(1) {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.stat-card:nth-child(2) {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.stat-card:nth-child(3) {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.stat-card:nth-child(4) {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
+.security-dashboard .stat-card:nth-child(1) { box-shadow: inset 4px 0 0 var(--primary); }
+.security-dashboard .stat-card:nth-child(2) { box-shadow: inset 4px 0 0 var(--team-red); }
+.security-dashboard .stat-card:nth-child(3) { box-shadow: inset 4px 0 0 var(--team-blue); }
+.security-dashboard .stat-card:nth-child(4) { box-shadow: inset 4px 0 0 var(--ambar); }
 
 .stat-icon {
-    font-size: 48px;
+    font-size: 40px;
     opacity: 0.9;
 }
 
@@ -95,15 +78,17 @@
     flex: 1;
 }
 
-.stat-value {
-    font-size: 32px;
+.security-dashboard .stat-value {
+    font-family: var(--font-display);
+    font-size: 30px;
     font-weight: bold;
+    font-variant-numeric: tabular-nums;
     margin-bottom: 5px;
 }
 
-.stat-label {
-    font-size: 14px;
-    opacity: 0.9;
+.security-dashboard .stat-label {
+    font-size: 13px;
+    color: var(--muted);
 }
 
 /* ===================================
@@ -119,41 +104,35 @@
 
 .filter-select {
     padding: 10px 15px;
-    border: 2px solid #e1e4e8;
-    border-radius: 6px;
-    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    background: var(--surface);
     font-size: 14px;
-    color: #24292e;
+    color: var(--text);
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.15s;
 }
 
-.filter-select:hover {
-    border-color: #0366d6;
-}
-
+.filter-select:hover,
 .filter-select:focus {
     outline: none;
-    border-color: #0366d6;
-    box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.1);
+    border-color: var(--primary);
 }
 
 /* ===================================
    CHART CONTAINER
    ================================== */
 
-.chart-container {
-    background: white;
-    border-radius: 12px;
+.security-dashboard .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 25px;
     margin-bottom: 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.chart-container h3 {
+.security-dashboard .chart-container h3 {
     margin: 0 0 20px 0;
-    font-size: 20px;
-    color: #24292e;
 }
 
 #events-chart {
@@ -165,17 +144,15 @@
    ================================== */
 
 .logs-container {
-    background: white;
-    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 25px;
     margin-bottom: 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .logs-container h3 {
     margin: 0 0 20px 0;
-    font-size: 20px;
-    color: #24292e;
 }
 
 .logs-table-container {
@@ -188,10 +165,11 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    font-variant-numeric: tabular-nums;
 }
 
 .logs-table thead {
-    background: #f6f8fa;
+    background: var(--surface-2);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -200,47 +178,41 @@
 .logs-table th {
     padding: 12px 15px;
     text-align: left;
-    font-weight: 600;
-    color: #24292e;
-    border-bottom: 2px solid #e1e4e8;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
 }
 
 .logs-table td {
     padding: 12px 15px;
-    border-bottom: 1px solid #e1e4e8;
+    border-bottom: 1px solid var(--border);
     vertical-align: top;
 }
 
 .logs-table tr:hover {
-    background: #f6f8fa;
+    background: var(--surface-2);
 }
 
 /* Severidad en filas */
-.logs-table tr.severity-critical {
-    background: #fff5f5;
-}
-
-.logs-table tr.severity-high {
-    background: #fffbeb;
-}
-
-.logs-table tr.severity-medium {
-    background: #f0f9ff;
-}
-
-.logs-table tr.severity-low {
-    background: #f6ffed;
-}
+.logs-table tr.severity-critical { background: light-dark(#fdf2f2, #2a1717); }
+.logs-table tr.severity-high     { background: light-dark(#fdf8ec, #2a2410); }
+.logs-table tr.severity-medium   { background: light-dark(#f0f7fd, #141d2a); }
+.logs-table tr.severity-low      { background: light-dark(#f1f8ee, #17251b); }
 
 /* Badges */
 .action-badge {
     display: inline-block;
     padding: 4px 10px;
-    background: #e1e4e8;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
-    color: #24292e;
+    color: var(--text);
 }
 
 .severity-badge {
@@ -253,30 +225,30 @@
 }
 
 .severity-badge.severity-critical {
-    background: #dc3545;
-    color: white;
+    background: var(--team-red);
+    color: #fff;
 }
 
 .severity-badge.severity-high {
-    background: #ffc107;
-    color: #000;
+    background: var(--ambar);
+    color: #241a06;
 }
 
 .severity-badge.severity-medium {
-    background: #17a2b8;
-    color: white;
+    background: var(--team-blue);
+    color: #fff;
 }
 
 .severity-badge.severity-low {
-    background: #28a745;
-    color: white;
+    background: var(--azul);
+    color: #fff;
 }
 
 .details-cell {
     max-width: 300px;
     word-wrap: break-word;
     font-size: 12px;
-    color: #586069;
+    color: var(--muted);
 }
 
 /* ===================================
@@ -284,58 +256,41 @@
    ================================== */
 
 .alerts-list {
-    background: white;
-    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 25px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .alerts-list h3 {
     margin: 0 0 20px 0;
-    font-size: 20px;
-    color: #24292e;
 }
 
 .alert {
     padding: 15px 20px;
-    border-radius: 8px;
+    border-radius: var(--radius-s);
     margin-bottom: 15px;
     border-left: 4px solid;
+    background: var(--bg);
 }
 
 .alert:last-child {
     margin-bottom: 0;
 }
 
-.alert-critical {
-    background: #fff5f5;
-    border-color: #dc3545;
-}
-
-.alert-high {
-    background: #fffbeb;
-    border-color: #ffc107;
-}
-
-.alert-medium {
-    background: #f0f9ff;
-    border-color: #17a2b8;
-}
-
-.alert-low {
-    background: #f6ffed;
-    border-color: #28a745;
-}
+.alert-critical { border-color: var(--team-red); }
+.alert-high     { border-color: var(--ambar); }
+.alert-medium   { border-color: var(--team-blue); }
+.alert-low      { border-color: var(--azul); }
 
 .alert-message {
     font-weight: 600;
     margin-bottom: 8px;
-    color: #24292e;
 }
 
 .alert-action {
     font-size: 13px;
-    color: #586069;
+    color: var(--muted);
 }
 
 /* ===================================
@@ -343,12 +298,12 @@
    ================================== */
 
 .dashboard-error {
-    background: #fff5f5;
-    border: 2px solid #dc3545;
-    border-radius: 8px;
+    background: light-dark(#fdf2f2, #2a1717);
+    border: 1px solid var(--team-red);
+    border-radius: var(--radius-s);
     padding: 15px 20px;
     margin-bottom: 20px;
-    color: #dc3545;
+    color: var(--loss);
     font-weight: 500;
 }
 

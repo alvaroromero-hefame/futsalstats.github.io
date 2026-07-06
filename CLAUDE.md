@@ -75,7 +75,11 @@ Toda la lógica vive en `js/utils/calculations.js`.
 
 1. Crear `js/ui/miVista.js` exportando una clase con `render()`
 2. Importarla en `main.js` y añadirla al mapa `this.views`
-3. Añadir un `<li>` con `id="menu-miVista"` en el `<ul class="menu">` de `index.html`
+3. Añadir un enlace con `data-view="miVista"` en el `<ul class="menu">` del sidebar Y en el `<nav class="tabbar">` (móvil) de `app.html`. La navegación se enlaza por el atributo `data-view`, no por id.
+
+### Sistema de diseño
+
+Los tokens (colores, radios, tipografía) viven en `:root` de `css/main.css` y usan `light-dark()` para tema claro/oscuro automático. Todo color nuevo debe usar `var(--token)`, nunca hex directo. Tipografía: Barlow (texto) + Barlow Condensed (titulares), cargadas de Google Fonts. El layout del shell (topbar/sidebar/tabbar/footer) es un grid sobre `body.app-shell` — admin.html no lleva esa clase y no lo usa.
 
 ### CSP
 

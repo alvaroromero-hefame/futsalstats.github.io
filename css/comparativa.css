@@ -3,34 +3,26 @@
    ============================================ */
 
 .comparativa-container {
-    padding: 20px;
     max-width: 1400px;
     margin: 0 auto;
 }
 
 .comparativa-header {
     text-align: center;
-    margin-bottom: 40px;
-}
-
-.comparativa-header h1 {
-    color: #333;
-    font-size: 32px;
-    margin-bottom: 10px;
+    margin-bottom: 32px;
 }
 
 .comparativa-header p {
-    color: #666;
-    font-size: 16px;
+    color: var(--muted);
 }
 
 /* Selector de jugadores */
 .player-selector-container {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
 }
 
 .player-selector {
@@ -43,41 +35,38 @@
 
 .player-selector label {
     font-weight: 600;
-    color: #333;
-    font-size: 16px;
 }
 
 .player-select-dropdown {
     flex: 1;
     min-width: 200px;
-    padding: 12px 16px;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 15px;
-    transition: all 0.3s;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-s);
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color .15s;
 }
 
 .player-select-dropdown:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--primary);
+    color: var(--on-primary);
     border: none;
     padding: 12px 24px;
-    border-radius: 8px;
+    border-radius: var(--radius-s);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: filter .15s;
     font-size: 15px;
 }
 
 .btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    filter: brightness(1.1);
 }
 
 .btn-primary:disabled {
@@ -88,12 +77,12 @@
 /* Jugadores seleccionados */
 .selected-players {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .no-players {
-    color: #999;
+    color: var(--muted);
     font-style: italic;
     padding: 20px;
     text-align: center;
@@ -103,62 +92,52 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 20px;
-    border-radius: 25px;
+    padding: 10px 18px;
+    border-radius: 99px;
     font-weight: 600;
-    transition: all 0.3s;
+    color: #fff;
 }
 
-.player-color-1 {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.player-color-2 {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-}
-
-.player-color-3 {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
+/* Colores por jugador (coinciden con las series del gráfico) */
+.player-color-1 { background: var(--azul); }
+.player-color-2 { background: light-dark(#dc2626, #b91c1c); }
+.player-color-3 { background: light-dark(#2563eb, #1d4ed8); }
 
 .remove-player-btn {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
     border: none;
-    color: white;
-    width: 24px;
-    height: 24px;
+    color: #fff;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 16px;
-    transition: all 0.3s;
+    transition: background .15s;
 }
 
 .remove-player-btn:hover {
-    background: rgba(255, 255, 255, 0.5);
-    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.45);
 }
 
 /* Tabla de comparación */
 .comparison-table-container {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
     overflow-x: auto;
 }
 
 .info-message {
     text-align: center;
-    color: #666;
+    color: var(--muted);
     padding: 40px;
-    font-size: 16px;
 }
 
 .comparison-table-wrapper {
@@ -169,112 +148,76 @@
     width: 100%;
     border-collapse: collapse;
     min-width: 600px;
-    table-layout: fixed; /* Forzar distribución equitativa */
-    display: table; /* Asegurar comportamiento de tabla */
+    table-layout: fixed;
+    font-variant-numeric: tabular-nums;
 }
 
 .comparison-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    display: table-header-group; /* Asegurar comportamiento correcto */
-}
-
-.comparison-table tbody {
-    display: table-row-group; /* Asegurar comportamiento correcto */
-}
-
-.comparison-table tr {
-    display: table-row; /* Asegurar comportamiento de fila */
+    background: var(--surface-2);
 }
 
 .comparison-table th,
 .comparison-table td {
-    display: table-cell; /* CRÍTICO: Forzar comportamiento de celda */
-    padding: 16px;
+    padding: 14px 16px;
     text-align: center;
-    font-weight: 600;
-    font-size: 15px;
     vertical-align: middle;
 }
 
 .comparison-table th {
-    padding: 16px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 15px;
+    font-family: var(--font-display);
+    font-size: .85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
 }
 
 .comparison-table .metric-column {
     text-align: left;
-    width: 30%; /* Ancho fijo para la columna de métricas */
+    width: 30%;
 }
 
 .comparison-table .player-column {
-    width: auto; /* Las columnas de jugadores se distribuyen el resto */
+    width: auto;
     text-align: center;
 }
 
 .comparison-table tbody tr {
-    border-bottom: 1px solid #e5e7eb;
-    transition: background 0.2s;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
 }
 
 .comparison-table tbody tr:hover {
-    background: #f9fafb;
+    background: var(--surface-2);
 }
 
 .comparison-table tbody tr:last-child {
     border-bottom: none;
 }
 
-.comparison-table td {
-    padding: 14px 16px;
-    text-align: center;
-    font-size: 14px;
-    display: table-cell !important; /* FORZAR comportamiento de celda */
-}
-
 .comparison-table .metric-name {
     font-weight: 600;
-    color: #333;
     text-align: left;
-    display: table-cell !important; /* FORZAR comportamiento de celda */
 }
 
 .comparison-table .stat-value {
-    color: #666;
-    font-size: 15px;
-    font-weight: 500;
-    text-align: center; /* Asegurar centrado */
-    display: table-cell !important; /* FORZAR comportamiento de celda */
-}
-
-.metric-name {
-    font-weight: 600;
-    color: #333;
-    text-align: left !important;
-}
-
-.stat-value {
-    font-size: 16px;
-    color: #555;
+    color: var(--muted);
     font-weight: 500;
 }
 
 .best-stat {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white !important;
+    background: var(--primary);
+    color: var(--on-primary) !important;
     font-weight: 700;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    border-radius: var(--radius-s);
 }
 
 /* Gráficos */
 .comparison-charts {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
 }
 
 .chart-container {
@@ -284,9 +227,7 @@
 
 .chart-container h3 {
     text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 24px;
+    margin-bottom: 24px;
 }
 
 .chart-container canvas {
@@ -295,14 +236,6 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .comparativa-container {
-        padding: 15px;
-    }
-
-    .comparativa-header h1 {
-        font-size: 24px;
-    }
-
     .player-selector {
         flex-direction: column;
         align-items: stretch;
@@ -320,16 +253,9 @@
         padding: 15px;
     }
 
-    .comparison-table {
-        font-size: 14px;
-    }
-
     .comparison-table th,
     .comparison-table td {
         padding: 10px 8px;
-    }
-
-    .metric-name {
         font-size: 13px;
     }
 

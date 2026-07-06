@@ -3,7 +3,7 @@
  * Permite funcionamiento offline y cacheo de recursos
  */
 
-const CACHE_NAME = 'futsal-stats-v3.2.1';
+const CACHE_NAME = 'futsal-stats-v4.0.0';
 const OFFLINE_URL = '/offline.html';
 
 // Recursos a cachear en la instalación
@@ -16,7 +16,6 @@ const STATIC_CACHE_URLS = [
     // CSS
     '/css/main.css',
     '/css/admin.css',
-    '/css/mobile.css',
     '/css/sidebar.css',
     '/css/tables.css',
     '/css/player-stats.css',
@@ -35,7 +34,6 @@ const STATIC_CACHE_URLS = [
     '/js/auth/authGuard.js',
     
     // JavaScript - UI
-    '/js/ui/sidebar.js',
     '/js/ui/clasificacion.js',
     '/js/ui/estadisticas.js',
     '/js/ui/historico.js',

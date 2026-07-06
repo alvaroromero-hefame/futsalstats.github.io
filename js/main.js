@@ -3,7 +3,6 @@
  */
 // Ya no necesitamos importar el SDK de Supabase - usamos REST directo
 import { DataManager } from './dataManager.js';
-import { SidebarManager } from './ui/sidebar.js';
 import { ClasificacionView } from './ui/clasificacion.js';
 import { HistoricoView } from './ui/historico.js';
 import { EstadisticasView } from './ui/estadisticas.js';
@@ -20,9 +19,9 @@ class FutsalApp {
     constructor() {
         this.supabase = null;
         this.dataManager = null;
-        this.sidebarManager = null;
         this.mainContent = document.getElementById('main-content');
         this.views = {};
+        this.currentView = null;
     }
 
     /**
@@ -70,7 +69,7 @@ class FutsalApp {
         initAdvancedStats(this.dataManager);
         
         // Inicializar componentes UI
-        this.sidebarManager = new SidebarManager();
+        this.setupChartTheme();
         this.views = {
             clasificacion: new ClasificacionView(this.dataManager, this.mainContent),
             historico: new HistoricoView(this.dataManager, this.mainContent),
@@ -151,10 +150,19 @@ class FutsalApp {
      * Vuelve a renderizar la vista actualmente activa (tras cambiar de temporada)
      */
     rerenderActiveView() {
-        const activeLink = document.querySelector('.menu a.active');
-        if (!activeLink) return;
-        const viewName = activeLink.id.replace('menu-', '');
-        this.views[viewName]?.render();
+        if (!this.currentView) return;
+        this.views[this.currentView]?.render();
+    }
+
+    /**
+     * Ajusta los colores por defecto de Chart.js al tema (claro/oscuro)
+     */
+    setupChartTheme() {
+        if (!window.Chart) return;
+        const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        Chart.defaults.color = dark ? '#96a3c0' : '#5a6472';
+        Chart.defaults.borderColor = dark ? 'rgba(150, 163, 192, 0.2)' : 'rgba(90, 100, 114, 0.2)';
+        Chart.defaults.font.family = '"Barlow", system-ui, sans-serif';
     }
 
     /**
@@ -346,7 +354,7 @@ class FutsalApp {
         if (!badge) return;
 
         // Solo Supabase disponible ahora
-        badge.textContent = '🟢 Supabase';
+        badge.textContent = '● Supabase';
         badge.classList.add('connected');
     }
 
@@ -354,24 +362,12 @@ class FutsalApp {
      * Configura los event listeners de navegación
      */
     setupNavigation() {
-        const menuItems = [
-            { id: 'menu-clasificacion', view: 'clasificacion' },
-            { id: 'menu-historico', view: 'historico' },
-            { id: 'menu-estadisticas', view: 'estadisticas' },
-            { id: 'menu-comparativa', view: 'comparativa' },
-            { id: 'menu-simulador', view: 'simulador' },
-            { id: 'menu-analisis-ia', view: 'analisisIA' }
-        ];
-
-        menuItems.forEach(({ id, view }) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.showView(view);
-                    this.sidebarManager?.close();
-                });
-            }
+        // Sidebar (escritorio) y tab bar (móvil) comparten data-view
+        document.querySelectorAll('[data-view]').forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showView(element.dataset.view);
+            });
         });
     }
 
@@ -388,15 +384,13 @@ class FutsalApp {
                 }
             });
             
-            // Remover clase active de todos los enlaces
-            document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
-            
-            // Añadir clase active al enlace actual
-            const activeLink = document.getElementById(`menu-${viewName}`);
-            if (activeLink) {
-                activeLink.classList.add('active');
-            }
-            
+            // Marcar enlace activo en sidebar y tab bar
+            document.querySelectorAll('[data-view]').forEach(a => {
+                a.classList.toggle('active', a.dataset.view === viewName);
+            });
+            this.currentView = viewName;
+
+
             // Renderizar vista
             this.views[viewName].render();
             
@@ -417,22 +411,22 @@ class FutsalApp {
         // Actualizar badge de conexión
         const badge = document.getElementById('data-source-badge');
         if (badge) {
-            badge.textContent = '🔴 Error';
+            badge.textContent = '● Error';
             badge.classList.remove('connected');
             badge.classList.add('error');
         }
-        
+
         this.mainContent.innerHTML = `
             <div style="padding: 20px; text-align: center;">
-                <h2 style="color: #ef4444;">❌ Error</h2>
+                <h2 style="color: var(--loss);">Error</h2>
                 <p>${message}</p>
                 <button onclick="location.reload()" style="
                     margin-top: 20px;
                     padding: 10px 20px;
-                    background: #3b82f6;
-                    color: white;
+                    background: var(--primary);
+                    color: var(--on-primary);
                     border: none;
-                    border-radius: 6px;
+                    border-radius: 8px;
                     cursor: pointer;
                 ">
                     Reintentar

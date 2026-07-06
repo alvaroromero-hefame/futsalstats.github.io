@@ -2,24 +2,25 @@
 <html lang="es">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
 	<!-- PWA Meta Tags -->
 	<meta name="description" content="Gestión y estadísticas de partidos de fútbol sala">
-	<meta name="theme-color" content="#667eea">
+	<meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<meta name="apple-mobile-web-app-title" content="Futsal Stats">
 	<link rel="manifest" href="/manifest.json">
-	
+
 	<!-- Apple Touch Icons -->
 	<link rel="apple-touch-icon" href="/icons/icon-152x152.png">
 	<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
-	
+
 	<!-- Favicon -->
 	<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96x96.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
-	
+
 	<!-- Security Headers -->
 	<meta http-equiv="Content-Security-Policy" content="
 		default-src 'self';
@@ -32,67 +33,98 @@
 		form-action 'self';
 	">
 	<meta http-equiv="X-Content-Type-Options" content="nosniff">
-	<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">"
-	
+	<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
 	<title>Futsal Stats</title>
+
+	<!-- Tipografía -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+
 	<!-- CSS modularizado -->
 	<link rel="stylesheet" href="css/main.css">
 	<link rel="stylesheet" href="css/sidebar.css">
 	<link rel="stylesheet" href="css/tables.css">
-	<link rel="stylesheet" href="css/mobile.css">
 	<link rel="stylesheet" href="css/player-stats.css">
 	<link rel="stylesheet" href="css/simulador.css">
 	<link rel="stylesheet" href="css/analisisIA.css">
 	<link rel="stylesheet" href="css/comparativa.css">
-	
+
 	<!-- Chart.js -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
-<body>
-	<!-- Toggle button outside sidebar so it's always visible -->
-	<button id="toggleBtn" class="toggle-btn">☰</button>
-	
-	<div id="sidebar" class="sidebar">
+<body class="app-shell">
+
+	<!-- Iconos SVG reutilizables -->
+	<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+		<defs>
+			<symbol id="i-trofeo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1"/></symbol>
+			<symbol id="i-calendario" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+			<symbol id="i-grafica" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></symbol>
+			<symbol id="i-comparar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+			<symbol id="i-simular" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></symbol>
+			<symbol id="i-ia" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 2.6 11.4 6c.1.2.3.4.5.5l3.4 1.5a1 1 0 0 1 0 1.8L12 11.4a1 1 0 0 0-.6.6l-1.5 3.4a1 1 0 0 1-1.8 0L6.6 12a1 1 0 0 0-.5-.5L2.6 10a1 1 0 0 1 0-1.8L6 6.6c.2-.1.4-.3.5-.5l1.6-3.5a1 1 0 0 1 1.8 0Z"/><path d="M19 15v4M21 17h-4"/></symbol>
+		</defs>
+	</svg>
+
+	<!-- Barra superior: marca + temporada -->
+	<header class="topbar">
+		<div class="brand">
+			<span class="brand-mark">FS</span>
+			<span class="brand-name">Futsal<em>Stats</em></span>
+		</div>
 		<div class="season-selector-wrap">
 			<label for="season-selector">Temporada</label>
 			<select id="season-selector"></select>
 		</div>
+	</header>
 
-		<ul class="menu">
-			<li><a href="#" id="menu-clasificacion">🏆 Clasificación</a></li>
-			<li><a href="#" id="menu-historico">📅 Histórico</a></li>
-			<li><a href="#" id="menu-estadisticas">📊 Estadísticas</a></li>
-			<li><a href="#" id="menu-comparativa">🔍 Comparativa</a></li>
-			<li><a href="#" id="menu-simulador">🎮 Simulador</a></li>
-			<li><a href="#" id="menu-analisis-ia">🤖 Análisis IA</a></li>
-		</ul>
-	</div>
+	<!-- Navegación lateral (tablet / escritorio) -->
+	<aside id="sidebar" class="sidebar">
+		<nav aria-label="Secciones">
+			<ul class="menu">
+				<li><a href="#" id="menu-clasificacion" data-view="clasificacion"><svg class="icon"><use href="#i-trofeo"/></svg><span>Clasificación</span></a></li>
+				<li><a href="#" id="menu-historico" data-view="historico"><svg class="icon"><use href="#i-calendario"/></svg><span>Histórico</span></a></li>
+				<li><a href="#" id="menu-estadisticas" data-view="estadisticas"><svg class="icon"><use href="#i-grafica"/></svg><span>Estadísticas</span></a></li>
+				<li><a href="#" id="menu-comparativa" data-view="comparativa"><svg class="icon"><use href="#i-comparar"/></svg><span>Comparativa</span></a></li>
+				<li><a href="#" id="menu-simulador" data-view="simulador"><svg class="icon"><use href="#i-simular"/></svg><span>Simulador</span></a></li>
+				<li><a href="#" id="menu-analisis-ia" data-view="analisisIA"><svg class="icon"><use href="#i-ia"/></svg><span>Análisis IA</span></a></li>
+			</ul>
+		</nav>
+	</aside>
 
-	<div id="mobile-backdrop" class="mobile-backdrop"></div>
-	
-	<div id="main-content" class="main-content">
+	<main id="main-content" class="main-content">
 		<!-- Loading inicial -->
 		<div id="initial-loading" class="initial-loading">
 			<div class="loading-spinner"></div>
-			<p>Cargando datos...</p>
+			<p>Cargando datos…</p>
 		</div>
-	</div>
-	
+	</main>
+
 	<!-- Footer con versión -->
 	<footer id="app-footer" class="app-footer">
 		<p>
-			⚽ <strong>Futsal Stats</strong> 
+			<strong>Futsal Stats</strong>
 			<span id="app-version">v3.2.1</span>
-			<span class="separator">•</span>
-			<span>Estadísticas avanzadas con IA</span>
-			<span class="separator">•</span>
-			<span id="data-source-badge" class="data-source-badge">🔄 Conectando...</span>
+			<span class="separator">·</span>
+			<span id="data-source-badge" class="data-source-badge">Conectando…</span>
 		</p>
 	</footer>
-	
+
+	<!-- Navegación inferior (móvil) -->
+	<nav class="tabbar" aria-label="Secciones">
+		<a href="#" data-view="clasificacion"><svg class="icon"><use href="#i-trofeo"/></svg><span>Tabla</span></a>
+		<a href="#" data-view="historico"><svg class="icon"><use href="#i-calendario"/></svg><span>Partidos</span></a>
+		<a href="#" data-view="estadisticas"><svg class="icon"><use href="#i-grafica"/></svg><span>Stats</span></a>
+		<a href="#" data-view="comparativa"><svg class="icon"><use href="#i-comparar"/></svg><span>Comparar</span></a>
+		<a href="#" data-view="simulador"><svg class="icon"><use href="#i-simular"/></svg><span>Simular</span></a>
+		<a href="#" data-view="analisisIA"><svg class="icon"><use href="#i-ia"/></svg><span>IA</span></a>
+	</nav>
+
 	<!-- JavaScript modularizado con ES6 modules -->
 	<script type="module" src="js/main.js"></script>
-	
+
 	<!-- PWA Service Worker Registration -->
 	<script>
 		// Registrar Service Worker para PWA
@@ -101,7 +133,7 @@
 				navigator.serviceWorker.register('/sw.js')
 					.then(registration => {
 						console.log('✅ Service Worker registrado:', registration.scope);
-						
+
 						// Detectar actualizaciones del SW
 						registration.addEventListener('updatefound', () => {
 							const newWorker = registration.installing;
@@ -119,7 +151,7 @@
 					.catch(error => {
 						console.error('❌ Error al registrar Service Worker:', error);
 					});
-				
+
 				// Detectar cuando el SW toma control
 				navigator.serviceWorker.addEventListener('controllerchange', () => {
 					console.log('🔄 Service Worker actualizado, recargando...');
@@ -127,38 +159,38 @@
 				});
 			});
 		}
-		
+
 		// Detectar instalación de PWA
 		let deferredPrompt;
 		window.addEventListener('beforeinstallprompt', (e) => {
 			// Prevenir el mini-infobar de Chrome
 			e.preventDefault();
 			deferredPrompt = e;
-			
+
 			// Mostrar botón de instalación personalizado (opcional)
 			console.log('💡 PWA puede ser instalada');
 			showInstallPromotion();
 		});
-		
+
 		// Función para mostrar promoción de instalación
 		function showInstallPromotion() {
 			// Crear banner de instalación solo una vez
 			if (localStorage.getItem('pwa-install-dismissed')) {
 				return;
 			}
-			
+
 			const banner = document.createElement('div');
 			banner.id = 'install-banner';
 			banner.style.cssText = `
 				position: fixed;
-				bottom: 20px;
+				bottom: calc(76px + env(safe-area-inset-bottom));
 				left: 50%;
 				transform: translateX(-50%);
-				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-				color: white;
-				padding: 15px 25px;
+				background: var(--primary);
+				color: var(--on-primary);
+				padding: 14px 20px;
 				border-radius: 12px;
-				box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+				box-shadow: 0 8px 30px rgba(0,0,0,0.35);
 				z-index: 10000;
 				display: flex;
 				align-items: center;
@@ -166,30 +198,30 @@
 				animation: slideUp 0.3s ease-out;
 				max-width: 90%;
 			`;
-			
+
 			banner.innerHTML = `
-				<span>📱 Instala Futsal Stats en tu dispositivo</span>
+				<span>Instala Futsal Stats en tu dispositivo</span>
 				<button id="install-button" style="
-					background: white;
-					color: #667eea;
+					background: var(--on-primary);
+					color: var(--primary);
 					border: none;
 					padding: 8px 16px;
-					border-radius: 6px;
+					border-radius: 8px;
 					font-weight: bold;
 					cursor: pointer;
 				">Instalar</button>
 				<button id="dismiss-button" style="
 					background: transparent;
-					color: white;
-					border: 1px solid white;
+					color: inherit;
+					border: 1px solid currentColor;
 					padding: 8px 16px;
-					border-radius: 6px;
+					border-radius: 8px;
 					cursor: pointer;
 				">Ahora no</button>
 			`;
-			
+
 			document.body.appendChild(banner);
-			
+
 			// Evento de instalación
 			document.getElementById('install-button').addEventListener('click', async () => {
 				if (deferredPrompt) {
@@ -200,20 +232,20 @@
 				}
 				banner.remove();
 			});
-			
+
 			// Evento de dismissal
 			document.getElementById('dismiss-button').addEventListener('click', () => {
 				localStorage.setItem('pwa-install-dismissed', 'true');
 				banner.remove();
 			});
 		}
-		
+
 		// Detectar cuando la app se instala
 		window.addEventListener('appinstalled', () => {
 			console.log('✅ PWA instalada correctamente');
 			deferredPrompt = null;
 		});
-		
+
 		// Animación CSS para el banner
 		const style = document.createElement('style');
 		style.textContent = `
