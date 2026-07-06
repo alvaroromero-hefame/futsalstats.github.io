@@ -247,11 +247,9 @@ export function calcularVictorias(data) {
  */
 export function calcularTopGoleadores(data, playersById = {}) {
     const goleadores = {};
-    const nombres = {};
 
     const procesar = (player) => {
-        const key = claveDeJugador(player);
-        nombres[key] = nombreDeJugador(player, playersById);
+        const key = nombreDeJugador(player, playersById);
         const goles = player.goal !== undefined ? player.goal : (player.goles || 0);
         goleadores[key] = (goleadores[key] || 0) + goles;
     };
@@ -262,7 +260,7 @@ export function calcularTopGoleadores(data, playersById = {}) {
         lineups.red.forEach(procesar);
     });
 
-    return obtenerTop3(goleadores, nombres);
+    return obtenerTop3(goleadores);
 }
 
 /**
@@ -273,11 +271,9 @@ export function calcularTopGoleadores(data, playersById = {}) {
  */
 export function calcularTopEncajados(data, playersById = {}) {
     const encajados = {};
-    const nombres = {};
 
     const procesar = (player) => {
-        const key = claveDeJugador(player);
-        nombres[key] = nombreDeJugador(player, playersById);
+        const key = nombreDeJugador(player, playersById);
         const keeper = player.keeper !== undefined ? player.keeper : (player.portero || 0);
         encajados[key] = (encajados[key] || 0) + keeper;
     };
@@ -288,7 +284,7 @@ export function calcularTopEncajados(data, playersById = {}) {
         lineups.red.forEach(procesar);
     });
 
-    return obtenerTop3(encajados, nombres);
+    return obtenerTop3(encajados);
 }
 
 /**
@@ -299,11 +295,9 @@ export function calcularTopEncajados(data, playersById = {}) {
  */
 export function calcularTopAsistencias(data, playersById = {}) {
     const asistencias = {};
-    const nombres = {};
 
     const procesar = (player) => {
-        const key = claveDeJugador(player);
-        nombres[key] = nombreDeJugador(player, playersById);
+        const key = nombreDeJugador(player, playersById);
         const assists = player.assist !== undefined ? player.assist : (player.asistencias || 0);
         asistencias[key] = (asistencias[key] || 0) + assists;
     };
@@ -314,16 +308,15 @@ export function calcularTopAsistencias(data, playersById = {}) {
         lineups.red.forEach(procesar);
     });
 
-    return obtenerTop3(asistencias, nombres);
+    return obtenerTop3(asistencias);
 }
 
 /**
  * Obtiene el top 3 de un objeto de estadísticas
- * @param {Object} obj - Objeto con clave:valor
- * @param {Object} nombres - Mapa clave:nombre a mostrar (opcional, por defecto la propia clave)
+ * @param {Object} obj - Objeto con nombre:valor
  * @returns {Array} Array de strings con formato "Nombre (valor)"
  */
-function obtenerTop3(obj, nombres = {}) {
+function obtenerTop3(obj) {
     const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
     const top = [];
     let rank = 1;
@@ -333,8 +326,7 @@ function obtenerTop3(obj, nombres = {}) {
             rank++;
         }
         if (rank > 3) break;
-        const nombre = nombres[sorted[i][0]] || sorted[i][0];
-        top.push(`${nombre} (${sorted[i][1]})`);
+        top.push(`${sorted[i][0]} (${sorted[i][1]})`);
     }
 
     return top;
