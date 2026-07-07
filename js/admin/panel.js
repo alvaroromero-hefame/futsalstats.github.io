@@ -333,21 +333,29 @@ export class AdminPanel {
             </div>
 
             <div class="admin-section">
-                <h2>📋 Disponibilidad (Fijos / Eventuales)</h2>
-                <div class="availability-controls">
-                    <label for="availability-season-select">Temporada</label>
-                    <select id="availability-season-select"></select>
+                <div class="availability-header">
+                    <h2>📋 Disponibilidad</h2>
+                    <div class="availability-controls">
+                        <label for="availability-season-select">Temporada</label>
+                        <select id="availability-season-select"></select>
+                    </div>
                 </div>
                 <div class="availability-board">
-                    <div class="availability-column">
-                        <h4>Fijos</h4>
+                    <div class="availability-column availability-column--fixed">
+                        <div class="availability-column-header">
+                            <h4>🔵 Fijos</h4>
+                            <span class="availability-count" id="availability-fixed-count">0</span>
+                        </div>
                         <div id="availability-fixed" class="chips-row"></div>
                     </div>
-                    <div class="availability-column">
-                        <h4>Eventuales/Suplentes</h4>
+                    <div class="availability-column availability-column--eventual">
+                        <div class="availability-column-header">
+                            <h4>🟠 Eventuales/Suplentes</h4>
+                            <span class="availability-count" id="availability-eventual-count">0</span>
+                        </div>
                         <div id="availability-eventual" class="chips-row"></div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.openAvailabilityPicker()">
-                            ➕ Añadir
+                        <button type="button" class="btn btn-secondary btn-sm availability-add-btn" onclick="adminPanel.openAvailabilityPicker()">
+                            ➕ Añadir jugador
                         </button>
                     </div>
                 </div>
@@ -1153,13 +1161,19 @@ export class AdminPanel {
         if (!fixedEl || !eventualEl) return;
 
         const chip = (p) => `
-            <span class="player-chip" onclick="adminPanel.toggleAvailability('${p.id}', ${p.is_fixed})">
-                ${p.name}
-                <button type="button" class="btn-icon btn-delete" onclick="event.stopPropagation(); adminPanel.removeAvailability('${p.id}')">✕</button>
+            <span class="player-chip ${p.is_fixed ? 'player-chip--fixed' : 'player-chip--eventual'}" onclick="adminPanel.toggleAvailability('${p.id}', ${p.is_fixed})" title="Click para pasar a ${p.is_fixed ? 'eventual' : 'fijo'}">
+                <span class="player-chip-avatar">${(p.name || '?').charAt(0).toUpperCase()}</span>
+                <span class="player-chip-name">${p.name}</span>
+                <button type="button" class="chip-remove" title="Quitar de disponibilidad" onclick="event.stopPropagation(); adminPanel.removeAvailability('${p.id}')">✕</button>
             </span>`;
 
-        fixedEl.innerHTML = this.fixedPlayers.map(chip).join('') || '<p class="no-data">Sin fijos</p>';
-        eventualEl.innerHTML = this.eventualPlayers.map(chip).join('') || '<p class="no-data">Sin eventuales</p>';
+        fixedEl.innerHTML = this.fixedPlayers.map(chip).join('') || '<p class="no-data">Sin fijos todavía</p>';
+        eventualEl.innerHTML = this.eventualPlayers.map(chip).join('') || '<p class="no-data">Sin eventuales todavía</p>';
+
+        const fixedCountEl = document.getElementById('availability-fixed-count');
+        const eventualCountEl = document.getElementById('availability-eventual-count');
+        if (fixedCountEl) fixedCountEl.textContent = this.fixedPlayers.length;
+        if (eventualCountEl) eventualCountEl.textContent = this.eventualPlayers.length;
     }
 
     /**
@@ -1174,7 +1188,7 @@ export class AdminPanel {
                     day: this.currentDay,
                     season_id: this.currentAdminSeasonId,
                     is_fixed: !currentIsFixed
-                }, { onConflict: this.currentAdminSeasonId ? 'player_id,day,season_id' : 'player_id,day' });
+                }, { onConflict: 'player_id,day,season_id' });
             if (error) throw error;
 
             await this.loadAvailabilityBoard();
@@ -1219,7 +1233,7 @@ export class AdminPanel {
                     day: this.currentDay,
                     season_id: this.currentAdminSeasonId,
                     is_fixed: isFixed
-                }, { onConflict: this.currentAdminSeasonId ? 'player_id,day,season_id' : 'player_id,day' });
+                }, { onConflict: 'player_id,day,season_id' });
             if (error) throw error;
 
             this.closeAvailabilityPicker();

@@ -204,15 +204,15 @@
                     console.log('✅ Session timeout activado (15 minutos)');
                 }
 
-                // Crear panel si no existe
+                // Crear y renderizar el panel solo la primera vez. Supabase dispara
+                // SIGNED_IN/TOKEN_REFRESHED al recuperar el foco de la pestaña, y
+                // volver a renderizar aquí reiniciaría la sección activa al inicio.
                 if (!this.panel) {
                     this.panel = new AdminPanel(this.supabase, this.dataManager);
                     window.adminPanel = this.panel; // Para métodos onclick
+                    const container = document.getElementById('admin-screen');
+                    await this.panel.render(container);
                 }
-
-                // Renderizar panel (ahora es async)
-                const container = document.getElementById('admin-screen');
-                await this.panel.render(container);
             }
 
             showError(message) {
