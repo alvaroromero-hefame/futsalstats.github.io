@@ -30,7 +30,7 @@ export class SimuladorView {
 
         let html = `
             <div class="simulador-container">
-                <h1>⚽ Simulador de Partidos ${seasonBadge}</h1>
+                <h1><svg class="icon icon-inline"><use href="#i-simular"/></svg> Simulador de Partidos ${seasonBadge}</h1>
                 <p class="simulador-description">
                     Selecciona 5 jugadores para cada equipo y ve las estadísticas del partido simulado
                 </p>
@@ -44,7 +44,7 @@ export class SimuladorView {
                         </select>
                     </div>
                     <button id="generate-balanced-teams" class="btn btn-generator">
-                        ⚖️ Generador de Fijos
+                        Generador de Fijos
                     </button>
                     <p class="generator-description">
                         Genera automáticamente dos equipos equilibrados usando solo jugadores fijos del día seleccionado
@@ -54,7 +54,7 @@ export class SimuladorView {
                 <div class="teams-simulator">
                     <!-- Equipo Azul -->
                     <div class="team-simulator team-blue">
-                        <h2>🔵 Equipo Azul</h2>
+                        <h2><span class="team-dot team-dot-blue"></span>Equipo Azul</h2>
                         <div class="player-selector">
                             <select id="blue-player-select" class="player-select">
                                 <option value="">-- Seleccionar jugador --</option>
@@ -72,7 +72,7 @@ export class SimuladorView {
 
                     <!-- Equipo Rojo -->
                     <div class="team-simulator team-red">
-                        <h2>🔴 Equipo Rojo</h2>
+                        <h2><span class="team-dot team-dot-red"></span>Equipo Rojo</h2>
                         <div class="player-selector">
                             <select id="red-player-select" class="player-select">
                                 <option value="">-- Seleccionar jugador --</option>
@@ -91,15 +91,15 @@ export class SimuladorView {
 
                 <!-- Resultado de la simulación -->
                 <div id="simulation-result" class="simulation-result" style="display: none;">
-                    <h2>📊 Resultado de la Simulación</h2>
+                    <h2><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Resultado de la Simulación</h2>
                     <div class="vs-container">
                         <div class="team-prediction team-prediction-blue">
-                            <h3>🔵 Equipo Azul</h3>
+                            <h3><span class="team-dot team-dot-blue"></span>Equipo Azul</h3>
                             <div id="blue-prediction" class="prediction-stats"></div>
                         </div>
                         <div class="vs-divider">VS</div>
                         <div class="team-prediction team-prediction-red">
-                            <h3>🔴 Equipo Rojo</h3>
+                            <h3><span class="team-dot team-dot-red"></span>Equipo Rojo</h3>
                             <div id="red-prediction" class="prediction-stats"></div>
                         </div>
                     </div>
@@ -108,10 +108,10 @@ export class SimuladorView {
                 <!-- Botones de acción -->
                 <div class="simulator-actions">
                     <button id="simulate-match" class="btn btn-success" style="display: none;">
-                        🎯 Simular Partido
+                        Simular Partido
                     </button>
                     <button id="clear-simulation" class="btn btn-secondary" style="display: none;">
-                        🗑️ Limpiar Todo
+                        Limpiar Todo
                     </button>
                 </div>
             </div>
@@ -449,7 +449,7 @@ export class SimuladorView {
                     <td>${player.avgKeeper}</td>
                     <td>
                         <button class="btn-remove-player" onclick="simuladorView.removePlayer('${team}', ${idx})" title="Eliminar">
-                            ❌
+                            &times;
                         </button>
                     </td>
                 </tr>
@@ -478,7 +478,7 @@ export class SimuladorView {
         const statsContainer = document.getElementById(`${team}-team-stats`);
         statsContainer.innerHTML = `
             <div class="team-summary">
-                <h3>📊 Estadísticas del Equipo</h3>
+                <h3><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Estadísticas del Equipo</h3>
                 <div class="team-stats-grid">
                     <div class="stat-item">
                         <span class="stat-value">${avgWinRate}%</span>

@@ -6,11 +6,11 @@
 export class AIPlayerAnalyzer {
     constructor() {
         this.profiles = {
-            'Goleador': { icon: '⚽', color: '#3b82f6' },
-            'Playmaker': { icon: '🎯', color: '#10b981' },
-            'Defensor': { icon: '🛡️', color: '#8b5cf6' },
-            'Portero': { icon: '🧤', color: '#ef4444' },
-            'Polivalente': { icon: '⭐', color: '#f59e0b' }
+            'Goleador': { icon: 'i-balon', color: 'var(--team-blue)' },
+            'Playmaker': { icon: 'i-diana', color: 'var(--win)' },
+            'Defensor': { icon: 'i-escudo', color: 'var(--navy)' },
+            'Portero': { icon: 'i-escudo', color: 'var(--team-red)' },
+            'Polivalente': { icon: 'i-estrella', color: 'var(--ambar)' }
         };
     }
 
@@ -103,11 +103,11 @@ export class AIPlayerAnalyzer {
     determineLevel(stats) {
         const score = this.calculateOverallScore(stats);
         
-        if (score >= 85) return { level: 'Elite', color: '#fbbf24', icon: '👑' };
-        if (score >= 70) return { level: 'Avanzado', color: '#8b5cf6', icon: '🔥' };
-        if (score >= 55) return { level: 'Intermedio', color: '#3b82f6', icon: '⭐' };
-        if (score >= 40) return { level: 'En desarrollo', color: '#10b981', icon: '📈' };
-        return { level: 'Principiante', color: '#6b7280', icon: '🌱' };
+        if (score >= 85) return { level: 'Elite', color: 'var(--gold)', icon: 'i-trofeo' };
+        if (score >= 70) return { level: 'Avanzado', color: 'var(--primary)', icon: 'i-actividad' };
+        if (score >= 55) return { level: 'Intermedio', color: 'var(--team-blue)', icon: 'i-estrella' };
+        if (score >= 40) return { level: 'En desarrollo', color: 'var(--win)', icon: 'i-grafica' };
+        return { level: 'Principiante', color: 'var(--muted)', icon: 'i-sparkle' };
     }
 
     /**
@@ -142,8 +142,8 @@ export class AIPlayerAnalyzer {
         if (stats.matches.length < 5) {
             return {
                 trend: 'Datos insuficientes',
-                icon: '❓',
-                color: '#6b7280',
+                icon: 'i-info',
+                color: 'var(--muted)',
                 description: 'Necesita más partidos para análisis de tendencia'
             };
         }
@@ -155,8 +155,8 @@ export class AIPlayerAnalyzer {
         if (previous.length === 0) {
             return {
                 trend: 'Nuevo',
-                icon: '🆕',
-                color: '#10b981',
+                icon: 'i-sparkle',
+                color: 'var(--win)',
                 description: 'Jugador en etapa inicial'
             };
         }
@@ -174,8 +174,8 @@ export class AIPlayerAnalyzer {
         if (goalsDiff > 0.5 || winsDiff > 0.15) {
             return {
                 trend: 'En ascenso',
-                icon: '📈',
-                color: '#10b981',
+                icon: 'i-grafica',
+                color: 'var(--win)',
                 description: 'Rendimiento claramente al alza'
             };
         }
@@ -184,8 +184,8 @@ export class AIPlayerAnalyzer {
         if (goalsDiff < -0.5 || winsDiff < -0.15) {
             return {
                 trend: 'En descenso',
-                icon: '📉',
-                color: '#ef4444',
+                icon: 'i-grafica',
+                color: 'var(--loss)',
                 description: 'Rendimiento en baja, necesita recuperación'
             };
         }
@@ -193,8 +193,8 @@ export class AIPlayerAnalyzer {
         // Estable
         return {
             trend: 'Estable',
-            icon: '➡️',
-            color: '#3b82f6',
+            icon: 'i-actividad',
+            color: 'var(--team-blue)',
             description: 'Rendimiento consistente'
         };
     }
@@ -209,45 +209,45 @@ export class AIPlayerAnalyzer {
         
         // Goles
         if (parseFloat(avg.goals) >= 2.5) {
-            strengths.push('🎯 Excelente finalizador - promedio superior a 2.5 goles/partido');
+            strengths.push('Excelente finalizador - promedio superior a 2.5 goles/partido');
         } else if (parseFloat(avg.goals) >= 1.5) {
-            strengths.push('⚽ Buen promedio goleador');
+            strengths.push('Buen promedio goleador');
         }
         
         // Asistencias
         if (parseFloat(avg.assists) >= 2.0) {
-            strengths.push('🎨 Creador de juego excepcional');
+            strengths.push('Creador de juego excepcional');
         } else if (parseFloat(avg.assists) >= 1.0) {
-            strengths.push('🤝 Buen generador de asistencias');
+            strengths.push('Buen generador de asistencias');
         }
         
         // Victorias
         if (parseFloat(totals.winRate) >= 70) {
-            strengths.push('🏆 Alto impacto en victorias del equipo');
+            strengths.push('Alto impacto en victorias del equipo');
         } else if (parseFloat(totals.winRate) >= 55) {
-            strengths.push('✅ Balance positivo de victorias');
+            strengths.push('Balance positivo de victorias');
         }
         
         // Portería
         if (parseFloat(avg.keeper) <= 2.0 && totals.keeper > 0) {
-            strengths.push('🧤 Portero confiable con buen promedio defensivo');
+            strengths.push('Portero confiable con buen promedio defensivo');
         }
         
         // Experiencia
         if (totals.matches >= 30) {
-            strengths.push('📚 Gran experiencia con ' + totals.matches + ' partidos');
+            strengths.push('Gran experiencia con ' + totals.matches + ' partidos');
         } else if (totals.matches >= 15) {
-            strengths.push('📖 Experiencia sólida');
+            strengths.push('Experiencia sólida');
         }
         
         // Consistencia ofensiva
         const contributionRate = (totals.goals + totals.assists) / totals.matches;
         if (contributionRate >= 3) {
-            strengths.push('⚡ Alta contribución ofensiva constante');
+            strengths.push('Alta contribución ofensiva constante');
         }
         
         if (strengths.length === 0) {
-            strengths.push('🌱 En desarrollo, buscando su mejor versión');
+            strengths.push('En desarrollo, buscando su mejor versión');
         }
         
         return strengths;
@@ -263,37 +263,37 @@ export class AIPlayerAnalyzer {
         
         // Goles
         if (parseFloat(avg.goals) < 1.0 && profile.type !== 'Portero' && profile.type !== 'Defensor') {
-            improvements.push('⚽ Aumentar efectividad goleadora');
+            improvements.push('Aumentar efectividad goleadora');
         }
         
         // Asistencias
         if (parseFloat(avg.assists) < 0.8) {
-            improvements.push('🎯 Mejorar visión de juego y pases clave');
+            improvements.push('Mejorar visión de juego y pases clave');
         }
         
         // Victorias
         if (parseFloat(totals.winRate) < 50) {
-            improvements.push('📊 Trabajar en impacto sobre el resultado del equipo');
+            improvements.push('Trabajar en impacto sobre el resultado del equipo');
         }
         
         // Portería (si juega de portero frecuentemente)
         if (parseFloat(avg.keeper) > 4.0 && totals.keeper > totals.matches * 0.2) {
-            improvements.push('🧤 Reducir goles encajados en portería');
+            improvements.push('Reducir goles encajados en portería');
         }
         
         // Experiencia
         if (totals.matches < 10) {
-            improvements.push('📈 Ganar más experiencia con más partidos');
+            improvements.push('Ganar más experiencia con más partidos');
         }
         
         // Consistencia
         const variance = this.calculateVariance(stats.matches);
         if (variance > 2) {
-            improvements.push('🎚️ Buscar mayor regularidad en el rendimiento');
+            improvements.push('Buscar mayor regularidad en el rendimiento');
         }
         
         if (improvements.length === 0) {
-            improvements.push('✨ Rendimiento sólido, mantener el nivel');
+            improvements.push('Rendimiento sólido, mantener el nivel');
         }
         
         return improvements;
@@ -363,37 +363,37 @@ export class AIPlayerAnalyzer {
         
         switch (profile.type) {
             case 'Goleador':
-                recommendations.push('🎯 Posicionar en zona de remate, cerca del área rival');
-                recommendations.push('⚡ Aprovechar velocidad en contragolpes');
+                recommendations.push('Posicionar en zona de remate, cerca del área rival');
+                recommendations.push('Aprovechar velocidad en contragolpes');
                 if (parseFloat(avg.assists) < 1) {
-                    recommendations.push('🤝 Trabajar asociaciones con compañeros');
+                    recommendations.push('Trabajar asociaciones con compañeros');
                 }
                 break;
                 
             case 'Playmaker':
-                recommendations.push('🎨 Darle libertad creativa en el centro del campo');
-                recommendations.push('📍 Posición de pivote o media punta');
-                recommendations.push('🔄 Fomentar circulación de balón a través suyo');
+                recommendations.push('Darle libertad creativa en el centro del campo');
+                recommendations.push('Posición de pivote o media punta');
+                recommendations.push('Fomentar circulación de balón a través suyo');
                 break;
                 
             case 'Defensor':
-                recommendations.push('🛡️ Rol defensivo, cubriendo espacios');
-                recommendations.push('👁️ Enfocarse en anticipación y lectura');
-                recommendations.push('🏃 Apoyar transiciones ofensivas cuando sea seguro');
+                recommendations.push('Rol defensivo, cubriendo espacios');
+                recommendations.push('Enfocarse en anticipación y lectura');
+                recommendations.push('Apoyar transiciones ofensivas cuando sea seguro');
                 break;
                 
             case 'Portero':
-                recommendations.push('🧤 Rol de portero titular o suplente confiable');
+                recommendations.push('Rol de portero titular o suplente confiable');
                 if (parseFloat(avg.keeper) > 3) {
-                    recommendations.push('📚 Mejorar colocación y reflejos');
+                    recommendations.push('Mejorar colocación y reflejos');
                 }
-                recommendations.push('🗣️ Comunicación constante con defensa');
+                recommendations.push('Comunicación constante con defensa');
                 break;
                 
             case 'Polivalente':
-                recommendations.push('🔄 Rotar en diferentes posiciones según necesidad');
-                recommendations.push('⚖️ Utilizar para equilibrar el equipo');
-                recommendations.push('🎯 Mantener versatilidad como fortaleza');
+                recommendations.push('Rotar en diferentes posiciones según necesidad');
+                recommendations.push('Utilizar para equilibrar el equipo');
+                recommendations.push('Mantener versatilidad como fortaleza');
                 break;
         }
         

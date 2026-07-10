@@ -6,306 +6,56 @@
 	<title>Resumen de Temporada · Futsal Stats</title>
 	<meta name="description" content="Los mejores jugadores de la temporada de fútbol sala">
 
+	<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png">
+
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
 
-	<style>
-		:root {
-			--gold:   #FFD700;
-			--silver: #C0C0C0;
-			--bronze: #CD7F32;
-			--bg:     #000000;
-			--card:   #091b3f;
-			--card2:  #122650;
-			--accent: #5ba3d9;
-			--accent2:#7fc4ff;
-			--text:   #f5f5f5;
-			--muted:  #96a3c0;
-			--martes: #60a5fa;
-			--jueves: #e8a13c;
-			--radius: 16px;
-		}
-
-		* { box-sizing: border-box; margin: 0; padding: 0; }
-
-		body {
-			background: var(--bg);
-			color: var(--text);
-			font-family: 'Barlow', system-ui, sans-serif;
-			min-height: 100vh;
-			overflow-x: hidden;
-		}
-
-		/* ── Hero ── */
-		.hero {
-			text-align: center;
-			padding: 70px 20px 50px;
-			background: linear-gradient(135deg, #000000 0%, #091b3f 50%, #000000 100%);
-			position: relative;
-			overflow: hidden;
-		}
-		.hero::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(4,74,128,.4) 0%, transparent 70%);
-			pointer-events: none;
-		}
-		.hero-badge {
-			display: inline-block;
-			background: #044a80;
-			color: #f5f5f5;
-			font-size: .78rem;
-			font-weight: 700;
-			letter-spacing: .12em;
-			text-transform: uppercase;
-			padding: 6px 18px;
-			border-radius: 99px;
-			margin-bottom: 22px;
-		}
-		.hero h1 {
-			font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-			font-size: clamp(2.2rem, 7vw, 4rem);
-			font-weight: 700;
-			line-height: 1.1;
-			background: linear-gradient(135deg, #fff 30%, var(--gold));
-			-webkit-background-clip: text;
-			-webkit-text-fill-color: transparent;
-			background-clip: text;
-			margin-bottom: 16px;
-		}
-		.hero p {
-			color: var(--muted);
-			font-size: 1.05rem;
-			max-width: 540px;
-			margin: 0 auto;
-		}
-		.trophy-row {
-			font-size: 3rem;
-			margin-bottom: 20px;
-			letter-spacing: .3em;
-		}
-		.season-select-wrap { margin-top: 22px; }
-		.season-select-wrap select {
-			background: var(--card2);
-			color: var(--text);
-			border: 1px solid rgba(255,255,255,.15);
-			border-radius: 99px;
-			padding: 8px 18px;
-			font-size: .85rem;
-			font-weight: 600;
-		}
-
-		/* ── Loading / Error states ── */
-		.state-msg {
-			text-align: center;
-			padding: 60px 20px;
-			color: var(--muted);
-		}
-		.state-msg .spinner {
-			width: 48px; height: 48px;
-			border: 4px solid rgba(91,163,217,.2);
-			border-top-color: var(--accent);
-			border-radius: 50%;
-			animation: spin .9s linear infinite;
-			margin: 0 auto 20px;
-		}
-		@keyframes spin { to { transform: rotate(360deg); } }
-
-		/* ── Main grid ── */
-		.sections {
-			max-width: 1300px;
-			margin: 0 auto;
-			padding: 40px 20px 80px;
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
-			gap: 32px;
-		}
-
-		/* ── Category card ── */
-		.cat-card {
-			background: var(--card);
-			border-radius: var(--radius);
-			overflow: hidden;
-			border: 1px solid rgba(255,255,255,.06);
-			transition: transform .2s, box-shadow .2s;
-		}
-		.cat-card:hover {
-			transform: translateY(-3px);
-			box-shadow: 0 12px 40px rgba(0,0,0,.5);
-		}
-		.cat-header {
-			padding: 20px 24px 16px;
-			border-bottom: 1px solid rgba(255,255,255,.06);
-			display: flex;
-			align-items: center;
-			gap: 12px;
-		}
-		.cat-icon {
-			font-size: 1.8rem;
-			line-height: 1;
-		}
-		.cat-title {
-			font-size: 1.15rem;
-			font-weight: 700;
-			color: #fff;
-		}
-		.cat-subtitle {
-			font-size: .78rem;
-			color: var(--muted);
-			margin-top: 2px;
-		}
-
-		/* ── Two-column days inside card ── */
-		.days-grid {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-		}
-		.day-col {
-			padding: 18px 20px 22px;
-		}
-		.day-col:first-child {
-			border-right: 1px solid rgba(255,255,255,.06);
-		}
-		.day-label {
-			font-size: .7rem;
-			font-weight: 800;
-			letter-spacing: .1em;
-			text-transform: uppercase;
-			margin-bottom: 14px;
-			display: flex;
-			align-items: center;
-			gap: 6px;
-		}
-		.day-label.martes { color: var(--martes); }
-		.day-label.jueves { color: var(--jueves); }
-		.day-dot {
-			width: 8px; height: 8px;
-			border-radius: 50%;
-			flex-shrink: 0;
-		}
-		.day-label.martes .day-dot { background: var(--martes); }
-		.day-label.jueves .day-dot { background: var(--jueves); }
-
-		/* ── Podium rows ── */
-		.podium-row {
-			display: flex;
-			align-items: center;
-			gap: 10px;
-			padding: 9px 0;
-			border-bottom: 1px solid rgba(255,255,255,.04);
-			transition: background .15s;
-		}
-		.podium-row:last-child { border-bottom: none; }
-		.podium-row:hover { background: rgba(255,255,255,.03); border-radius: 8px; padding-left: 4px; }
-
-		.medal {
-			font-size: 1.4rem;
-			width: 30px;
-			text-align: center;
-			flex-shrink: 0;
-		}
-		.player-name {
-			flex: 1;
-			min-width: 0;
-			font-size: .93rem;
-			font-weight: 600;
-			color: #e0e0f5;
-		}
-		.player-stat {
-			font-size: .88rem;
-			font-weight: 700;
-			color: var(--accent);
-			white-space: nowrap;
-			background: rgba(91,163,217,.14);
-			padding: 3px 10px;
-			border-radius: 99px;
-		}
-		.podium-row.rank-1 .player-name { color: var(--gold); }
-		.podium-row.rank-2 .player-name { color: var(--silver); }
-		.podium-row.rank-3 .player-name { color: var(--bronze); }
-		.podium-row.rank-1 .player-stat { background: rgba(255,215,0,.15); color: var(--gold); }
-		.podium-row.rank-2 .player-stat { background: rgba(192,192,192,.12); color: var(--silver); }
-		.podium-row.rank-3 .player-stat { background: rgba(205,127,50,.15); color: var(--bronze); }
-
-		.no-data {
-			color: var(--muted);
-			font-size: .85rem;
-			font-style: italic;
-			padding: 8px 0;
-		}
-
-		/* ── Suplente ── */
-		.suplente-section {
-			margin-top: 14px;
-			padding-top: 12px;
-			border-top: 1px dashed rgba(255,255,255,.1);
-		}
-		.suplente-label {
-			font-size: .66rem;
-			font-weight: 800;
-			letter-spacing: .1em;
-			text-transform: uppercase;
-			color: var(--muted);
-			margin-bottom: 8px;
-		}
-		.podium-row.suplente-row .player-name { color: var(--muted); font-weight: 500; }
-		.podium-row.suplente-row .player-stat {
-			background: rgba(255,255,255,.06);
-			color: var(--muted);
-		}
-
-		/* ── Footer ── */
-		.page-footer {
-			text-align: center;
-			padding: 30px 20px;
-			color: var(--muted);
-			font-size: .82rem;
-			border-top: 1px solid rgba(255,255,255,.05);
-		}
-
-		/* ── Responsive ── */
-		@media (max-width: 640px) {
-			.sections {
-				grid-template-columns: 1fr;
-				padding: 24px 12px 60px;
-				gap: 20px;
-			}
-			.days-grid {
-				grid-template-columns: 1fr;
-			}
-			.day-col:first-child {
-				border-right: none;
-				border-bottom: 1px solid rgba(255,255,255,.06);
-			}
-			.hero { padding: 50px 16px 36px; }
-		}
-	</style>
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/tables.css">
+	<link rel="stylesheet" href="css/resumen.css">
 </head>
-<body>
+<body class="resumen-body" data-active-day="martes">
+
+<!-- Iconos SVG reutilizables -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+	<defs>
+		<symbol id="i-trofeo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1"/></symbol>
+		<symbol id="i-estrella" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8l-6.2 3.2L7 14.2l-5-4.9 6.9-1z"/></symbol>
+		<symbol id="i-balon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m12 7 4 3-1.5 5h-5L8 10z"/><path d="M12 7V4M8.5 10 5 8M15.5 10 19 8M9.5 15l-2 3.5M14.5 15l2 3.5"/></symbol>
+		<symbol id="i-diana" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+		<symbol id="i-escudo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5.2 3.4 9.2 8 11 4.6-1.8 8-5.8 8-11V5z"/></symbol>
+		<symbol id="i-actividad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+		<symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 2.6 11.4 6c.1.2.3.4.5.5l3.4 1.5a1 1 0 0 1 0 1.8L12 11.4a1 1 0 0 0-.6.6l-1.5 3.4a1 1 0 0 1-1.8 0L6.6 12a1 1 0 0 0-.5-.5L2.6 10a1 1 0 0 1 0-1.8L6 6.6c.2-.1.4-.3.5-.5l1.6-3.5a1 1 0 0 1 1.8 0Z"/></symbol>
+	</defs>
+</svg>
 
 <!-- HERO -->
-<div class="hero">
-	<div class="trophy-row">🏆🥇🏅</div>
-	<div class="hero-badge">Temporada 2025 · 2026</div>
-	<h1>LA TEMPORADA<br>HA ACABADO</h1>
-	<p>Estos son los mejores jugadores de la temporada. ¡Hasta la próxima!</p>
-	<div class="season-select-wrap">
-		<select id="season-select"></select>
+<div class="resumen-hero pitch-lines">
+	<span class="resumen-eyebrow" id="season-eyebrow">Temporada</span>
+	<h1 class="resumen-title">LA TEMPORADA<br>HA ACABADO</h1>
+	<p class="resumen-lead">Estos son los mejores jugadores de la temporada. ¡Hasta la próxima!</p>
+	<div class="season-chips" id="season-chips"></div>
+</div>
+
+<!-- Selector de día (solo móvil) -->
+<div class="day-selector-wrap">
+	<div class="day-selector">
+		<button type="button" class="active" data-day="martes">Martes</button>
+		<button type="button" data-day="jueves">Jueves</button>
 	</div>
 </div>
 
 <!-- CONTENT -->
 <div id="app-root">
 	<div class="state-msg" id="loading-msg">
-		<div class="spinner"></div>
 		<p>Cargando estadísticas…</p>
 	</div>
 </div>
 
 <div class="page-footer" id="page-footer" style="display:none">
-	⚽ <strong>Futsal Stats</strong> · Resumen de Temporada
+	<strong>Futsal Stats</strong> · Resumen de Temporada
 </div>
 
 <script type="module">
@@ -422,23 +172,43 @@ function buildStats(matches) {
 	});
 }
 
-// ── Top 3 helpers ─────────────────────────────────────────────
-const top3 = (arr, fn, asc = false) => {
-	const sorted = [...arr].sort((a, b) => asc ? fn(a) - fn(b) : fn(b) - fn(a));
-	return sorted.slice(0, 3);
-};
-
 // ── Render helpers ────────────────────────────────────────────
-const MEDALS = ['🥇', '🥈', '🥉'];
+function escHtml(str) {
+	return String(str)
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
+}
 
-function renderPodium(players, statFn, statLabel) {
+function icon(id) {
+	return `<svg class="icon"><use href="#${id}"/></svg>`;
+}
+
+function renderPodium(players, statFn, statLabel, rawFn, asc) {
 	if (!players.length) return `<p class="no-data">Sin datos suficientes</p>`;
-	return players.map((p, i) => `
-		<div class="podium-row rank-${i + 1}">
-			<span class="medal">${MEDALS[i]}</span>
-			<span class="player-name">${escHtml(p.nombre)}</span>
-			<span class="player-stat">${statFn(p)} ${statLabel}</span>
-		</div>`).join('');
+
+	const top = rawFn(players[0]);
+	const worst = rawFn(players[players.length - 1]);
+
+	return players.map((p, i) => {
+		let pct;
+		if (asc) {
+			const span = top - worst;
+			pct = span > 0 ? ((top - rawFn(p)) / span) * 100 : 100;
+		} else {
+			pct = top > 0 ? (rawFn(p) / top) * 100 : 100;
+		}
+		return `
+			<div class="podium-row rank-${i + 1}">
+				<span class="rank-badge">${String(i + 1).padStart(2, '0')}</span>
+				<div class="podium-main">
+					<span class="player-name">${escHtml(p.nombre)}</span>
+					<div class="stat-bar-track"><div class="stat-bar-fill" style="--pct:${pct.toFixed(0)}%"></div></div>
+				</div>
+				<span class="stat-pill">${statFn(p)} ${statLabel}</span>
+			</div>`;
+	}).join('');
 }
 
 // ── Render titulares top3 + mejor suplente ───────────────────
@@ -449,16 +219,16 @@ function renderBlock(stats, fijos, { filterFn = () => true, sortFn, statFn, stat
 	const suplentes = sorted(stats.filter(p => !fijos.has(p.nombre) && filterFn(p)));
 	const bestSup   = suplentes[0] || null;
 
-	let html = renderPodium(titulares, statFn, statLabel);
+	let html = renderPodium(titulares, statFn, statLabel, sortFn, asc);
 
 	if (bestSup) {
 		html += `
 			<div class="suplente-section">
-				<div class="suplente-label">✨ Mejor suplente</div>
+				<div class="suplente-label">${icon('i-sparkle')} Mejor suplente</div>
 				<div class="podium-row suplente-row">
-					<span class="medal">🌟</span>
-					<span class="player-name">${escHtml(bestSup.nombre)}</span>
-					<span class="player-stat">${statFn(bestSup)} ${statLabel}</span>
+					<span class="suplente-badge">${icon('i-sparkle')}</span>
+					<div class="podium-main"><span class="player-name">${escHtml(bestSup.nombre)}</span></div>
+					<span class="stat-pill">${statFn(bestSup)} ${statLabel}</span>
 				</div>
 			</div>`;
 	}
@@ -466,17 +236,9 @@ function renderBlock(stats, fijos, { filterFn = () => true, sortFn, statFn, stat
 	return html;
 }
 
-function escHtml(str) {
-	return String(str)
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;');
-}
-
 function renderDayCol(dayClass, dayName, html) {
 	return `
-		<div class="day-col">
+		<div class="day-col" data-day="${dayClass}">
 			<div class="day-label ${dayClass}">
 				<span class="day-dot"></span>${dayName}
 			</div>
@@ -484,19 +246,19 @@ function renderDayCol(dayClass, dayName, html) {
 		</div>`;
 }
 
-function renderCategory({ icon, title, subtitle, martesHtml, juevesHtml }) {
+function renderCategory({ iconId, title, subtitle, martesHtml, juevesHtml }) {
 	return `
 		<div class="cat-card">
 			<div class="cat-header">
-				<span class="cat-icon">${icon}</span>
+				${icon(iconId)}
 				<div>
 					<div class="cat-title">${title}</div>
 					<div class="cat-subtitle">${subtitle}</div>
 				</div>
 			</div>
 			<div class="days-grid">
-				${renderDayCol('martes', '📅 Martes', martesHtml)}
-				${renderDayCol('jueves', '📅 Jueves', juevesHtml)}
+				${renderDayCol('martes', 'Martes', martesHtml)}
+				${renderDayCol('jueves', 'Jueves', juevesHtml)}
 			</div>
 		</div>`;
 }
@@ -504,13 +266,20 @@ function renderCategory({ icon, title, subtitle, martesHtml, juevesHtml }) {
 // ── Selector de temporada (una temporada = mismo nombre en martes y jueves) ──
 let allSeasons = [];
 
-async function populateSeasonSelect(selectedName) {
+async function populateSeasonChips(selectedName) {
 	allSeasons = await loadSeasons();
 	const names = [...new Set(allSeasons.map(s => s.name))];
 
-	const select = document.getElementById('season-select');
-	select.innerHTML = `<option value="">Todas las temporadas</option>` +
-		names.map(name => `<option value="${escHtml(name)}" ${name === selectedName ? 'selected' : ''}>${escHtml(name)}</option>`).join('');
+	const wrap = document.getElementById('season-chips');
+	wrap.innerHTML = names.map(name => `
+		<button type="button" class="season-chip${name === selectedName ? ' active' : ''}" data-season="${escHtml(name)}">${escHtml(name)}</button>
+	`).join('');
+
+	wrap.querySelectorAll('.season-chip').forEach(chip => {
+		chip.addEventListener('click', () => main(chip.dataset.season));
+	});
+
+	document.getElementById('season-eyebrow').textContent = selectedName || 'Todas las temporadas';
 }
 
 function seasonIdFor(day, seasonName) {
@@ -519,13 +288,20 @@ function seasonIdFor(day, seasonName) {
 }
 
 // ── Main ──────────────────────────────────────────────────────
-async function main(seasonName = null) {
+let currentSeasonName = null;
+
+async function main(seasonName = undefined) {
 	try {
-		if (allSeasons.length === 0) {
-			const active = (await loadSeasons()).find(s => s.is_active);
-			await populateSeasonSelect(seasonName ?? active?.name ?? null);
-			seasonName = document.getElementById('season-select').value || null;
+		if (seasonName === undefined) {
+			if (allSeasons.length === 0) {
+				const active = (await loadSeasons()).find(s => s.is_active);
+				seasonName = active?.name ?? null;
+			} else {
+				seasonName = currentSeasonName;
+			}
 		}
+		currentSeasonName = seasonName;
+		await populateSeasonChips(seasonName);
 
 		const seasonIdMartes = seasonIdFor('martes', seasonName);
 		const seasonIdJueves = seasonIdFor('jueves', seasonName);
@@ -542,7 +318,7 @@ async function main(seasonName = null) {
 
 		const categories = [
 			{
-				icon: '⭐',
+				iconId: 'i-trofeo',
 				title: 'Líderes',
 				subtitle: 'Jugadores con más puntos totales',
 				fn: (stats, fijos) => renderBlock(stats, fijos, {
@@ -552,7 +328,7 @@ async function main(seasonName = null) {
 				})
 			},
 			{
-				icon: '🏅',
+				iconId: 'i-estrella',
 				title: 'Top MVPs',
 				subtitle: 'Jugadores más valiosos del partido',
 				fn: (stats, fijos) => renderBlock(stats, fijos, {
@@ -563,7 +339,7 @@ async function main(seasonName = null) {
 				})
 			},
 			{
-				icon: '⚽',
+				iconId: 'i-balon',
 				title: 'Top Goleadores',
 				subtitle: 'Jugadores con más goles',
 				fn: (stats, fijos) => renderBlock(stats, fijos, {
@@ -574,7 +350,7 @@ async function main(seasonName = null) {
 				})
 			},
 			{
-				icon: '🎯',
+				iconId: 'i-diana',
 				title: 'Top Asistentes',
 				subtitle: 'Jugadores con más asistencias',
 				fn: (stats, fijos) => renderBlock(stats, fijos, {
@@ -585,7 +361,7 @@ async function main(seasonName = null) {
 				})
 			},
 			{
-				icon: '🧤',
+				iconId: 'i-escudo',
 				title: 'Top Porteros',
 				subtitle: `Menor ratio goles encajados/partido (mín. ${MIN_GAMES_PORTERO} partidos como portero)`,
 				fn: (stats, fijos) => renderBlock(stats, fijos, {
@@ -597,7 +373,7 @@ async function main(seasonName = null) {
 				})
 			},
 			{
-				icon: '🏃',
+				iconId: 'i-actividad',
 				title: 'Top Jugados',
 				subtitle: 'Jugadores que más partidos han disputado',
 				fn: (stats, fijos) => renderBlock(stats, fijos, {
@@ -610,7 +386,7 @@ async function main(seasonName = null) {
 		];
 
 		const sectionsHtml = categories.map(cat => renderCategory({
-			icon: cat.icon,
+			iconId: cat.iconId,
 			title: cat.title,
 			subtitle: cat.subtitle,
 			martesHtml: cat.fn(statsM, fijosMartes),
@@ -625,14 +401,18 @@ async function main(seasonName = null) {
 		console.error('Error cargando datos:', err);
 		document.getElementById('app-root').innerHTML = `
 			<div class="state-msg">
-				<p style="font-size:2rem;margin-bottom:12px">⚠️</p>
 				<p>Error al cargar los datos: ${escHtml(err.message)}</p>
 			</div>`;
 	}
 }
 
-document.getElementById('season-select').addEventListener('change', (e) => {
-	main(e.target.value || null);
+// ── Selector de día (móvil) ──────────────────────────────────
+document.querySelectorAll('.day-selector button').forEach(btn => {
+	btn.addEventListener('click', () => {
+		document.querySelectorAll('.day-selector button').forEach(b => b.classList.remove('active'));
+		btn.classList.add('active');
+		document.body.dataset.activeDay = btn.dataset.day;
+	});
 });
 
 main();

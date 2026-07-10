@@ -1,0 +1,257 @@
+/* ============================================================
+   Resumen de temporada — página pública compartible
+   Usa los tokens y componentes de main.css / tables.css
+   ============================================================ */
+
+body.resumen-body {
+	overflow-x: hidden;
+}
+
+/* ── Hero ── */
+.resumen-hero {
+	text-align: center;
+	padding: clamp(50px, 8vw, 80px) 20px 44px;
+	border-bottom: 1px solid var(--border);
+}
+
+.resumen-eyebrow {
+	display: inline-block;
+	font-family: var(--font-display);
+	font-size: .78rem;
+	font-weight: 700;
+	letter-spacing: .14em;
+	text-transform: uppercase;
+	color: var(--primary);
+	background: var(--primary-soft);
+	padding: 6px 18px;
+	border-radius: 99px;
+	margin-bottom: 22px;
+}
+
+.resumen-title {
+	font-size: clamp(2.4rem, 6vw + 1rem, 5rem);
+	letter-spacing: -.02em;
+	margin: 0 0 16px;
+}
+
+.resumen-lead {
+	color: var(--muted);
+	font-size: 1.05rem;
+	max-width: 540px;
+	margin: 0 auto 26px;
+}
+
+/* ── Estados de carga / error ── */
+.state-msg {
+	text-align: center;
+	padding: 60px 20px;
+	color: var(--muted);
+}
+
+/* ── Selector de día: solo visible en móvil (en escritorio se ven ambas columnas) ── */
+.day-selector-wrap { display: none; }
+
+@media (max-width: 640px) {
+	.day-selector-wrap {
+		display: flex;
+		justify-content: center;
+		padding: 18px 16px 0;
+	}
+}
+
+/* ── Grid principal de categorías ── */
+.sections {
+	max-width: 1300px;
+	margin: 0 auto;
+	padding: 40px 20px 80px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
+	gap: 24px;
+}
+
+/* ── Tarjeta de categoría ── */
+.cat-card {
+	background: var(--surface);
+	border-radius: var(--radius);
+	overflow: hidden;
+	border: 1px solid var(--border);
+	transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+
+.cat-header {
+	padding: 18px 22px 15px;
+	border-bottom: 1px solid var(--border);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.cat-header .icon {
+	width: 26px;
+	height: 26px;
+	color: var(--primary);
+	flex-shrink: 0;
+}
+
+.cat-title {
+	font-family: var(--font-display);
+	font-size: 1.1rem;
+	font-weight: 700;
+	letter-spacing: .01em;
+	text-transform: uppercase;
+	color: var(--text);
+}
+
+.cat-subtitle {
+	font-size: .78rem;
+	color: var(--muted);
+	margin-top: 2px;
+}
+
+/* ── Dos columnas de día dentro de la tarjeta ── */
+.days-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+}
+
+.day-col {
+	padding: 16px 20px 20px;
+	min-width: 0;
+}
+
+.day-col:first-child {
+	border-right: 1px solid var(--border);
+}
+
+.day-label {
+	font-size: .68rem;
+	font-weight: 800;
+	letter-spacing: .1em;
+	text-transform: uppercase;
+	margin-bottom: 12px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--muted);
+}
+
+.day-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.day-label.martes .day-dot { background: var(--team-blue); }
+.day-label.jueves .day-dot { background: var(--ambar); }
+
+/* ── Filas de podio ── */
+.podium-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 0;
+	border-bottom: 1px solid var(--border);
+}
+
+.podium-row:last-child { border-bottom: none; }
+
+.podium-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.player-name {
+	display: block;
+	font-size: .92rem;
+	font-weight: 600;
+	color: var(--text);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.stat-pill {
+	font-size: .85rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--primary);
+	white-space: nowrap;
+	background: var(--primary-soft);
+	padding: 3px 10px;
+	border-radius: 99px;
+	flex-shrink: 0;
+}
+
+.rank-1 .stat-pill { background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); }
+.rank-2 .stat-pill { background: color-mix(in srgb, var(--silver) 16%, transparent); color: var(--silver); }
+.rank-3 .stat-pill { background: color-mix(in srgb, var(--bronze) 16%, transparent); color: var(--bronze); }
+
+.no-data {
+	color: var(--muted);
+	font-size: .85rem;
+	font-style: italic;
+	padding: 6px 0;
+}
+
+/* ── Suplente destacado ── */
+.suplente-section {
+	margin-top: 12px;
+	padding-top: 10px;
+	border-top: 1px dashed var(--border);
+}
+
+.suplente-label {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	font-size: .64rem;
+	font-weight: 800;
+	letter-spacing: .1em;
+	text-transform: uppercase;
+	color: var(--muted);
+	margin-bottom: 8px;
+}
+
+.suplente-label .icon { width: 13px; height: 13px; }
+
+.podium-row.suplente-row .player-name { color: var(--muted); font-weight: 500; }
+.podium-row.suplente-row .stat-pill { background: var(--surface-2); color: var(--muted); }
+
+.suplente-badge {
+	display: grid;
+	place-items: center;
+	width: 2.1ch;
+	flex-shrink: 0;
+}
+
+.suplente-badge .icon { width: 18px; height: 18px; color: var(--muted); }
+
+/* ── Footer ── */
+.page-footer {
+	text-align: center;
+	padding: 28px 20px;
+	color: var(--muted);
+	font-size: .82rem;
+	border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 640px) {
+	.sections {
+		grid-template-columns: 1fr;
+		padding: 20px 14px 60px;
+		gap: 16px;
+	}
+
+	.days-grid { grid-template-columns: 1fr; }
+
+	.day-col:first-child { border-right: none; }
+
+	/* En móvil se navega por pestañas: solo se muestra el día activo */
+	.day-col { display: none; }
+	body[data-active-day="martes"] .day-col[data-day="martes"] { display: block; }
+	body[data-active-day="jueves"] .day-col[data-day="jueves"] { display: block; }
+}

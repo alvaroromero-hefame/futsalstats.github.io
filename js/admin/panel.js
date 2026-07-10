@@ -57,13 +57,13 @@ export class AdminPanel {
         return `
             <div class="admin-panel">
                 <div class="admin-header">
-                    <h1>📊 Panel de Administración</h1>
+                    <h1>Panel de Administración</h1>
                     <div class="admin-header-actions">
                         <button id="admin-help" class="btn btn-help" title="Ayuda">
-                            ❓
+                            <svg class="icon"><use href="#i-ayuda"/></svg>
                         </button>
                         <button id="admin-logout" class="btn btn-secondary">
-                            🚪 Cerrar Sesión
+                            <svg class="icon icon-inline"><use href="#i-salir"/></svg> Cerrar Sesión
                         </button>
                     </div>
                 </div>
@@ -71,19 +71,19 @@ export class AdminPanel {
                 <div class="admin-content">
                     <div id="admin-home" class="admin-home">
                         <button type="button" class="admin-nav-card" data-section="partidos">
-                            <span class="admin-nav-icon">⚽</span>
+                            <span class="admin-nav-icon"><svg class="icon"><use href="#i-balon"/></svg></span>
                             <span>Partidos</span>
                         </button>
                         <button type="button" class="admin-nav-card" data-section="jugadores">
-                            <span class="admin-nav-icon">👥</span>
+                            <span class="admin-nav-icon"><svg class="icon"><use href="#i-usuarios"/></svg></span>
                             <span>Jugadores</span>
                         </button>
                         <button type="button" class="admin-nav-card" data-section="seguridad">
-                            <span class="admin-nav-icon">🛡️</span>
+                            <span class="admin-nav-icon"><svg class="icon"><use href="#i-escudo"/></svg></span>
                             <span>Seguridad</span>
                         </button>
                         <button type="button" class="admin-nav-card" data-section="configuracion">
-                            <span class="admin-nav-icon">⚙️</span>
+                            <span class="admin-nav-icon"><svg class="icon"><use href="#i-config"/></svg></span>
                             <span>Configuración</span>
                         </button>
                     </div>
@@ -97,7 +97,7 @@ export class AdminPanel {
                 <!-- Modal de confirmación -->
                 <div id="confirm-modal" class="modal" style="display: none;">
                     <div class="modal-content">
-                        <h3>⚠️ Confirmación</h3>
+                        <h3><svg class="icon icon-inline"><use href="#i-alerta"/></svg> Confirmación</h3>
                         <p id="confirm-message"></p>
                         <div class="modal-actions">
                             <button id="confirm-yes" class="btn btn-danger">Sí, eliminar</button>
@@ -194,7 +194,7 @@ export class AdminPanel {
             </div>
 
             <div class="admin-section">
-                <h2>⚽ Añadir Nuevo Partido</h2>
+                <h2><svg class="icon icon-inline"><use href="#i-balon"/></svg> Añadir Nuevo Partido</h2>
                 <form id="match-form" class="match-form">
                     <div class="form-row">
                         <div class="form-group">
@@ -212,7 +212,7 @@ export class AdminPanel {
                     <div class="teams-container">
                         <!-- Equipo Azul -->
                         <div class="team-section team-blue">
-                            <h3>🔵 Equipo Azul</h3>
+                            <h3><span class="team-dot team-dot-blue"></span>Equipo Azul</h3>
                             <div class="form-group">
                                 <label for="blue-result">Goles del Equipo</label>
                                 <input type="number" id="blue-result" min="0" required>
@@ -231,14 +231,14 @@ export class AdminPanel {
                                     <!-- Se añadirán dinámicamente -->
                                 </div>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('blue')">
-                                    ➕ Añadir Extra
+                                    <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir Extra
                                 </button>
                             </div>
                         </div>
 
                         <!-- Equipo Rojo -->
                         <div class="team-section team-red">
-                            <h3>🔴 Equipo Rojo</h3>
+                            <h3><span class="team-dot team-dot-red"></span>Equipo Rojo</h3>
                             <div class="form-group">
                                 <label for="red-result">Goles del Equipo</label>
                                 <input type="number" id="red-result" min="0" required>
@@ -257,7 +257,7 @@ export class AdminPanel {
                                     <!-- Se añadirán dinámicamente -->
                                 </div>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('red')">
-                                    ➕ Añadir Extra
+                                    <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir Extra
                                 </button>
                             </div>
                         </div>
@@ -265,20 +265,20 @@ export class AdminPanel {
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
-                            💾 Guardar Partido
+                            Guardar Partido
                         </button>
                         <button type="button" class="btn btn-secondary" onclick="adminPanel.cancelEdit()" style="display:none;" id="btn-cancel-edit">
-                            ❌ Cancelar Edición
+                            Cancelar Edición
                         </button>
                         <button type="reset" class="btn btn-secondary">
-                            🔄 Limpiar
+                            Limpiar
                         </button>
                     </div>
                 </form>
             </div>
 
             <div class="admin-section">
-                <h2>📋 Partidos Recientes</h2>
+                <h2><svg class="icon icon-inline"><use href="#i-calendario"/></svg> Partidos Recientes</h2>
 
                 <div class="matches-filters">
                     <div class="filter-group">
@@ -290,10 +290,10 @@ export class AdminPanel {
                         <input type="date" id="filter-date-to" class="filter-input">
                     </div>
                     <button class="btn btn-primary" onclick="adminPanel.applyMatchFilters()">
-                        🔍 Filtrar
+                        <svg class="icon icon-inline"><use href="#i-buscar"/></svg> Filtrar
                     </button>
                     <button class="btn btn-secondary" onclick="adminPanel.clearMatchFilters()">
-                        🔄 Limpiar
+                        Limpiar
                     </button>
                 </div>
 
@@ -312,13 +312,13 @@ export class AdminPanel {
         return `
             <div class="admin-section">
                 <div class="players-management-header">
-                    <h2>👥 Maestro de Jugadores</h2>
+                    <h2><svg class="icon icon-inline"><use href="#i-usuarios"/></svg> Maestro de Jugadores</h2>
                     <div class="players-management-actions">
                         <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.linkHistoricalPlayers()" title="Vincula por nombre los partidos antiguos con el maestro, para que un cambio de nombre se refleje solo en toda la app">
-                            🔗 Vincular histórico
+                            <svg class="icon icon-inline"><use href="#i-enlace"/></svg> Vincular histórico
                         </button>
                         <button type="button" class="btn btn-primary btn-sm" onclick="adminPanel.openPlayerModal()">
-                            ➕ Nuevo Jugador
+                            <svg class="icon icon-inline"><use href="#i-mas"/></svg> Nuevo Jugador
                         </button>
                     </div>
                 </div>
@@ -334,7 +334,7 @@ export class AdminPanel {
 
             <div class="admin-section">
                 <div class="availability-header">
-                    <h2>📋 Disponibilidad</h2>
+                    <h2>Disponibilidad</h2>
                     <div class="availability-controls">
                         <label for="availability-season-select">Temporada</label>
                         <select id="availability-season-select"></select>
@@ -343,19 +343,19 @@ export class AdminPanel {
                 <div class="availability-board">
                     <div class="availability-column availability-column--fixed">
                         <div class="availability-column-header">
-                            <h4>🔵 Fijos</h4>
+                            <h4><span class="team-dot team-dot-blue"></span>Fijos</h4>
                             <span class="availability-count" id="availability-fixed-count">0</span>
                         </div>
                         <div id="availability-fixed" class="chips-row"></div>
                     </div>
                     <div class="availability-column availability-column--eventual">
                         <div class="availability-column-header">
-                            <h4>🟠 Eventuales/Suplentes</h4>
+                            <h4><span class="team-dot team-dot-amber"></span>Eventuales/Suplentes</h4>
                             <span class="availability-count" id="availability-eventual-count">0</span>
                         </div>
                         <div id="availability-eventual" class="chips-row"></div>
                         <button type="button" class="btn btn-secondary btn-sm availability-add-btn" onclick="adminPanel.openAvailabilityPicker()">
-                            ➕ Añadir jugador
+                            <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir jugador
                         </button>
                     </div>
                 </div>
@@ -369,7 +369,7 @@ export class AdminPanel {
     getSeguridadTemplate() {
         return `
             <div class="admin-section">
-                <h2>🛡️ Panel de Seguridad</h2>
+                <h2><svg class="icon icon-inline"><use href="#i-escudo"/></svg> Panel de Seguridad</h2>
                 <div id="security-dashboard-container"></div>
             </div>
         `;
@@ -381,7 +381,7 @@ export class AdminPanel {
     getConfiguracionTemplate() {
         const dayColumn = (day, label) => `
             <div class="config-column">
-                <h3>📅 ${label}</h3>
+                <h3><span class="team-dot ${day === 'martes' ? 'team-dot-blue' : 'team-dot-amber'}"></span>${label}</h3>
 
                 <div class="config-subsection">
                     <h4>Temporadas</h4>
@@ -389,7 +389,7 @@ export class AdminPanel {
                         <p class="loading">Cargando temporadas...</p>
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.openSeasonModal('${day}')">
-                        ➕ Nueva Temporada
+                        <svg class="icon icon-inline"><use href="#i-mas"/></svg> Nueva Temporada
                     </button>
                 </div>
 
@@ -409,14 +409,14 @@ export class AdminPanel {
 
         return `
             <div class="admin-section">
-                <h2>⚙️ Configuración</h2>
+                <h2><svg class="icon icon-inline"><use href="#i-config"/></svg> Configuración</h2>
                 <form id="config-form">
                     <div class="config-columns">
                         ${dayColumn('martes', 'Martes')}
                         ${dayColumn('jueves', 'Jueves')}
                     </div>
                     <button type="submit" class="btn btn-primary">
-                        💾 Guardar Configuración
+                        Guardar Configuración
                     </button>
                 </form>
             </div>
@@ -679,11 +679,11 @@ export class AdminPanel {
             if (error) throw error;
 
             this.closeSeasonModal();
-            this.showNotification('✅ Temporada creada', 'success');
+            this.showNotification('Temporada creada', 'success');
             await this.refreshConfigSeasonsColumn(this.seasonModalDay);
         } catch (error) {
             console.error('Error creando temporada:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -693,11 +693,11 @@ export class AdminPanel {
             const { error } = await this.supabase.from('seasons').update({ is_active: true }).eq('id', id);
             if (error) throw error;
 
-            this.showNotification('✅ Temporada activada', 'success');
+            this.showNotification('Temporada activada', 'success');
             await this.refreshConfigSeasonsColumn(day);
         } catch (error) {
             console.error('Error activando temporada:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -783,9 +783,9 @@ export class AdminPanel {
                     ${noteText}
                 </span>
                 <div class="player-item-actions">
-                    <button class="btn-icon" onclick="adminPanel.openMergeModal('${p.id}')" title="Fusionar un nombre duplicado en este jugador">🔀</button>
-                    <button class="btn-icon btn-edit" onclick="adminPanel.openPlayerModal('${p.id}')">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="adminPanel.deletePlayer('${p.id}', '${p.name}')">🗑️</button>
+                    <button class="btn-icon" onclick="adminPanel.openMergeModal('${p.id}')" title="Fusionar un nombre duplicado en este jugador"><svg class="icon"><use href="#i-fusionar"/></svg></button>
+                    <button class="btn-icon btn-edit" onclick="adminPanel.openPlayerModal('${p.id}')" title="Editar jugador"><svg class="icon"><use href="#i-editar"/></svg></button>
+                    <button class="btn-icon btn-delete" onclick="adminPanel.deletePlayer('${p.id}', '${p.name}')" title="Eliminar jugador"><svg class="icon"><use href="#i-papelera"/></svg></button>
                 </div>
             </div>
         `;
@@ -905,10 +905,10 @@ export class AdminPanel {
                 linkedMatches++;
             }
 
-            let message = `✅ ${linkedMatches} partido(s) actualizados (${linkedEntries} jugadores vinculados)`;
+            let message = `${linkedMatches} partido(s) actualizados (${linkedEntries} jugadores vinculados)`;
             if (unresolved.size > 0) {
                 console.warn('Nombres sin vincular (sin fila exacta en el maestro):', [...unresolved]);
-                message += `. ${unresolved.size} nombre(s) sin vincular (revisa la consola, o usa 🔀 Fusionar)`;
+                message += `. ${unresolved.size} nombre(s) sin vincular (revisa la consola, o usa "Fusionar")`;
             }
             this.showNotification(message, unresolved.size > 0 ? 'info' : 'success');
 
@@ -917,7 +917,7 @@ export class AdminPanel {
             }
         } catch (error) {
             console.error('Error vinculando histórico:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -958,7 +958,7 @@ export class AdminPanel {
             }
 
             this.closeMergeModal();
-            this.showNotification(`✅ "${duplicateName}" fusionado en "${target.name}"`, 'success');
+            this.showNotification(`"${duplicateName}" fusionado en "${target.name}"`, 'success');
             await this.loadAllPlayers();
             await this.loadAvailabilityBoard();
 
@@ -967,7 +967,7 @@ export class AdminPanel {
             }
         } catch (error) {
             console.error('Error fusionando jugadores:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -1051,7 +1051,7 @@ export class AdminPanel {
             }
 
             this.closePlayerModal();
-            this.showNotification('✅ Jugador guardado', 'success');
+            this.showNotification('Jugador guardado', 'success');
             await this.loadAllPlayers();
 
             if (this.dataManager) {
@@ -1059,7 +1059,7 @@ export class AdminPanel {
             }
         } catch (error) {
             console.error('Error guardando jugador:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -1105,11 +1105,11 @@ export class AdminPanel {
             if (settingsError) throw settingsError;
 
             if (updatedCount > 0) {
-                this.showNotification(`🔁 Nombre actualizado en ${updatedCount} partido(s) históricos`, 'info');
+                this.showNotification(`Nombre actualizado en ${updatedCount} partido(s) históricos`, 'info');
             }
         } catch (error) {
             console.error('Error propagando cambio de nombre:', error);
-            this.showNotification('⚠️ Jugador renombrado, pero hubo un error actualizando partidos antiguos: ' + error.message, 'error');
+            this.showNotification('Jugador renombrado, pero hubo un error actualizando partidos antiguos: ' + error.message, 'error');
         }
     }
 
@@ -1194,7 +1194,7 @@ export class AdminPanel {
             await this.loadAvailabilityBoard();
         } catch (error) {
             console.error('Error actualizando disponibilidad:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -1237,11 +1237,11 @@ export class AdminPanel {
             if (error) throw error;
 
             this.closeAvailabilityPicker();
-            this.showNotification(`✅ Jugador añadido como ${isFixed ? 'fijo' : 'eventual'}`, 'success');
+            this.showNotification(`Jugador añadido como ${isFixed ? 'fijo' : 'eventual'}`, 'success');
             await this.loadAvailabilityBoard();
         } catch (error) {
             console.error('Error añadiendo disponibilidad:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -1260,7 +1260,7 @@ export class AdminPanel {
             await this.loadAvailabilityBoard();
         } catch (error) {
             console.error('Error quitando disponibilidad:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -1365,8 +1365,8 @@ export class AdminPanel {
                                class="stat-input" data-stat="portero" title="Goles encajados como portero">
                     </div>
                 </div>
-                <button type="button" class="btn-icon btn-delete" onclick="adminPanel.removeExtraPlayer('${extraId}')">
-                    ❌
+                <button type="button" class="btn-icon btn-delete" onclick="adminPanel.removeExtraPlayer('${extraId}')" title="Quitar jugador">
+                    &times;
                 </button>
             </div>
         `;
@@ -1438,8 +1438,8 @@ export class AdminPanel {
                                class="stat-input" data-stat="portero" title="Goles encajados como portero">
                     </div>
                 </div>
-                <button type="button" class="btn-icon btn-delete" onclick="adminPanel.removeExtraPlayer('${extraId}')">
-                    ❌
+                <button type="button" class="btn-icon btn-delete" onclick="adminPanel.removeExtraPlayer('${extraId}')" title="Quitar jugador">
+                    &times;
                 </button>
             </div>
         `;
@@ -1482,7 +1482,7 @@ export class AdminPanel {
         const formData = new FormData(e.target);
         const csrfToken = formData.get('csrf_token');
         if (!this.csrf.validateToken(csrfToken)) {
-            this.showNotification('❌ Token de seguridad inválido. Recarga la página.', 'error');
+            this.showNotification('Token de seguridad inválido. Recarga la página.', 'error');
             console.error('🔒 CSRF validation failed');
             return;
         }
@@ -1495,7 +1495,7 @@ export class AdminPanel {
                 form: 'match-form',
                 reason: honeypotValidation.reason
             });
-            this.showNotification('❌ Error de validación. Por favor, intenta de nuevo.', 'error');
+            this.showNotification('Error de validación. Por favor, intenta de nuevo.', 'error');
             return;
         }
 
@@ -1579,12 +1579,12 @@ export class AdminPanel {
                     user?.id
                 );
 
-                this.showNotification('✅ Partido actualizado correctamente', 'success');
+                this.showNotification('Partido actualizado correctamente', 'success');
                 
                 // Resetear modo edición
                 this.editingMatchId = null;
                 const submitBtn = document.querySelector('#match-form button[type="submit"]');
-                submitBtn.textContent = '💾 Guardar Partido';
+                submitBtn.textContent = 'Guardar Partido';
                 submitBtn.style.background = '';
                 
                 // Ocultar botón cancelar
@@ -1611,7 +1611,7 @@ export class AdminPanel {
                     user?.id
                 );
 
-                this.showNotification('✅ Partido guardado correctamente', 'success');
+                this.showNotification('Partido guardado correctamente', 'success');
             }
 
             // Limpiar formulario
@@ -1641,7 +1641,7 @@ export class AdminPanel {
 
         } catch (error) {
             console.error('Error guardando partido:', error);
-            this.showNotification('❌ Error guardando partido: ' + error.message, 'error');
+            this.showNotification('Error guardando partido: ' + error.message, 'error');
         }
     }
 
@@ -1941,11 +1941,11 @@ export class AdminPanel {
 
             if (error) throw error;
 
-            this.showNotification('✅ Configuración guardada', 'success');
+            this.showNotification('Configuración guardada', 'success');
 
         } catch (error) {
             console.error('Error guardando configuración:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -1987,13 +1987,13 @@ export class AdminPanel {
                     <div class="match-header">
                         <span class="match-date">${m.match_date}</span>
                         <span class="match-day-badge">${m.day}</span>
-                        ${m.mvp ? `<span class="match-mvp">🏆 ${m.mvp}</span>` : ''}
+                        ${m.mvp ? `<span class="match-mvp"><svg class="icon icon-inline"><use href="#i-trofeo"/></svg> ${m.mvp}</span>` : ''}
                         <div class="match-actions">
                             <button class="btn-icon btn-edit" onclick="adminPanel.editMatch('${m.id}')" title="Editar partido">
-                                ✏️
+                                <svg class="icon"><use href="#i-editar"/></svg>
                             </button>
                             <button class="btn-icon btn-delete" onclick="adminPanel.deleteMatch('${m.id}', '${m.match_date}')" title="Eliminar partido">
-                                🗑️
+                                <svg class="icon"><use href="#i-papelera"/></svg>
                             </button>
                         </div>
                     </div>
@@ -2015,9 +2015,9 @@ export class AdminPanel {
                                 const asists = p.assist || p.asistencias || 0;
                                 const portero = p.keeper || p.portero || 0;
                                 let stats = '';
-                                if (goles > 0) stats += ` ⚽${goles}`;
-                                if (asists > 0) stats += ` 🎯${asists}`;
-                                if (portero > 0) stats += ` 🧤${portero}`;
+                                if (goles > 0) stats += ` ${goles}G`;
+                                if (asists > 0) stats += ` ${asists}A`;
+                                if (portero > 0) stats += ` ${portero}E`;
                                 return `${p.name}${stats}`;
                             }).join(', ')}
                         </div>
@@ -2027,9 +2027,9 @@ export class AdminPanel {
                                 const asists = p.assist || p.asistencias || 0;
                                 const portero = p.keeper || p.portero || 0;
                                 let stats = '';
-                                if (goles > 0) stats += ` ⚽${goles}`;
-                                if (asists > 0) stats += ` 🎯${asists}`;
-                                if (portero > 0) stats += ` 🧤${portero}`;
+                                if (goles > 0) stats += ` ${goles}G`;
+                                if (asists > 0) stats += ` ${asists}A`;
+                                if (portero > 0) stats += ` ${portero}E`;
                                 return `${p.name}${stats}`;
                             }).join(', ')}
                         </div>
@@ -2181,7 +2181,7 @@ export class AdminPanel {
 
             // Cambiar texto del botón y mostrar botón de cancelar
             const submitBtn = document.querySelector('#match-form button[type="submit"]');
-            submitBtn.textContent = '💾 Actualizar Partido';
+            submitBtn.textContent = 'Actualizar Partido';
             submitBtn.style.background = 'var(--ambar)';
             
             const cancelBtn = document.getElementById('btn-cancel-edit');
@@ -2190,11 +2190,11 @@ export class AdminPanel {
             // Scroll al formulario
             document.querySelector('#match-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-            this.showNotification('✏️ Editando partido - Modifica los campos y guarda', 'info');
+            this.showNotification('Editando partido - Modifica los campos y guarda', 'info');
 
         } catch (error) {
             console.error('Error cargando partido para editar:', error);
-            this.showNotification('❌ Error cargando partido', 'error');
+            this.showNotification('Error cargando partido', 'error');
         }
     }
 
@@ -2207,7 +2207,7 @@ export class AdminPanel {
         
         // Restaurar botón submit
         const submitBtn = document.querySelector('#match-form button[type="submit"]');
-        submitBtn.textContent = '💾 Guardar Partido';
+        submitBtn.textContent = 'Guardar Partido';
         submitBtn.style.background = '';
         
         // Ocultar botón cancelar
@@ -2232,7 +2232,7 @@ export class AdminPanel {
             if (stats) stats.style.display = 'none';
         });
         
-        this.showNotification('❌ Edición cancelada', 'info');
+        this.showNotification('Edición cancelada', 'info');
     }
 
     /**
@@ -2249,7 +2249,7 @@ export class AdminPanel {
 
             if (error) throw error;
 
-            this.showNotification('✅ Partido eliminado', 'success');
+            this.showNotification('Partido eliminado', 'success');
             this.loadRecentMatches();
             
             if (this.dataManager) {
@@ -2258,7 +2258,7 @@ export class AdminPanel {
 
         } catch (error) {
             console.error('Error eliminando partido:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -2278,13 +2278,13 @@ export class AdminPanel {
 
             if (error) throw error;
 
-            this.showNotification('✅ Jugador eliminado', 'success');
+            this.showNotification('Jugador eliminado', 'success');
             await this.loadAllPlayers();
             await this.loadAvailabilityBoard();
 
         } catch (error) {
             console.error('Error eliminando jugador:', error);
-            this.showNotification('❌ Error: ' + error.message, 'error');
+            this.showNotification('Error: ' + error.message, 'error');
         }
     }
 
@@ -2320,16 +2320,16 @@ export class AdminPanel {
             modal.innerHTML = `
                 <div class="help-modal-content">
                     <button class="help-modal-close">&times;</button>
-                    <h2>📖 Guía de Uso - Panel de Administración</h2>
-                    
+                    <h2>Guía de Uso - Panel de Administración</h2>
+
                     <div class="help-section">
-                        <h3>🧭 Navegación</h3>
+                        <h3>Navegación</h3>
                         <p>El menú principal tiene 4 accesos: <strong>Partidos</strong>, <strong>Jugadores</strong>, <strong>Seguridad</strong> y <strong>Configuración</strong>. Usa "← Volver" para regresar al menú.</p>
                         <p>Dentro de Partidos y Jugadores, los botones <strong>Martes</strong>/<strong>Jueves</strong> filtran todos los datos de esa sección según el día seleccionado.</p>
                     </div>
 
                     <div class="help-section">
-                        <h3>⚽ Añadir Nuevo Partido</h3>
+                        <h3>Añadir Nuevo Partido</h3>
                         <ol>
                             <li><strong>Fecha:</strong> Selecciona la fecha del partido</li>
                             <li><strong>MVP:</strong> Selecciona el jugador MVP del partido (opcional)</li>
@@ -2341,37 +2341,37 @@ export class AdminPanel {
                                     <li>Indica sus goles, asistencias y encajados</li>
                                 </ul>
                             </li>
-                            <li>Haz clic en <strong>"💾 Guardar Partido"</strong></li>
+                            <li>Haz clic en <strong>"Guardar Partido"</strong></li>
                         </ol>
                     </div>
 
                     <div class="help-section">
-                        <h3>✏️ Editar Partido</h3>
+                        <h3>Editar Partido</h3>
                         <p>En la sección <strong>Partidos Recientes</strong>:</p>
                         <ul>
                             <li>Usa los filtros de fecha para buscar partidos específicos</li>
-                            <li>Haz clic en <strong>✏️ Editar</strong> para modificar un partido existente</li>
+                            <li>Haz clic en el icono de lápiz (<strong>Editar</strong>) para modificar un partido existente</li>
                             <li>El formulario se rellenará automáticamente con los datos</li>
                             <li>La fecha no puede editarse en modo edición</li>
-                            <li>Haz clic en <strong>"🔄 Actualizar Partido"</strong> para guardar cambios</li>
+                            <li>Haz clic en <strong>"Actualizar Partido"</strong> para guardar cambios</li>
                             <li>Puedes <strong>Cancelar</strong> para volver al modo normal</li>
                         </ul>
                     </div>
 
                     <div class="help-section">
-                        <h3>👥 Maestro de Jugadores y Disponibilidad</h3>
-                        <p><strong>Maestro de Jugadores:</strong> catálogo único de jugadores (nombre, emoji, avatar, notas), independiente del día. "➕ Nuevo Jugador" crea uno; ✏️ lo edita.</p>
-                        <p><strong>Disponibilidad:</strong> elige temporada y usa los chips para marcar quién es fijo o eventual ese día/temporada. Clic en el chip alterna fijo/eventual; ✕ lo quita; "➕ Añadir" incorpora a alguien del maestro.</p>
+                        <h3>Maestro de Jugadores y Disponibilidad</h3>
+                        <p><strong>Maestro de Jugadores:</strong> catálogo único de jugadores (nombre, emoji, avatar, notas), independiente del día. "Nuevo Jugador" crea uno; el icono de lápiz lo edita.</p>
+                        <p><strong>Disponibilidad:</strong> elige temporada y usa los chips para marcar quién es fijo o eventual ese día/temporada. Clic en el chip alterna fijo/eventual; la × lo quita; "Añadir" incorpora a alguien del maestro.</p>
                         <p><strong>Nota:</strong> Los jugadores eventuales también se añaden automáticamente a la disponibilidad al crearlos desde un partido con "+ Nuevo jugador..."</p>
                     </div>
 
                     <div class="help-section">
-                        <h3>⚙️ Configuración</h3>
-                        <p>Dos columnas independientes, una por día. En cada una: gestiona sus <strong>Temporadas</strong> (crear/activar), elige de cuál quieres ver los fijos, y selecciona el <strong>Próximo Seleccionador</strong> (aparecerá con el icono ⚽ en la clasificación de ese día).</p>
+                        <h3>Configuración</h3>
+                        <p>Dos columnas independientes, una por día. En cada una: gestiona sus <strong>Temporadas</strong> (crear/activar), elige de cuál quieres ver los fijos, y selecciona el <strong>Próximo Seleccionador</strong> (aparecerá con un icono de balón en la clasificación de ese día).</p>
                     </div>
 
                     <div class="help-section">
-                        <h3>💡 Consejos</h3>
+                        <h3>Consejos</h3>
                         <ul>
                             <li>Los datos se actualizan automáticamente en la aplicación principal</li>
                             <li>Puedes editar las estadísticas de un partido ya creado</li>

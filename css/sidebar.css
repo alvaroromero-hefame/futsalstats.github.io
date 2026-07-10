@@ -94,5 +94,6 @@
 
 	.tabbar a.active {
 		color: var(--primary);
+		background: var(--primary-soft);
 	}
 }

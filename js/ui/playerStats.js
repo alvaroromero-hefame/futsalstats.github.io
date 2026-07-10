@@ -74,13 +74,13 @@ export class PlayerStatsModal {
                 <div class="player-stats-grid">
                     <!-- Gráfico 1: Evolución de goles, asistencias y encajados -->
                     <div class="stats-card">
-                        <h3>📊 Evolución Temporal</h3>
+                        <h3><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Evolución Temporal</h3>
                         <canvas id="chart-evolution"></canvas>
                     </div>
                     
                     <!-- Gráfico 2: Promedios -->
                     <div class="stats-card">
-                        <h3>📈 Promedios por Partido</h3>
+                        <h3><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Promedios por Partido</h3>
                         <canvas id="chart-averages"></canvas>
                     </div>
 
@@ -110,36 +110,36 @@ export class PlayerStatsModal {
 
                     <!-- Estadísticas Avanzadas -->
                     <div class="advanced-stats-section full-width">
-                        <h3>🎯 Estadísticas Avanzadas</h3>
+                        <h3><svg class="icon icon-inline"><use href="#i-diana"/></svg> Estadísticas Avanzadas</h3>
                         
                         <div class="advanced-stats-grid">
                             <!-- Racha Actual -->
                             <div class="stat-card advanced-stat">
-                                <h4>🔥 Racha Actual</h4>
+                                <h4><svg class="icon icon-inline"><use href="#i-actividad"/></svg> Racha Actual</h4>
                                 <div id="stat-streak" class="advanced-stat-value">-</div>
                             </div>
 
                             <!-- Mejor Compañero -->
                             <div class="stat-card advanced-stat">
-                                <h4>🤝 Mejor Compañero</h4>
+                                <h4><svg class="icon icon-inline"><use href="#i-comparar"/></svg> Mejor Compañero</h4>
                                 <div id="stat-best-partner" class="advanced-stat-value">-</div>
                             </div>
 
                             <!-- Probabilidad MVP -->
                             <div class="stat-card advanced-stat">
-                                <h4>⭐ Probabilidad MVP</h4>
+                                <h4><svg class="icon icon-inline"><use href="#i-estrella"/></svg> Probabilidad MVP</h4>
                                 <div id="stat-mvp-probability" class="advanced-stat-value">-</div>
                             </div>
 
                             <!-- Rendimiento Equipo Azul -->
                             <div class="stat-card advanced-stat team-blue">
-                                <h4>🔵 Equipo Azul</h4>
+                                <h4><span class="team-dot team-dot-blue"></span>Equipo Azul</h4>
                                 <div id="stat-team-blue" class="advanced-stat-value">-</div>
                             </div>
 
                             <!-- Rendimiento Equipo Rojo -->
                             <div class="stat-card advanced-stat team-red">
-                                <h4>🔴 Equipo Rojo</h4>
+                                <h4><span class="team-dot team-dot-red"></span>Equipo Rojo</h4>
                                 <div id="stat-team-red" class="advanced-stat-value">-</div>
                             </div>
                         </div>
@@ -147,7 +147,7 @@ export class PlayerStatsModal {
                     
                     <!-- Gráfico 3: Partidos ganados por mes -->
                     <div class="stats-card full-width">
-                        <h3>🏆 Victorias por Mes</h3>
+                        <h3><svg class="icon icon-inline"><use href="#i-trofeo"/></svg> Victorias por Mes</h3>
                         <canvas id="chart-wins-by-month"></canvas>
                     </div>
                 </div>
@@ -280,7 +280,11 @@ export class PlayerStatsModal {
             // Racha actual
             const streakEl = document.getElementById('stat-streak');
             if (streakEl) {
-                streakEl.innerHTML = `${advancedStats.streak.emoji} ${advancedStats.streak.label}`;
+                const streakColor = advancedStats.streak.type === 'win' ? 'var(--win)'
+                    : advancedStats.streak.type === 'loss' ? 'var(--loss)'
+                    : 'var(--muted)';
+                streakEl.style.color = streakColor;
+                streakEl.textContent = advancedStats.streak.label;
             }
             
             // Mejor compañero

@@ -113,11 +113,10 @@ export class AdvancedStats {
         });
 
         if (playerMatches.length === 0) {
-            return { 
-                type: 'none', 
-                count: 0, 
-                emoji: '➖', 
-                label: 'Sin partidos' 
+            return {
+                type: 'none',
+                count: 0,
+                label: 'Sin partidos'
             };
         }
 
@@ -141,10 +140,7 @@ export class AdvancedStats {
         return {
             type: streakType,
             count: streakCount,
-            emoji: streakType === 'win' 
-                ? (streakCount >= 5 ? '🔥' : '✅') 
-                : (streakCount >= 3 ? '❄️' : '❌'),
-            label: streakType === 'win' 
+            label: streakType === 'win'
                 ? `${streakCount} victoria${streakCount > 1 ? 's' : ''} seguida${streakCount > 1 ? 's' : ''}`
                 : `${streakCount} derrota${streakCount > 1 ? 's' : ''} seguida${streakCount > 1 ? 's' : ''}`
         };

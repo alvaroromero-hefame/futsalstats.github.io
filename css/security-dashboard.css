@@ -70,9 +70,27 @@
 .security-dashboard .stat-card:nth-child(4) { box-shadow: inset 4px 0 0 var(--ambar); }
 
 .stat-icon {
-    font-size: 40px;
-    opacity: 0.9;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: var(--primary-soft);
 }
+
+.stat-icon .icon {
+    width: 26px;
+    height: 26px;
+    color: var(--primary);
+}
+
+.security-dashboard .stat-card:nth-child(2) .stat-icon { background: color-mix(in srgb, var(--team-red) 16%, transparent); }
+.security-dashboard .stat-card:nth-child(2) .stat-icon .icon { color: var(--team-red); }
+.security-dashboard .stat-card:nth-child(3) .stat-icon { background: color-mix(in srgb, var(--team-blue) 16%, transparent); }
+.security-dashboard .stat-card:nth-child(3) .stat-icon .icon { color: var(--team-blue); }
+.security-dashboard .stat-card:nth-child(4) .stat-icon { background: color-mix(in srgb, var(--ambar) 16%, transparent); }
+.security-dashboard .stat-card:nth-child(4) .stat-icon .icon { color: var(--ambar); }
 
 .stat-content {
     flex: 1;

@@ -2,6 +2,18 @@
    Análisis IA View
    ============================================ */
 
+.day-card h3 .day-dot {
+	display: inline-block;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	margin-right: 8px;
+	vertical-align: 1px;
+}
+
+.day-dot.martes-dot { background: var(--team-blue); }
+.day-dot.jueves-dot { background: var(--ambar); }
+
 .analisis-ia-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -178,10 +190,17 @@
     padding: 10px 22px;
     border-radius: 99px;
     font-weight: 600;
+    color: #fff;
 }
 
 .ai-badge .badge-icon {
-    font-size: 22px;
+    display: flex;
+}
+
+.ai-badge .badge-icon .icon {
+    width: 20px;
+    height: 20px;
+    color: currentColor;
 }
 
 .ai-badge .badge-text {

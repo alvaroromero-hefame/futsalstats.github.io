@@ -68,7 +68,7 @@ export function renderDetallePartido(match, fijos = []) {
     blueLineup.forEach(m => {
         // Sanitizar nombre del jugador
         const sanitizedName = SecurityUtils.sanitizeHTML(m.name);
-        let fijoIcon = fijos.includes(m.name) ? ' ⭐' : '';
+        let fijoIcon = fijos.includes(m.name) ? ' <svg class="icon icon-inline" title="Jugador fijo"><use href="#i-estrella"/></svg>' : '';
         const goles = SecurityUtils.sanitizeNumber(m.goal !== undefined ? m.goal : (m.goles || 0));
         const asistencias = SecurityUtils.sanitizeNumber(m.assist !== undefined ? m.assist : (m.asistencias || 0));
         const encajados = SecurityUtils.sanitizeNumber(m.keeper !== undefined ? m.keeper : (m.portero || 0));
@@ -81,7 +81,7 @@ export function renderDetallePartido(match, fijos = []) {
     redLineup.forEach(m => {
         // Sanitizar nombre del jugador
         const sanitizedName = SecurityUtils.sanitizeHTML(m.name);
-        let fijoIcon = fijos.includes(m.name) ? ' ⭐' : '';
+        let fijoIcon = fijos.includes(m.name) ? ' <svg class="icon icon-inline" title="Jugador fijo"><use href="#i-estrella"/></svg>' : '';
         const goles = SecurityUtils.sanitizeNumber(m.goal !== undefined ? m.goal : (m.goles || 0));
         const asistencias = SecurityUtils.sanitizeNumber(m.assist !== undefined ? m.assist : (m.asistencias || 0));
         const encajados = SecurityUtils.sanitizeNumber(m.keeper !== undefined ? m.keeper : (m.portero || 0));
@@ -136,8 +136,8 @@ export function renderLeyendaClasificacion() {
                 <li>Asistencia: +0.25 puntos por cada asistencia</li>
                 <li>Gol encajado: -0.10 puntos a cada jugador del equipo por cada gol encajado</li>
                 <li>MVP: +1 punto adicional por cada vez que ha sido MVP</li>
-                <li>⭐ Jugador fijo</li>
-                <li>⚽ Próximo seleccionador</li>
+                <li><svg class="icon icon-inline"><use href="#i-estrella"/></svg> Jugador fijo</li>
+                <li><svg class="icon icon-inline"><use href="#i-balon"/></svg> Próximo seleccionador</li>
             </ul>
         </div>
     `;

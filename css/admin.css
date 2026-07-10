@@ -270,8 +270,19 @@ input[type="checkbox"] {
     cursor: pointer;
     font-size: 18px;
     border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: background .15s, transform .15s;
 }
+
+.btn-icon .icon {
+    width: 18px;
+    height: 18px;
+}
+
+.btn-icon.btn-edit .icon { color: var(--primary); }
+.btn-icon.btn-delete .icon { color: var(--loss); }
 
 .btn-icon:hover {
     background: var(--field);
@@ -366,10 +377,15 @@ input[type="checkbox"] {
     place-items: center;
     width: 68px;
     height: 68px;
-    font-size: 34px;
     border-radius: 18px;
     background: var(--primary-soft);
     transition: transform .2s;
+}
+
+.admin-nav-icon .icon {
+    width: 32px;
+    height: 32px;
+    color: var(--primary);
 }
 
 .admin-nav-card:hover .admin-nav-icon {
@@ -1522,13 +1538,17 @@ input[type="checkbox"] {
     height: 40px !important;
     min-width: 40px !important;
     min-height: 40px !important;
-    font-size: 20px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
     transition: filter 0.15s !important;
     padding: 0 !important;
+}
+
+.btn-help .icon {
+    width: 20px;
+    height: 20px;
 }
 
 .btn-help:hover {

@@ -76,21 +76,20 @@ export class ClasificacionView {
             const nombreSanitizado = SecurityUtils.sanitizeHTML(j.nombre);
             
             if (fijos.includes(j.nombre)) {
-                fijoIcon = '⭐';
+                fijoIcon = '<svg class="icon icon-inline" title="Jugador fijo"><use href="#i-estrella"/></svg>';
             }
-            
+
             // Ícono del próximo seleccionador
             if (data.proximoSeleccionador && j.nombre === data.proximoSeleccionador) {
-                selectorIcon = '⚽';
+                selectorIcon = '<svg class="icon icon-inline" title="Próximo seleccionador"><use href="#i-balon"/></svg>';
             }
-            
+
             if (idx === 0) {
                 clase = 'primero';
-                icono = '🏆';
+                icono = '<svg class="icon icon-inline" title="Líder"><use href="#i-trofeo"/></svg>';
             }
             if (idx === clasificacion.length - 1) {
                 clase = 'ultimo';
-                icono = '😭';
             }
             
             // Sanitizar todos los valores numéricos

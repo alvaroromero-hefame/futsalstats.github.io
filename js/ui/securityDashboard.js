@@ -30,10 +30,10 @@ export class SecurityDashboard {
         container.innerHTML = `
             <div class="security-dashboard">
                 <div class="dashboard-header">
-                    <h2>🛡️ Panel de Seguridad</h2>
+                    <h2><svg class="icon icon-inline"><use href="#i-escudo"/></svg> Panel de Seguridad</h2>
                     <div class="dashboard-controls">
                         <button id="refresh-dashboard" class="btn-primary">
-                            🔄 Actualizar
+                            <svg class="icon icon-inline"><use href="#i-refrescar"/></svg> Actualizar
                         </button>
                         <label class="auto-refresh-toggle">
                             <input type="checkbox" id="auto-refresh" checked>
@@ -45,28 +45,28 @@ export class SecurityDashboard {
                 <!-- Estadísticas resumen -->
                 <div class="stats-grid" id="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon">📊</div>
+                        <div class="stat-icon"><svg class="icon"><use href="#i-grafica"/></svg></div>
                         <div class="stat-content">
                             <div class="stat-value" id="stat-total">-</div>
                             <div class="stat-label">Total Eventos</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-icon"><svg class="icon"><use href="#i-alerta"/></svg></div>
                         <div class="stat-content">
                             <div class="stat-value" id="stat-security">-</div>
                             <div class="stat-label">Eventos de Seguridad</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">🔐</div>
+                        <div class="stat-icon"><svg class="icon"><use href="#i-candado"/></svg></div>
                         <div class="stat-content">
                             <div class="stat-value" id="stat-failed-logins">-</div>
                             <div class="stat-label">Logins Fallidos</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">🤖</div>
+                        <div class="stat-icon"><svg class="icon"><use href="#i-ia"/></svg></div>
                         <div class="stat-content">
                             <div class="stat-value" id="stat-bots">-</div>
                             <div class="stat-label">Bots Detectados</div>
@@ -104,13 +104,13 @@ export class SecurityDashboard {
 
                 <!-- Gráfico de eventos -->
                 <div class="chart-container">
-                    <h3>📈 Eventos por Hora (24h)</h3>
+                    <h3><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Eventos por Hora (24h)</h3>
                     <canvas id="events-chart"></canvas>
                 </div>
 
                 <!-- Tabla de logs recientes -->
                 <div class="logs-container">
-                    <h3>📋 Eventos Recientes</h3>
+                    <h3><svg class="icon icon-inline"><use href="#i-calendario"/></svg> Eventos Recientes</h3>
                     <div class="logs-table-container">
                         <table class="logs-table" id="logs-table">
                             <thead>
@@ -304,7 +304,7 @@ export class SecurityDashboard {
             if (attempts.length >= 5) {
                 alerts.push({
                     level: 'critical',
-                    message: `⚠️ ${attempts.length} intentos de login fallidos desde IP ${ip}`,
+                    message: `${attempts.length} intentos de login fallidos desde IP ${ip}`,
                     action: 'Considerar bloquear esta IP'
                 });
             }
@@ -315,7 +315,7 @@ export class SecurityDashboard {
         if (bots.length >= 10) {
             alerts.push({
                 level: 'high',
-                message: `🤖 ${bots.length} bots detectados en las últimas 24h`,
+                message: `${bots.length} bots detectados en las últimas 24h`,
                 action: 'Verificar honeypot y añadir CAPTCHA si es necesario'
             });
         }
@@ -325,7 +325,7 @@ export class SecurityDashboard {
         if (rateLimits.length >= 20) {
             alerts.push({
                 level: 'medium',
-                message: `⏱️ ${rateLimits.length} eventos de rate limiting`,
+                message: `${rateLimits.length} eventos de rate limiting`,
                 action: 'Revisar si es tráfico legítimo o ataque'
             });
         }
@@ -346,7 +346,7 @@ export class SecurityDashboard {
 
         container.innerHTML = `
             <div class="alerts-list">
-                <h3>🚨 Alertas Activas</h3>
+                <h3><svg class="icon icon-inline"><use href="#i-alerta"/></svg> Alertas Activas</h3>
                 ${alerts.map(alert => `
                     <div class="alert alert-${alert.level}">
                         <div class="alert-message">${alert.message}</div>

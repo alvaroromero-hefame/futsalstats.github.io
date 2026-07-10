@@ -29,11 +29,20 @@
 	--loss:         light-dark(#b91c1c, #f87171);
 	--warn:         light-dark(#b45309, #fbbf24);
 
+	/* Podio (rangos 1-3) */
+	--gold:   light-dark(#8a6200, #ffd700);
+	--silver: light-dark(#5b5b5b, #c7c7d1);
+	--bronze: light-dark(#8a4a1e, #d68a4c);
+
 	/* Forma y elevación */
 	--radius: 14px;
 	--radius-s: 8px;
 	--shadow-1: 0 1px 2px rgba(9, 27, 63, .05), 0 6px 20px rgba(9, 27, 63, .06);
 	--shadow-2: 0 12px 40px rgba(9, 27, 63, .22);
+
+	/* Movimiento */
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
 	/* Tipografía */
 	--font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -85,15 +94,21 @@ input, select, textarea {
 h1, h2, h3, h4 {
 	font-family: var(--font-display);
 	text-transform: uppercase;
-	letter-spacing: .02em;
 	line-height: 1.15;
 	text-wrap: balance;
 }
 
-h1 { font-size: clamp(1.7rem, 1.2rem + 2vw, 2.4rem); margin: 20px 0; }
-h2 { font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.9rem); margin: 18px 0 15px 0; }
-h3 { font-size: clamp(1.2rem, 1rem + .8vw, 1.4rem); margin: 15px 0 12px 0; }
-h4 { font-size: 1.15rem; margin: 12px 0 10px 0; }
+/* Tracking negativo a tamaños grandes, positivo a tamaños pequeños (Apple: la
+   letra parece más separada cuanto más grande es el cuerpo, hay que compensar) */
+h1 { font-size: clamp(1.7rem, 1.2rem + 2vw, 2.4rem); letter-spacing: -.01em; margin: 20px 0; }
+h2 { font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.9rem); letter-spacing: -.005em; margin: 18px 0 15px 0; }
+h3 { font-size: clamp(1.2rem, 1rem + .8vw, 1.4rem); letter-spacing: .01em; margin: 15px 0 12px 0; }
+h4 { font-size: 1.15rem; letter-spacing: .02em; margin: 12px 0 10px 0; }
+
+/* Cifras: siempre tabulares para que las tablas de estadísticas no "bailen" */
+.tabular, .stat-value, .rank-badge, .stat-pill, .estadistica-grande {
+	font-variant-numeric: tabular-nums;
+}
 
 p { line-height: 1.6; margin: 10px 0; }
 
@@ -193,12 +208,14 @@ p { line-height: 1.6; margin: 10px 0; }
 
 .season-selector-wrap select {
 	max-width: 46vw;
-	padding: 8px 12px;
-	border-radius: var(--radius-s);
+	padding: 8px 32px 8px 14px;
+	border-radius: 99px;
 	border: 1px solid var(--border);
-	background: var(--bg);
+	background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2396a3c0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 16px;
+	appearance: none;
 	color: var(--text);
-	font-weight: 500;
+	font-weight: 600;
+	font-size: .88rem;
 }
 
 /* ── Contenido principal ── */
@@ -289,6 +306,29 @@ p { line-height: 1.6; margin: 10px 0; }
 	flex-shrink: 0;
 }
 
+/* Icono incrustado en línea de texto (tablas, títulos) */
+.icon-inline {
+	width: 15px;
+	height: 15px;
+	vertical-align: -3px;
+	color: var(--primary);
+	margin-left: 2px;
+}
+
+/* Punto de color de equipo/día, reutilizado en toda la app y el admin */
+.team-dot {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	margin-right: 8px;
+	vertical-align: 1px;
+}
+
+.team-dot-blue  { background: var(--team-blue); }
+.team-dot-red   { background: var(--team-red); }
+.team-dot-amber { background: var(--ambar); }
+
 /* ============================================================
    Responsive del shell
    ============================================================ */
@@ -318,4 +358,122 @@ p { line-height: 1.6; margin: 10px 0; }
 	}
 
 	.brand-name { font-size: 1.2rem; }
+}
+
+/* ============================================================
+   Componentes editoriales compartidos
+   (resumen, clasificación, y cualquier vista con rankings)
+   ============================================================ */
+
+/* ── Rank badge: numeral tipográfico grande en vez de medallas emoji ── */
+.rank-badge {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.5rem;
+	line-height: 1;
+	width: 2.1ch;
+	flex-shrink: 0;
+	text-align: center;
+	color: var(--muted);
+	letter-spacing: -.02em;
+}
+
+.rank-1 .rank-badge { color: var(--gold); }
+.rank-2 .rank-badge { color: var(--silver); }
+.rank-3 .rank-badge { color: var(--bronze); }
+
+/* ── Barra de magnitud relativa (valor del jugador frente al líder) ── */
+.stat-bar-track {
+	position: relative;
+	height: 4px;
+	border-radius: 99px;
+	background: var(--surface-2);
+	overflow: hidden;
+	margin-top: 5px;
+}
+
+.stat-bar-fill {
+	position: absolute;
+	inset: 0;
+	width: var(--pct, 0%);
+	border-radius: 99px;
+	background: var(--primary);
+	transition: width 400ms var(--ease-out);
+}
+
+.rank-1 .stat-bar-fill { background: var(--gold); }
+.rank-2 .stat-bar-fill { background: var(--silver); }
+.rank-3 .stat-bar-fill { background: var(--bronze); }
+
+/* ── Chips de temporada (selector compacto tipo "portada de marcador") ── */
+.season-chips {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.season-chip {
+	appearance: none;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--muted);
+	font-weight: 600;
+	font-size: .85rem;
+	padding: 7px 18px;
+	border-radius: 99px;
+	transition: background 150ms, color 150ms, border-color 150ms, transform 160ms var(--ease-out);
+}
+
+.season-chip:hover { color: var(--text); }
+.season-chip:active { transform: scale(0.97); }
+
+.season-chip.active {
+	background: var(--navy);
+	border-color: var(--navy);
+	color: #f5f5f5;
+}
+
+/* ── Skeleton loader: silueta del propio componente, no un spinner genérico ── */
+.skeleton {
+	position: relative;
+	background: var(--surface-2);
+	border-radius: var(--radius-s);
+	overflow: hidden;
+	color: transparent !important;
+}
+
+.skeleton::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 8%, transparent), transparent);
+	animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+	from { transform: translateX(-100%); }
+	to   { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.skeleton::after { animation: none; }
+}
+
+/* ── Textura sutil de líneas de cancha (fondo, muy discreta) ── */
+.pitch-lines {
+	background-image:
+		repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 4%, transparent) 0 1px, transparent 1px 120px);
+	background-position: center top;
+}
+
+/* ── Botones: feedback de presión inmediato ── */
+button, .btn, .season-chip, .detalle-btn {
+	transition: transform 140ms var(--ease-out), background 150ms, color 150ms, border-color 150ms;
+}
+
+button:active, .btn:active { transform: scale(0.97); }
+
+@media (hover: hover) and (pointer: fine) {
+	.cat-card:hover, .stat-card:hover { transform: translateY(-2px); }
 }

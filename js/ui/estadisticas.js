@@ -45,8 +45,8 @@ export class EstadisticasView {
             html += `
                 <div class="fila" style="justify-content: center;">
                     <div class="columna izquierda" style="max-width: 400px;">
-                        <h2>💰 Recaudación</h2>
-                        <p id="contador-no-fijos" class="estadistica-grande" style="color: #f39c12;">Cargando...</p>
+                        <h2>Recaudación</h2>
+                        <p id="contador-no-fijos" class="estadistica-grande" style="color: var(--ambar);">Cargando...</p>
                     </div>
                 </div>
             `;

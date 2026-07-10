@@ -96,21 +96,42 @@ function buildStats(matches) {
     });
 }
 
-const top3 = (arr, fn, asc = false) => {
-    const sorted = [...arr].sort((a, b) => asc ? fn(a) - fn(b) : fn(b) - fn(a));
-    return sorted.slice(0, 3);
-};
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
 
-const MEDALS = ['🥇', '🥈', '🥉'];
+function icon(id) {
+    return `<svg class="icon"><use href="#${id}"/></svg>`;
+}
 
-function renderPodium(players, statFn, statLabel) {
+function renderPodium(players, statFn, statLabel, rawFn, asc) {
     if (!players.length) return `<p class="no-data">Sin datos suficientes</p>`;
-    return players.map((p, i) => `
-        <div class="podium-row rank-${i + 1}">
-            <span class="medal">${MEDALS[i]}</span>
-            <span class="player-name">${escHtml(p.nombre)}</span>
-            <span class="player-stat">${statFn(p)} ${statLabel}</span>
-        </div>`).join('');
+
+    const top = rawFn(players[0]);
+    const worst = rawFn(players[players.length - 1]);
+
+    return players.map((p, i) => {
+        let pct;
+        if (asc) {
+            const span = top - worst;
+            pct = span > 0 ? ((top - rawFn(p)) / span) * 100 : 100;
+        } else {
+            pct = top > 0 ? (rawFn(p) / top) * 100 : 100;
+        }
+        return `
+            <div class="podium-row rank-${i + 1}">
+                <span class="rank-badge">${String(i + 1).padStart(2, '0')}</span>
+                <div class="podium-main">
+                    <span class="player-name">${escHtml(p.nombre)}</span>
+                    <div class="stat-bar-track"><div class="stat-bar-fill" style="--pct:${pct.toFixed(0)}%"></div></div>
+                </div>
+                <span class="stat-pill">${statFn(p)} ${statLabel}</span>
+            </div>`;
+    }).join('');
 }
 
 function renderBlock(stats, fijos, { filterFn = () => true, sortFn, statFn, statLabel, asc = false }) {
@@ -120,16 +141,16 @@ function renderBlock(stats, fijos, { filterFn = () => true, sortFn, statFn, stat
     const suplentes = sorted(stats.filter(p => !fijos.has(p.nombre) && filterFn(p)));
     const bestSup = suplentes[0] || null;
 
-    let html = renderPodium(titulares, statFn, statLabel);
+    let html = renderPodium(titulares, statFn, statLabel, sortFn, asc);
 
     if (bestSup) {
         html += `
             <div class="suplente-section">
-                <div class="suplente-label">✨ Mejor suplente</div>
+                <div class="suplente-label">${icon('i-sparkle')} Mejor suplente</div>
                 <div class="podium-row suplente-row">
-                    <span class="medal">🌟</span>
-                    <span class="player-name">${escHtml(bestSup.nombre)}</span>
-                    <span class="player-stat">${statFn(bestSup)} ${statLabel}</span>
+                    <span class="suplente-badge">${icon('i-sparkle')}</span>
+                    <div class="podium-main"><span class="player-name">${escHtml(bestSup.nombre)}</span></div>
+                    <span class="stat-pill">${statFn(bestSup)} ${statLabel}</span>
                 </div>
             </div>`;
     }
@@ -137,17 +158,9 @@ function renderBlock(stats, fijos, { filterFn = () => true, sortFn, statFn, stat
     return html;
 }
 
-function escHtml(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-}
-
 function renderDayCol(dayClass, dayName, html) {
     return `
-        <div class="day-col">
+        <div class="day-col" data-day="${dayClass}">
             <div class="day-label ${dayClass}">
                 <span class="day-dot"></span>${dayName}
             </div>
@@ -155,19 +168,19 @@ function renderDayCol(dayClass, dayName, html) {
         </div>`;
 }
 
-function renderCategory({ icon, title, subtitle, martesHtml, juevesHtml }) {
+function renderCategory({ iconId, title, subtitle, martesHtml, juevesHtml }) {
     return `
         <div class="cat-card">
             <div class="cat-header">
-                <span class="cat-icon">${icon}</span>
+                ${icon(iconId)}
                 <div>
                     <div class="cat-title">${title}</div>
                     <div class="cat-subtitle">${subtitle}</div>
                 </div>
             </div>
             <div class="days-grid">
-                ${renderDayCol('martes', '📅 Martes', martesHtml)}
-                ${renderDayCol('jueves', '📅 Jueves', juevesHtml)}
+                ${renderDayCol('martes', 'Martes', martesHtml)}
+                ${renderDayCol('jueves', 'Jueves', juevesHtml)}
             </div>
         </div>`;
 }
@@ -186,33 +199,33 @@ async function main() {
 
     const categories = [
         {
-            icon: '⭐', title: 'Líderes', subtitle: 'Jugadores con más puntos totales',
+            iconId: 'i-trofeo', title: 'Líderes', subtitle: 'Jugadores con más puntos totales',
             fn: (stats, fijos) => renderBlock(stats, fijos, { sortFn: p => p.puntos, statFn: p => p.puntos.toFixed(1), statLabel: 'pts' })
         },
         {
-            icon: '🏅', title: 'Top MVPs', subtitle: 'Jugadores más valiosos del partido',
+            iconId: 'i-estrella', title: 'Top MVPs', subtitle: 'Jugadores más valiosos del partido',
             fn: (stats, fijos) => renderBlock(stats, fijos, { filterFn: p => p.mvps > 0, sortFn: p => p.mvps, statFn: p => p.mvps, statLabel: 'MVPs' })
         },
         {
-            icon: '⚽', title: 'Top Goleadores', subtitle: 'Jugadores con más goles',
+            iconId: 'i-balon', title: 'Top Goleadores', subtitle: 'Jugadores con más goles',
             fn: (stats, fijos) => renderBlock(stats, fijos, { filterFn: p => p.goles > 0, sortFn: p => p.goles, statFn: p => p.goles, statLabel: 'goles' })
         },
         {
-            icon: '🎯', title: 'Top Asistentes', subtitle: 'Jugadores con más asistencias',
+            iconId: 'i-diana', title: 'Top Asistentes', subtitle: 'Jugadores con más asistencias',
             fn: (stats, fijos) => renderBlock(stats, fijos, { filterFn: p => p.asistencias > 0, sortFn: p => p.asistencias, statFn: p => p.asistencias, statLabel: 'asist.' })
         },
         {
-            icon: '🧤', title: 'Top Porteros', subtitle: `Menor ratio goles encajados/partido (mín. ${MIN_GAMES_PORTERO} partidos como portero)`,
+            iconId: 'i-escudo', title: 'Top Porteros', subtitle: `Menor ratio goles encajados/partido (mín. ${MIN_GAMES_PORTERO} partidos como portero)`,
             fn: (stats, fijos) => renderBlock(stats, fijos, { filterFn: p => p.encajados > 0 && p.partidos >= MIN_GAMES_PORTERO, sortFn: p => p.ratioEncajados, statFn: p => p.ratioEncajados.toFixed(2), statLabel: 'enc/ptdo', asc: true })
         },
         {
-            icon: '🏃', title: 'Top Jugados', subtitle: 'Jugadores que más partidos han disputado',
+            iconId: 'i-actividad', title: 'Top Jugados', subtitle: 'Jugadores que más partidos han disputado',
             fn: (stats, fijos) => renderBlock(stats, fijos, { filterFn: p => p.partidos > 0, sortFn: p => p.partidos, statFn: p => p.partidos, statLabel: 'partidos' })
         }
     ];
 
     const sectionsHtml = categories.map(cat => renderCategory({
-        icon: cat.icon,
+        iconId: cat.iconId,
         title: cat.title,
         subtitle: cat.subtitle,
         martesHtml: cat.fn(statsM, fijosMartes),

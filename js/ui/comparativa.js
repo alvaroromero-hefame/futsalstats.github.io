@@ -73,7 +73,7 @@ export class ComparativaView {
         this.container.innerHTML = `
             <div class="comparativa-container">
                 <div class="comparativa-header">
-                    <h1>🔍 Comparativa de Jugadores ${seasonBadge}</h1>
+                    <h1><svg class="icon icon-inline"><use href="#i-comparar"/></svg> Comparativa de Jugadores ${seasonBadge}</h1>
                     <p>Selecciona hasta 3 jugadores para comparar sus estadísticas</p>
                 </div>
 
@@ -86,7 +86,7 @@ export class ComparativaView {
                             ${players.map(p => `<option value="${p}">${p}</option>`).join('')}
                         </select>
                         <button id="add-player-btn" class="btn-primary" ${this.selectedPlayers.length >= this.maxPlayers ? 'disabled' : ''}>
-                            ➕ Agregar
+                            Agregar
                         </button>
                     </div>
 
@@ -126,7 +126,7 @@ export class ComparativaView {
 
         return this.selectedPlayers.map((player, index) => `
             <div class="selected-player-card player-color-${index + 1}">
-                <span class="player-name">👤 ${player}</span>
+                <span class="player-name">${player}</span>
                 <button class="remove-player-btn" data-player="${player}">✕</button>
             </div>
         `).join('');
@@ -215,21 +215,21 @@ export class ComparativaView {
         tableHTML += `</tr></thead><tbody>`;
         
         // Fila: Partidos Jugados
-        tableHTML += `<tr><td class="metric-name">⚽ Partidos Jugados</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-actividad"/></svg> Partidos Jugados</td>`;
         playersStats.forEach(p => {
             tableHTML += `<td class="stat-value">${p.stats.totalMatches}</td>`;
         });
         tableHTML += `</tr>`;
         
         // Fila: Victorias
-        tableHTML += `<tr><td class="metric-name">🏆 Victorias</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-trofeo"/></svg> Victorias</td>`;
         playersStats.forEach(p => {
             tableHTML += `<td class="stat-value">${p.stats.wins}</td>`;
         });
         tableHTML += `</tr>`;
         
         // Fila: % Victorias
-        tableHTML += `<tr><td class="metric-name">📊 % Victorias</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-grafica"/></svg> % Victorias</td>`;
         playersStats.forEach(p => {
             const isHighest = this.isHighestValue(playersStats, 'winRate', p.stats.winRate);
             tableHTML += `<td class="stat-value ${isHighest ? 'best-stat' : ''}">${p.stats.winRate}%</td>`;
@@ -237,7 +237,7 @@ export class ComparativaView {
         tableHTML += `</tr>`;
         
         // Fila: Goles Totales
-        tableHTML += `<tr><td class="metric-name">⚽ Goles Totales</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-balon"/></svg> Goles Totales</td>`;
         playersStats.forEach(p => {
             const isHighest = this.isHighestValue(playersStats, 'totalGoals', p.stats.totalGoals);
             tableHTML += `<td class="stat-value ${isHighest ? 'best-stat' : ''}">${p.stats.totalGoals}</td>`;
@@ -245,7 +245,7 @@ export class ComparativaView {
         tableHTML += `</tr>`;
         
         // Fila: Goles/Partido
-        tableHTML += `<tr><td class="metric-name">📈 Goles/Partido</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Goles/Partido</td>`;
         playersStats.forEach(p => {
             const isHighest = this.isHighestValue(playersStats, 'goalsPerMatch', p.stats.goalsPerMatch);
             tableHTML += `<td class="stat-value ${isHighest ? 'best-stat' : ''}">${p.stats.goalsPerMatch}</td>`;
@@ -253,7 +253,7 @@ export class ComparativaView {
         tableHTML += `</tr>`;
         
         // Fila: Asistencias Totales
-        tableHTML += `<tr><td class="metric-name">🎯 Asistencias Totales</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-diana"/></svg> Asistencias Totales</td>`;
         playersStats.forEach(p => {
             const isHighest = this.isHighestValue(playersStats, 'totalAssists', p.stats.totalAssists);
             tableHTML += `<td class="stat-value ${isHighest ? 'best-stat' : ''}">${p.stats.totalAssists}</td>`;
@@ -261,7 +261,7 @@ export class ComparativaView {
         tableHTML += `</tr>`;
         
         // Fila: Asistencias/Partido
-        tableHTML += `<tr><td class="metric-name">📈 Asistencias/Partido</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Asistencias/Partido</td>`;
         playersStats.forEach(p => {
             const isHighest = this.isHighestValue(playersStats, 'assistsPerMatch', p.stats.assistsPerMatch);
             tableHTML += `<td class="stat-value ${isHighest ? 'best-stat' : ''}">${p.stats.assistsPerMatch}</td>`;
@@ -269,14 +269,14 @@ export class ComparativaView {
         tableHTML += `</tr>`;
         
         // Fila: Goles Encajados
-        tableHTML += `<tr><td class="metric-name">🥅 Goles Encajados</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-escudo"/></svg> Goles Encajados</td>`;
         playersStats.forEach(p => {
             tableHTML += `<td class="stat-value">${p.stats.totalKeeper}</td>`;
         });
         tableHTML += `</tr>`;
         
         // Fila: MVPs
-        tableHTML += `<tr><td class="metric-name">⭐ MVPs</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-estrella"/></svg> MVPs</td>`;
         playersStats.forEach(p => {
             const isHighest = this.isHighestValue(playersStats, 'mvpCount', p.stats.mvpCount);
             tableHTML += `<td class="stat-value ${isHighest ? 'best-stat' : ''}">${p.stats.mvpCount}</td>`;
@@ -284,7 +284,7 @@ export class ComparativaView {
         tableHTML += `</tr>`;
         
         // Fila: % MVP
-        tableHTML += `<tr><td class="metric-name">✨ % MVP</td>`;
+        tableHTML += `<tr><td class="metric-name"><svg class="icon icon-inline"><use href="#i-sparkle"/></svg> % MVP</td>`;
         playersStats.forEach(p => {
             const isHighest = this.isHighestValue(playersStats, 'mvpRate', p.stats.mvpRate);
             tableHTML += `<td class="stat-value ${isHighest ? 'best-stat' : ''}">${p.stats.mvpRate}%</td>`;
@@ -311,7 +311,7 @@ export class ComparativaView {
     renderCharts() {
         return `
             <div class="chart-container">
-                <h3>📊 Comparación Visual</h3>
+                <h3><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Comparación Visual</h3>
                 <canvas id="comparison-chart"></canvas>
             </div>
         `;

@@ -27,7 +27,7 @@ export class AnalisisIAView {
 
         let html = `
             <div class="analisis-ia-container">
-                <h1>🤖 Análisis IA de Jugadores</h1>
+                <h1><svg class="icon icon-inline"><use href="#i-ia"/></svg> Análisis IA de Jugadores</h1>
                 <p class="description">
                     Análisis profesional basado en todas las estadísticas del jugador (martes y jueves combinados)
                 </p>
@@ -268,7 +268,7 @@ export class AnalisisIAView {
         
         resultContainer.innerHTML = `
             <div class="analysis-header">
-                <h2>📊 Análisis Completo de ${playerName}</h2>
+                <h2><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Análisis Completo de ${playerName}</h2>
                 <p class="analysis-subtitle">Datos combinados de Martes y Jueves</p>
             </div>
 
@@ -295,12 +295,12 @@ export class AnalisisIAView {
             <!-- Desglose por día -->
             <div class="day-breakdown">
                 <div class="day-card">
-                    <h3>📅 Martes</h3>
+                    <h3><span class="day-dot martes-dot"></span>Martes</h3>
                     <p>${stats.byDay.martes.matches} partidos • ${stats.byDay.martes.wins} victorias</p>
                     <p>${stats.byDay.martes.goals} goles • ${stats.byDay.martes.assists} asistencias</p>
                 </div>
                 <div class="day-card">
-                    <h3>📅 Jueves</h3>
+                    <h3><span class="day-dot jueves-dot"></span>Jueves</h3>
                     <p>${stats.byDay.jueves.matches} partidos • ${stats.byDay.jueves.wins} victorias</p>
                     <p>${stats.byDay.jueves.goals} goles • ${stats.byDay.jueves.assists} asistencias</p>
                 </div>
@@ -311,19 +311,19 @@ export class AnalisisIAView {
                 <!-- Badges principales -->
                 <div class="ai-badges">
                     <div class="ai-badge" style="background: ${analysis.profile.color};">
-                        <span class="badge-icon">${analysis.profile.icon}</span>
+                        <span class="badge-icon"><svg class="icon"><use href="#${analysis.profile.icon}"/></svg></span>
                         <span class="badge-text">${analysis.profile.type}</span>
                     </div>
                     <div class="ai-badge" style="background: ${analysis.level.color};">
-                        <span class="badge-icon">${analysis.level.icon}</span>
+                        <span class="badge-icon"><svg class="icon"><use href="#${analysis.level.icon}"/></svg></span>
                         <span class="badge-text">${analysis.level.level}</span>
                     </div>
                     <div class="ai-badge" style="background: ${analysis.trend.color};">
-                        <span class="badge-icon">${analysis.trend.icon}</span>
+                        <span class="badge-icon"><svg class="icon"><use href="#${analysis.trend.icon}"/></svg></span>
                         <span class="badge-text">${analysis.trend.trend}</span>
                     </div>
                     <div class="ai-badge score-badge">
-                        <span class="badge-icon">📊</span>
+                        <span class="badge-icon"><svg class="icon"><use href="#i-grafica"/></svg></span>
                         <span class="badge-text">Score: ${analysis.score}/100</span>
                     </div>
                 </div>
@@ -337,7 +337,7 @@ export class AnalisisIAView {
 
                 <!-- Resumen -->
                 <div class="ai-section">
-                    <h4>📝 Resumen del Perfil</h4>
+                    <h4><svg class="icon icon-inline"><use href="#i-info"/></svg> Resumen del Perfil</h4>
                     <div class="ai-summary">
                         ${analysis.summary.map(line => `<p>• ${line}</p>`).join('')}
                     </div>
@@ -346,13 +346,13 @@ export class AnalisisIAView {
                 <!-- Fortalezas y Mejoras -->
                 <div class="ai-two-columns">
                     <div class="ai-section">
-                        <h4>💪 Fortalezas Principales</h4>
+                        <h4><svg class="icon icon-inline"><use href="#i-actividad"/></svg> Fortalezas Principales</h4>
                         <ul class="ai-list strengths-list">
                             ${analysis.strengths.map(s => `<li>${s}</li>`).join('')}
                         </ul>
                     </div>
                     <div class="ai-section">
-                        <h4>📈 Áreas de Mejora</h4>
+                        <h4><svg class="icon icon-inline"><use href="#i-grafica"/></svg> Áreas de Mejora</h4>
                         <ul class="ai-list improvements-list">
                             ${analysis.improvements.map(i => `<li>${i}</li>`).join('')}
                         </ul>
@@ -361,7 +361,7 @@ export class AnalisisIAView {
 
                 <!-- Recomendaciones Tácticas -->
                 <div class="ai-section">
-                    <h4>🎯 Recomendaciones Tácticas</h4>
+                    <h4><svg class="icon icon-inline"><use href="#i-diana"/></svg> Recomendaciones Tácticas</h4>
                     <ul class="ai-list recommendations-list">
                         ${analysis.recommendations.map(r => `<li>${r}</li>`).join('')}
                     </ul>
@@ -370,7 +370,7 @@ export class AnalisisIAView {
                 <!-- Compatibilidad -->
                 ${analysis.teamCompatibility.ideal.length > 0 || analysis.teamCompatibility.needsSupport.length > 0 ? `
                     <div class="ai-section">
-                        <h4>👥 Compatibilidad de Equipo</h4>
+                        <h4><svg class="icon icon-inline"><use href="#i-comparar"/></svg> Compatibilidad de Equipo</h4>
                         ${analysis.teamCompatibility.ideal.length > 0 ? `
                             <p><strong>Combina bien con:</strong></p>
                             <ul class="ai-list">
