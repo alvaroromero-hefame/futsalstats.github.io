@@ -36,7 +36,6 @@
 	<span class="resumen-eyebrow" id="season-eyebrow">Temporada</span>
 	<h1 class="resumen-title">LA TEMPORADA<br>HA ACABADO</h1>
 	<p class="resumen-lead">Estos son los mejores jugadores de la temporada. ¡Hasta la próxima!</p>
-	<div class="season-chips" id="season-chips"></div>
 </div>
 
 <!-- Selector de día (solo móvil) -->
@@ -263,45 +262,21 @@ function renderCategory({ iconId, title, subtitle, martesHtml, juevesHtml }) {
 		</div>`;
 }
 
-// ── Selector de temporada (una temporada = mismo nombre en martes y jueves) ──
+// ── Temporada inmediatamente anterior a la activa (mismo nombre en martes y jueves) ──
 let allSeasons = [];
 
-async function populateSeasonChips(selectedName) {
-	allSeasons = await loadSeasons();
-	const names = [...new Set(allSeasons.map(s => s.name))];
-
-	const wrap = document.getElementById('season-chips');
-	wrap.innerHTML = names.map(name => `
-		<button type="button" class="season-chip${name === selectedName ? ' active' : ''}" data-season="${escHtml(name)}">${escHtml(name)}</button>
-	`).join('');
-
-	wrap.querySelectorAll('.season-chip').forEach(chip => {
-		chip.addEventListener('click', () => main(chip.dataset.season));
-	});
-
-	document.getElementById('season-eyebrow').textContent = selectedName || 'Todas las temporadas';
-}
-
 function seasonIdFor(day, seasonName) {
-	if (!seasonName) return null;
 	return allSeasons.find(s => s.day === day && s.name === seasonName)?.id || null;
 }
 
 // ── Main ──────────────────────────────────────────────────────
-let currentSeasonName = null;
-
-async function main(seasonName = undefined) {
+async function main() {
 	try {
-		if (seasonName === undefined) {
-			if (allSeasons.length === 0) {
-				const active = (await loadSeasons()).find(s => s.is_active);
-				seasonName = active?.name ?? null;
-			} else {
-				seasonName = currentSeasonName;
-			}
-		}
-		currentSeasonName = seasonName;
-		await populateSeasonChips(seasonName);
+		allSeasons = await loadSeasons(); // ordenadas por start_date desc
+		const activeName = allSeasons.find(s => s.is_active)?.name;
+		const seasonName = allSeasons.find(s => s.name !== activeName)?.name;
+		if (!seasonName) throw new Error('No hay temporada anterior');
+		document.getElementById('season-eyebrow').textContent = `Temporada ${seasonName}`;
 
 		const seasonIdMartes = seasonIdFor('martes', seasonName);
 		const seasonIdJueves = seasonIdFor('jueves', seasonName);

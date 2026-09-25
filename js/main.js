@@ -47,9 +47,6 @@ class FutsalApp {
         const dataLoaded = await this.dataManager.loadData();
         console.log('✓ loadData completado. Datos cargados:', dataLoaded);
 
-        // Restaurar temporada elegida por el usuario en una sesión anterior
-        await this.restoreSeasonSelection();
-        
         // Ocultar loading inicial
         console.log('⏳ Ocultando pantalla de carga...');
         const loadingEl = document.getElementById('initial-loading');
@@ -92,20 +89,6 @@ class FutsalApp {
     }
 
     /**
-     * Restaura la temporada elegida por el usuario (persistida en localStorage) para cada día
-     */
-    async restoreSeasonSelection() {
-        for (const day of ['martes', 'jueves']) {
-            const saved = localStorage.getItem(`season_${day}`);
-            if (!saved || saved === this.dataManager.currentSeason[day]) continue;
-            const seasons = this.dataManager.getSeasons(day);
-            if (seasons.some(s => s.id === saved)) {
-                await this.dataManager.setCurrentSeason(day, saved);
-            }
-        }
-    }
-
-    /**
      * Configura el selector global de temporada del sidebar
      */
     setupSeasonSelector() {
@@ -122,7 +105,6 @@ class FutsalApp {
         select.addEventListener('change', async (e) => {
             const day = this.dataManager.getCurrentDay();
             const seasonId = e.target.value || null;
-            localStorage.setItem(`season_${day}`, seasonId || '');
             await this.dataManager.setCurrentSeason(day, seasonId);
             this.rerenderActiveView();
         });

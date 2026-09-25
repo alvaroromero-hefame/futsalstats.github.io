@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Nueva Temporada · Futsal Stats</title>
+	<meta name="description" content="Cuenta atrás para el inicio de la temporada de fútbol sala">
+
+	<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png">
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="css/resumen.css">
+	<style>
+		.countdowns {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 20px;
+			max-width: 860px;
+			margin: 40px auto;
+			padding: 0 16px;
+		}
+		.countdown {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 24px;
+			text-align: center;
+		}
+		.countdown h2 { margin: 0 0 4px; }
+		.countdown .fecha { color: var(--muted); margin: 0 0 20px; }
+		.countdown .units { display: flex; justify-content: center; gap: 12px; }
+		.countdown .unit {
+			background: var(--surface-2);
+			border-radius: var(--radius-s);
+			padding: 12px 8px;
+			min-width: 72px;
+		}
+		.countdown .num {
+			display: block;
+			font-family: var(--font-display);
+			font-size: 2.4rem;
+			font-weight: 700;
+			color: var(--primary);
+			font-variant-numeric: tabular-nums;
+		}
+		.countdown .lbl { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+		.countdown .started { font-family: var(--font-display); font-size: 1.6rem; color: var(--primary); }
+		.links { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 0 16px 40px; }
+		.links a {
+			padding: 10px 20px;
+			border-radius: 99px;
+			font-weight: 600;
+			text-decoration: none;
+			border: 1px solid var(--border);
+			color: var(--text);
+		}
+		.links a.primary { background: var(--primary); border-color: var(--primary); color: var(--surface); }
+	</style>
+</head>
+<body class="resumen-body">
+
+<div class="resumen-hero pitch-lines">
+	<span class="resumen-eyebrow">Nueva temporada</span>
+	<h1 class="resumen-title">VUELVE EL<br>FÚTBOL SALA</h1>
+	<p class="resumen-lead">Esto es lo que falta para el primer partido.</p>
+</div>
+
+<div class="countdowns">
+	<!-- ponytail: hora de inicio fija en data-start; cámbiala aquí si el partido empieza a otra hora -->
+	<section class="countdown" data-start="2026-09-29T00:00:00">
+		<h2>Martes</h2>
+		<p class="fecha">Martes 29 de septiembre</p>
+		<div class="units"></div>
+	</section>
+	<section class="countdown" data-start="2026-10-01T00:00:00">
+		<h2>Jueves</h2>
+		<p class="fecha">Jueves 1 de octubre</p>
+		<div class="units"></div>
+	</section>
+</div>
+
+<div class="links">
+	<a class="primary" href="app.html">Ir a la app</a>
+	<a href="resumen.html">Resumen temporada anterior</a>
+</div>
+
+<script>
+function tick() {
+	document.querySelectorAll('.countdown').forEach(el => {
+		const ms = new Date(el.dataset.start) - Date.now();
+		const units = el.querySelector('.units');
+		if (ms <= 0) {
+			units.innerHTML = '<span class="started">¡Ya ha empezado!</span>';
+			return;
+		}
+		const min = Math.floor(ms / 60000);
+		const parts = [[Math.floor(min / 1440), 'días'], [Math.floor(min / 60) % 24, 'horas'], [min % 60, 'minutos']];
+		units.innerHTML = parts.map(([n, l]) =>
+			`<div class="unit"><span class="num">${n}</span><span class="lbl">${l}</span></div>`).join('');
+	});
+}
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>

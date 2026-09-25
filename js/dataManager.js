@@ -122,12 +122,6 @@ export class DataManager {
                 this.futsalDataJueves = juevesData;
             }
 
-            // Verificar que al menos un día tenga datos
-            if (!this.futsalDataMartes && !this.futsalDataJueves) {
-                console.error('❌ [DataManager] No hay datos disponibles en ningún día');
-                throw new Error('No hay datos disponibles en Supabase');
-            }
-
             console.log('✅ [DataManager] Datos cargados desde Supabase correctamente');
             return true;
         } catch (error) {
@@ -209,18 +203,12 @@ export class DataManager {
             }
             console.log(`✓ [loadDayFromSupabase] Settings obtenidos:`, settings ? 'sí' : 'no');
 
-            // Si no hay datos, retornar null
-            if (!matches || matches.length === 0) {
-                console.log(`⚠️ [loadDayFromSupabase] No hay datos de ${day} en Supabase`);
-                return null;
-            }
-
             console.log(`✅ [loadDayFromSupabase] Datos de ${day} procesados correctamente`);
             // Transformar al formato esperado por la aplicación
             return {
                 fijos: players.map(p => p.name),
                 proximoSeleccionador: settings?.next_selector || '',
-                matches: matches.map(m => this.transformMatchFromSupabase(m))
+                matches: (matches || []).map(m => this.transformMatchFromSupabase(m))
             };
         } catch (error) {
             console.error(`❌ [loadDayFromSupabase] Error cargando ${day} desde Supabase:`, error.message);
