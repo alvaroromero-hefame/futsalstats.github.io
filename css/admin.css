@@ -969,11 +969,6 @@ input[type="checkbox"] {
     color: #1d4ed8;
 }
 
-.player-badge.eventual {
-    background: #fdecec;
-    color: #b91c1c;
-}
-
 .player-badge.day {
     background: var(--field);
     color: var(--muted);
@@ -1049,11 +1044,6 @@ input[type="checkbox"] {
 .availability-column--fixed {
     background: light-dark(#eef5fc, #0d2145);
     border-color: light-dark(#cfe1f4, #1d3a63);
-}
-
-.availability-column--eventual {
-    background: light-dark(#fdf3ea, #3a2612);
-    border-color: light-dark(#f5ddc4, #573a1c);
 }
 
 .availability-column-header {
@@ -1138,10 +1128,6 @@ input[type="checkbox"] {
     background: var(--team-blue);
 }
 
-.player-chip--eventual .player-chip-avatar {
-    background: var(--team-red);
-}
-
 .player-chip-name {
     font-size: 14px;
 }
@@ -1171,6 +1157,7 @@ input[type="checkbox"] {
 
 .availability-add-btn {
     width: 100%;
+    margin-top: 16px;
 }
 
 /* ============================================

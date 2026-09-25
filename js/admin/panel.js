@@ -37,7 +37,6 @@ export class AdminPanel {
 
         // Disponibilidad (fijos/eventuales) del currentDay + currentAdminSeasonId
         this.fixedPlayers = [];
-        this.eventualPlayers = [];
     }
 
     /**
@@ -348,17 +347,10 @@ export class AdminPanel {
                         </div>
                         <div id="availability-fixed" class="chips-row"></div>
                     </div>
-                    <div class="availability-column availability-column--eventual">
-                        <div class="availability-column-header">
-                            <h4><span class="team-dot team-dot-amber"></span>Eventuales/Suplentes</h4>
-                            <span class="availability-count" id="availability-eventual-count">0</span>
-                        </div>
-                        <div id="availability-eventual" class="chips-row"></div>
-                        <button type="button" class="btn btn-secondary btn-sm availability-add-btn" onclick="adminPanel.openAvailabilityPicker()">
-                            <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir jugador
-                        </button>
-                    </div>
                 </div>
+                <button type="button" class="btn btn-secondary btn-sm availability-add-btn" onclick="adminPanel.openAvailabilityPicker()">
+                    <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir fijo
+                </button>
             </div>
         `;
     }
@@ -476,6 +468,7 @@ export class AdminPanel {
                 el.innerHTML = this.getPartidosTemplate();
                 this.attachPartidosListeners();
                 await this.loadSeasonsAdmin();
+                await this.loadAllPlayers();
                 await this.loadAvailabilityBoard();
                 await this.loadRecentMatches();
                 break;
@@ -704,6 +697,14 @@ export class AdminPanel {
     // ── Maestro de jugadores ────────────────────────────────────
 
     /**
+     * Eventuales = todo el maestro que no es fijo en el día/temporada seleccionados
+     */
+    get eventualPlayers() {
+        const fixedIds = new Set(this.fixedPlayers.map(p => p.id));
+        return this.allPlayers.filter(p => !fixedIds.has(p.id));
+    }
+
+    /**
      * Carga el maestro completo de jugadores (sin filtro de día/temporada)
      */
     async loadAllPlayers() {
@@ -723,7 +724,7 @@ export class AdminPanel {
     }
 
     /**
-     * Para cada jugador del maestro, calcula si es fijo/eventual en martes y/o
+     * Para cada jugador del maestro, calcula si es fijo en martes y/o
      * jueves dentro de la temporada activa de cada día (o "sin temporada" si
      * ningún día tiene una activa). Alimenta this.masterAvailability como
      * { [playerId]: { martes: true|false|undefined, jueves: true|false|undefined } }
@@ -744,7 +745,8 @@ export class AdminPanel {
                 let query = this.supabase
                     .from('player_availability')
                     .select('player_id, is_fixed')
-                    .eq('day', day);
+                    .eq('day', day)
+                    .eq('is_fixed', true);
                 query = activeSeasonByDay[day]
                     ? query.eq('season_id', activeSeasonByDay[day])
                     : query.is('season_id', null);
@@ -757,7 +759,7 @@ export class AdminPanel {
                 });
             }
         } catch (error) {
-            console.warn('⚠️ No se pudo calcular fijo/eventual del maestro:', error.message);
+            console.warn('⚠️ No se pudo calcular fijos del maestro:', error.message);
         }
     }
 
@@ -768,12 +770,10 @@ export class AdminPanel {
             const noteAttr = p.notes ? ` title="${p.notes.replace(/"/g, '&quot;')}"` : '';
             const noteText = p.notes ? `<span class="player-note">${p.notes}</span>` : '';
             const avail = this.masterAvailability?.[p.id] || {};
-            const dayBadges = [
-                avail.martes !== undefined ? { fixed: avail.martes, code: 'M' } : null,
-                avail.jueves !== undefined ? { fixed: avail.jueves, code: 'J' } : null
-            ].filter(Boolean).map(({ fixed, code }) =>
-                `<span class="player-badge availability-badge ${fixed ? 'fixed' : 'eventual'}" title="${fixed ? 'Fijo' : 'Eventual'} de ${code === 'M' ? 'martes' : 'jueves'}">${fixed ? 'F' : 'E'}${code}</span>`
-            ).join('');
+            const dayBadges = [['martes', 'M'], ['jueves', 'J']]
+                .filter(([day]) => avail[day])
+                .map(([day, code]) => `<span class="player-badge availability-badge fixed" title="Fijo de ${day}">F${code}</span>`)
+                .join('');
             return `
             <div class="player-item ${p.notes ? 'has-note' : ''}"${noteAttr}>
                 <span class="player-avatar">${p.emoji || '👤'}</span>
@@ -1133,8 +1133,6 @@ export class AdminPanel {
             const rows = (data || []).filter(r => r.players);
             this.fixedPlayers = rows.filter(r => r.is_fixed)
                 .map(r => ({ id: r.players.id, name: r.players.name, day: this.currentDay, is_fixed: true }));
-            this.eventualPlayers = rows.filter(r => !r.is_fixed)
-                .map(r => ({ id: r.players.id, name: r.players.name, day: this.currentDay, is_fixed: false }));
 
             // El formulario de partido (sección Partidos) consume estas mismas listas, si está montado
             this.updatePlayerSelections(this.fixedPlayers, this.eventualPlayers);
@@ -1157,50 +1155,23 @@ export class AdminPanel {
 
     renderAvailabilityBoard() {
         const fixedEl = document.getElementById('availability-fixed');
-        const eventualEl = document.getElementById('availability-eventual');
-        if (!fixedEl || !eventualEl) return;
+        if (!fixedEl) return;
 
         const chip = (p) => `
-            <span class="player-chip ${p.is_fixed ? 'player-chip--fixed' : 'player-chip--eventual'}" onclick="adminPanel.toggleAvailability('${p.id}', ${p.is_fixed})" title="Click para pasar a ${p.is_fixed ? 'eventual' : 'fijo'}">
+            <span class="player-chip player-chip--fixed">
                 <span class="player-chip-avatar">${(p.name || '?').charAt(0).toUpperCase()}</span>
                 <span class="player-chip-name">${p.name}</span>
                 <button type="button" class="chip-remove" title="Quitar de disponibilidad" onclick="event.stopPropagation(); adminPanel.removeAvailability('${p.id}')">✕</button>
             </span>`;
 
         fixedEl.innerHTML = this.fixedPlayers.map(chip).join('') || '<p class="no-data">Sin fijos todavía</p>';
-        eventualEl.innerHTML = this.eventualPlayers.map(chip).join('') || '<p class="no-data">Sin eventuales todavía</p>';
 
         const fixedCountEl = document.getElementById('availability-fixed-count');
-        const eventualCountEl = document.getElementById('availability-eventual-count');
         if (fixedCountEl) fixedCountEl.textContent = this.fixedPlayers.length;
-        if (eventualCountEl) eventualCountEl.textContent = this.eventualPlayers.length;
-    }
-
-    /**
-     * Alterna fijo/eventual de un jugador ya presente en el tablero
-     */
-    async toggleAvailability(playerId, currentIsFixed) {
-        try {
-            const { error } = await this.supabase
-                .from('player_availability')
-                .upsert({
-                    player_id: playerId,
-                    day: this.currentDay,
-                    season_id: this.currentAdminSeasonId,
-                    is_fixed: !currentIsFixed
-                }, { onConflict: 'player_id,day,season_id' });
-            if (error) throw error;
-
-            await this.loadAvailabilityBoard();
-        } catch (error) {
-            console.error('Error actualizando disponibilidad:', error);
-            this.showNotification('Error: ' + error.message, 'error');
-        }
     }
 
     openAvailabilityPicker() {
-        const assignedIds = new Set([...this.fixedPlayers, ...this.eventualPlayers].map(p => p.id));
-        const available = this.allPlayers.filter(p => !assignedIds.has(p.id));
+        const available = this.eventualPlayers;
 
         const list = document.getElementById('availability-picker-list');
         list.innerHTML = available.map(p => `
@@ -1208,11 +1179,10 @@ export class AdminPanel {
                 <span class="player-avatar">${p.emoji || '👤'}</span>
                 <span class="player-name">${p.name}</span>
                 <div class="player-item-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="adminPanel.addToAvailability('${p.id}', true)">Fijo</button>
-                    <button class="btn btn-secondary btn-sm" onclick="adminPanel.addToAvailability('${p.id}', false)">Eventual</button>
+                    <button class="btn btn-secondary btn-sm" onclick="adminPanel.addToAvailability('${p.id}')">Hacer fijo</button>
                 </div>
             </div>
-        `).join('') || '<p class="no-data">Todos los jugadores del maestro ya están asignados</p>';
+        `).join('') || '<p class="no-data">Todos los jugadores del maestro ya son fijos</p>';
 
         document.getElementById('availability-picker-modal').style.display = 'flex';
     }
@@ -1222,9 +1192,9 @@ export class AdminPanel {
     }
 
     /**
-     * Añade un jugador del maestro a esta temporada/día como eventual
+     * Marca un jugador del maestro como fijo de esta temporada/día
      */
-    async addToAvailability(playerId, isFixed) {
+    async addToAvailability(playerId) {
         try {
             const { error } = await this.supabase
                 .from('player_availability')
@@ -1232,12 +1202,12 @@ export class AdminPanel {
                     player_id: playerId,
                     day: this.currentDay,
                     season_id: this.currentAdminSeasonId,
-                    is_fixed: isFixed
+                    is_fixed: true
                 }, { onConflict: 'player_id,day,season_id' });
             if (error) throw error;
 
             this.closeAvailabilityPicker();
-            this.showNotification(`Jugador añadido como ${isFixed ? 'fijo' : 'eventual'}`, 'success');
+            this.showNotification('Jugador añadido como fijo', 'success');
             await this.loadAvailabilityBoard();
         } catch (error) {
             console.error('Error añadiendo disponibilidad:', error);
@@ -1735,44 +1705,13 @@ export class AdminPanel {
                         }
                         
                         playerId = newPlayer.id;
+                        this.allPlayers.push(newPlayer);
                         console.log(`✅ Jugador "${playerName}" creado en players`);
                     } else {
                         console.log(`ℹ️ Jugador "${playerName}" ya existe en players (ID: ${playerId})`);
                     }
 
                     resolvedPlayerId = playerId;
-
-                    // Añadir a player_availability (de esta temporada/día) si no está ya
-                    if (playerId) {
-                        const { data: availCheck, error: availCheckError } = await this.seasonFilter(
-                            this.supabase
-                                .from('player_availability')
-                                .select('*')
-                                .eq('player_id', playerId)
-                                .eq('day', this.currentDay)
-                        ).maybeSingle();
-
-                        if (availCheckError) {
-                            console.warn('Error verificando disponibilidad:', availCheckError);
-                        } else if (!availCheck) {
-                            const { error: availError } = await this.supabase
-                                .from('player_availability')
-                                .insert({
-                                    player_id: playerId,
-                                    day: this.currentDay,
-                                    season_id: this.currentAdminSeasonId,
-                                    is_fixed: false
-                                });
-
-                            if (availError) {
-                                console.warn('Error creando disponibilidad:', availError);
-                            } else {
-                                console.log(`✅ Jugador "${playerName}" añadido como eventual del ${this.currentDay}`);
-                            }
-                        } else {
-                            console.log(`ℹ️ Jugador "${playerName}" ya está en disponibilidad del ${this.currentDay}`);
-                        }
-                    }
                 } catch (err) {
                     console.error('Error gestionando jugador:', err);
                     throw err;
@@ -1780,50 +1719,8 @@ export class AdminPanel {
             } else if (select.value) {
                 playerName = select.value;
                 
-                // Verificar si el jugador eventual ya está registrado para este día
-                try {
-                    // Buscar el ID del jugador
-                    const { data: player, error: playerError } = await this.supabase
-                        .from('players')
-                        .select('id')
-                        .eq('name', playerName)
-                        .single();
-
-                    if (player && !playerError) {
-                        resolvedPlayerId = player.id;
-
-                        // Verificar si ya existe en player_availability para esta temporada/día
-                        const { data: existing, error: checkError } = await this.seasonFilter(
-                            this.supabase
-                                .from('player_availability')
-                                .select('*')
-                                .eq('player_id', player.id)
-                                .eq('day', this.currentDay)
-                        ).maybeSingle();
-
-                        if (checkError) {
-                            console.warn('Error verificando disponibilidad:', checkError);
-                        }
-
-                        // Si no existe, agregarlo como eventual
-                        if (!existing) {
-                            const { error: insertError } = await this.supabase
-                                .from('player_availability')
-                                .insert({
-                                    player_id: player.id,
-                                    day: this.currentDay,
-                                    season_id: this.currentAdminSeasonId,
-                                    is_fixed: false
-                                });
-
-                            if (!insertError) {
-                                console.log(`✅ Jugador "${playerName}" añadido automáticamente como eventual del ${this.currentDay}`);
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.warn('Error gestionando disponibilidad del jugador eventual:', err);
-                }
+                // Resolver el id del maestro (los eventuales son el maestro menos los fijos)
+                resolvedPlayerId = this.allPlayers.find(p => p.name === playerName)?.id || null;
             } else {
                 continue; // Saltar si no hay selección
             }
@@ -2361,8 +2258,8 @@ export class AdminPanel {
                     <div class="help-section">
                         <h3>Maestro de Jugadores y Disponibilidad</h3>
                         <p><strong>Maestro de Jugadores:</strong> catálogo único de jugadores (nombre, emoji, avatar, notas), independiente del día. "Nuevo Jugador" crea uno; el icono de lápiz lo edita.</p>
-                        <p><strong>Disponibilidad:</strong> elige temporada y usa los chips para marcar quién es fijo o eventual ese día/temporada. Clic en el chip alterna fijo/eventual; la × lo quita; "Añadir" incorpora a alguien del maestro.</p>
-                        <p><strong>Nota:</strong> Los jugadores eventuales también se añaden automáticamente a la disponibilidad al crearlos desde un partido con "+ Nuevo jugador..."</p>
+                        <p><strong>Disponibilidad:</strong> elige temporada y marca quién es fijo ese día/temporada. "Añadir fijo" incorpora a alguien del maestro; la × lo quita.</p>
+                        <p><strong>Nota:</strong> Todo jugador del maestro que no sea fijo aparece automáticamente como eventual al crear un partido.</p>
                     </div>
 
                     <div class="help-section">
@@ -2375,7 +2272,7 @@ export class AdminPanel {
                         <ul>
                             <li>Los datos se actualizan automáticamente en la aplicación principal</li>
                             <li>Puedes editar las estadísticas de un partido ya creado</li>
-                            <li>Los jugadores eventuales añadidos en partidos se guardan automáticamente</li>
+                            <li>Los jugadores nuevos creados desde un partido se añaden al maestro automáticamente</li>
                             <li>Usa los filtros de fecha en "Partidos Recientes" para encontrar partidos antiguos</li>
                         </ul>
                     </div>
