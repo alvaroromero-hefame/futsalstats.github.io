@@ -3,7 +3,7 @@
  * Permite funcionamiento offline y cacheo de recursos
  */
 
-const CACHE_NAME = 'futsal-stats-v4.0.0';
+const CACHE_NAME = 'futsal-stats-v4.0.1';
 const OFFLINE_URL = '/offline.html';
 
 // Recursos a cachear en la instalación

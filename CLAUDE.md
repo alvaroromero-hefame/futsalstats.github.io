@@ -75,7 +75,7 @@ Toda la lógica vive en `js/utils/calculations.js`.
 
 1. Crear `js/ui/miVista.js` exportando una clase con `render()`
 2. Importarla en `main.js` y añadirla al mapa `this.views`
-3. Añadir un enlace con `data-view="miVista"` en el `<ul class="menu">` del sidebar Y en el `<nav class="tabbar">` (móvil) de `app.html`. La navegación se enlaza por el atributo `data-view`, no por id.
+3. Añadir un enlace con `data-view="miVista"` en el `<ul class="menu">` del sidebar Y en el `<nav class="tabbar">` (móvil) de `index.html`. La navegación se enlaza por el atributo `data-view`, no por id.
 
 ### Sistema de diseño
 
