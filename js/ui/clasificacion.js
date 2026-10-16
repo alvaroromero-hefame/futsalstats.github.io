@@ -53,6 +53,7 @@ export class ClasificacionView {
                         <th>Posición</th>
                         <th>Jugador</th>
                         <th>Puntos</th>
+                        <th>Jugados</th>
                         <th>Pts/Partido</th>
                         <th>Goles</th>
                         <th>Asistencias</th>
@@ -109,6 +110,7 @@ export class ClasificacionView {
                     <td data-label="Posición">${idx + 1}</td>
                     <td data-label="Jugador">${nombreSanitizado} ${icono} ${fijoIcon} ${selectorIcon}</td>
                     <td data-label="Puntos">${puntos}</td>
+                    <td data-label="Jugados">${partidos}</td>
                     <td data-label="Pts/Partido">${puntosPerPartido}</td>
                     <td data-label="Goles">${goles}</td>
                     <td data-label="Asistencias">${asistencias}</td>
