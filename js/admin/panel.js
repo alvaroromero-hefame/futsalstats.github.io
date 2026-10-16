@@ -209,32 +209,6 @@ export class AdminPanel {
                     </div>
 
                     <div class="teams-container">
-                        <!-- Equipo Azul -->
-                        <div class="team-section team-blue">
-                            <h3><span class="team-dot team-dot-blue"></span>Equipo Azul</h3>
-                            <div class="form-group">
-                                <label for="blue-result">Goles del Equipo</label>
-                                <input type="number" id="blue-result" min="0" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Jugadores Fijos</label>
-                                <div id="blue-players-fixed" class="players-list-detailed">
-                                    <!-- Se llenará dinámicamente -->
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Jugadores Extras</label>
-                                <div id="blue-players-extras" class="players-extras">
-                                    <!-- Se añadirán dinámicamente -->
-                                </div>
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('blue')">
-                                    <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir Extra
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Equipo Rojo -->
                         <div class="team-section team-red">
                             <h3><span class="team-dot team-dot-red"></span>Equipo Rojo</h3>
@@ -256,6 +230,32 @@ export class AdminPanel {
                                     <!-- Se añadirán dinámicamente -->
                                 </div>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('red')">
+                                    <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir Extra
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Equipo Azul -->
+                        <div class="team-section team-blue">
+                            <h3><span class="team-dot team-dot-blue"></span>Equipo Azul</h3>
+                            <div class="form-group">
+                                <label for="blue-result">Goles del Equipo</label>
+                                <input type="number" id="blue-result" min="0" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Jugadores Fijos</label>
+                                <div id="blue-players-fixed" class="players-list-detailed">
+                                    <!-- Se llenará dinámicamente -->
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Jugadores Extras</label>
+                                <div id="blue-players-extras" class="players-extras">
+                                    <!-- Se añadirán dinámicamente -->
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="adminPanel.addExtraPlayer('blue')">
                                     <svg class="icon icon-inline"><use href="#i-mas"/></svg> Añadir Extra
                                 </button>
                             </div>
@@ -701,7 +701,8 @@ export class AdminPanel {
      */
     get eventualPlayers() {
         const fixedIds = new Set(this.fixedPlayers.map(p => p.id));
-        return this.allPlayers.filter(p => !fixedIds.has(p.id));
+        return this.allPlayers.filter(p => !fixedIds.has(p.id))
+            .sort((a, b) => a.name.localeCompare(b.name, 'es'));
     }
 
     /**
@@ -1132,7 +1133,8 @@ export class AdminPanel {
 
             const rows = (data || []).filter(r => r.players);
             this.fixedPlayers = rows.filter(r => r.is_fixed)
-                .map(r => ({ id: r.players.id, name: r.players.name, day: this.currentDay, is_fixed: true }));
+                .map(r => ({ id: r.players.id, name: r.players.name, day: this.currentDay, is_fixed: true }))
+                .sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
             // El formulario de partido (sección Partidos) consume estas mismas listas, si está montado
             this.updatePlayerSelections(this.fixedPlayers, this.eventualPlayers);
@@ -1439,7 +1441,8 @@ export class AdminPanel {
         const mvpSelect = document.getElementById('match-mvp');
         if (!mvpSelect) return;
         mvpSelect.innerHTML = '<option value="">Sin MVP</option>' +
-            players.map(p => `<option value="${p.name}" data-id="${p.id}">${p.name}</option>`).join('');
+            [...players].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+                .map(p => `<option value="${p.name}" data-id="${p.id}">${p.name}</option>`).join('');
     }
 
     /**
